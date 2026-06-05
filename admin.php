@@ -1054,7 +1054,7 @@ foreach ($packages as $pkg) {
             </div>
           <?php endif; ?>
 
-          <form method="POST" action="admin.php">
+          <form method="POST" action="">
             <div class="form-group">
               <label for="username">Username</label>
               <input type="text" id="username" name="username" class="form-input" required placeholder="admin">
@@ -1084,7 +1084,7 @@ foreach ($packages as $pkg) {
             <div style="margin-top:0.5rem;"><strong>Recovery Phone:</strong> <?php echo htmlspecialchars($admin_creds['phone'] ?? 'Not Configured'); ?></div>
           </div>
 
-          <form method="POST" action="admin.php?action=forgot_password">
+          <form method="POST" action="">
             <input type="hidden" name="action_send_otp" value="1">
             <button type="submit" class="btn btn-primary" style="width:100%; height:46px; font-weight:700; margin-bottom:1rem;">Generate & Send OTP</button>
             <a href="admin.php" class="btn btn-outline" style="display:flex; justify-content:center; align-items:center; width:100%; height:46px; font-weight:700; text-decoration:none; box-sizing:border-box;">Cancel</a>
@@ -1106,7 +1106,7 @@ foreach ($packages as $pkg) {
             </div>
           <?php endif; ?>
 
-          <form method="POST" action="admin.php?action=forgot_password">
+          <form method="POST" action="">
             <div class="form-group" style="margin-bottom:2rem;">
               <label for="otp">Enter 6-Digit OTP</label>
               <input type="text" id="otp" name="otp" class="form-input" required placeholder="123456" pattern="\d{6}" maxlength="6" style="text-align:center; letter-spacing:0.5rem; font-size:1.25rem; font-weight:700;">
@@ -1126,7 +1126,7 @@ foreach ($packages as $pkg) {
             </div>
           <?php endif; ?>
 
-          <form method="POST" action="admin.php?action=forgot_password">
+          <form method="POST" action="">
             <div class="form-group">
               <label for="new_password">New Password</label>
               <input type="password" id="new_password" name="new_password" class="form-input" required placeholder="New Password">
