@@ -1,0 +1,3 @@
+# Prevent visitors from listing directory or downloading inquiries list
+Order Deny,Allow
+Deny from all

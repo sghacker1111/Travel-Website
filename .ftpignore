@@ -1,0 +1,7 @@
+.git/
+.github/
+.gitignore
+.ftpignore
+scratch/
+scripts/
+data/recovery_otp.txt

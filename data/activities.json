@@ -1,0 +1,58 @@
+[
+  {
+    "id": "everest-region",
+    "name": "Everest Region Trekking",
+    "slug": "everest-region-trekking",
+    "category": "trekking",
+    "description": "Classic trails in the Khumbu region including Everest Base Camp, Gokyo Lakes, and high Sherpa valleys."
+  },
+  {
+    "id": "annapurna-region",
+    "name": "Annapurna Region Trekking",
+    "slug": "annapurna-region-trekking",
+    "category": "trekking",
+    "description": "Diverse trekking routes through Gurung villages, massive valleys, and high altitude sanctuary points."
+  },
+  {
+    "id": "langtang-region",
+    "name": "Langtang Region Trekking",
+    "slug": "langtang-region-trekking",
+    "category": "trekking",
+    "description": "Scenic valleys close to Kathmandu featuring authentic Tamang culture and alpine glaciers."
+  },
+  {
+    "id": "manaslu-region",
+    "name": "Manaslu Region Trekking",
+    "slug": "manaslu-region-trekking",
+    "category": "trekking",
+    "description": "Remote restricted trekking loop wrapping around the world's eighth highest mountain, Mt. Manaslu."
+  },
+  {
+    "id": "mustang-region",
+    "name": "Mustang Region Trekking",
+    "slug": "mustang-region-trekking",
+    "category": "trekking",
+    "description": "Dry arid landscapes and red clay cliffs of the ancient forbidden kingdom of Lo Mustang."
+  },
+  {
+    "id": "restricted-areas",
+    "name": "Restricted / Remote Area Trekking",
+    "slug": "restricted-area-trekking",
+    "category": "trekking",
+    "description": "Wilderness trails requiring special permits, including Kanchenjunga, Makalu, and Dolpo regions."
+  },
+  {
+    "id": "peak-climbing-nepal",
+    "name": "Peak Climbing in Nepal",
+    "slug": "peak-climbing-nepal",
+    "category": "climbing",
+    "description": "Scale snow summits between 5500m and 6500m under NMA climbing permits with expert guides."
+  },
+  {
+    "id": "nepal-tours",
+    "name": "Nepal Tours & Excursions",
+    "slug": "nepal-tours-excursions",
+    "category": "tour",
+    "description": "Leisure, cultural heritage, helicopter flights, and wildlife jungle safaris in Chitwan and Pokhara."
+  }
+]

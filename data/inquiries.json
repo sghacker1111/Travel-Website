@@ -1,0 +1,13 @@
+[
+    {
+        "id": "inq_6a214488ed58a",
+        "name": "Test Hiker",
+        "email": "hiker@test.com",
+        "phone": "+1999999999",
+        "package": "Everest Base Camp Trek",
+        "travel_date": "2026-10-15",
+        "travelers": 2,
+        "message": "Testing dynamic booking writes.",
+        "submitted_at": "2026-06-04 09:25:28"
+    }
+]

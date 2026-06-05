@@ -1,0 +1,16 @@
+{
+    "company_name": "Top Mountain Treks Pvt. Ltd",
+    "logo_path": "assets\/images\/logo.png",
+    "whatsapp_number": "+977-9840019909",
+    "navigation": [],
+    "footer_icons": [],
+    "header_custom_html": "",
+    "footer_custom_html": "",
+    "admin": {
+        "name": "Administrator",
+        "username": "admin",
+        "password": "Top@#sg@#mountain",
+        "email": "admin@topmountaintreks.com",
+        "phone": "+977 9840019909"
+    }
+}

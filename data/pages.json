@@ -1,0 +1,65 @@
+[
+  {
+    "id": "page_about",
+    "title": "About Our Agency",
+    "slug": "about-us",
+    "content": "<h2>Welcome to Top Mountain Treks Pvt. Ltd.</h2><p>Headquartered in Thamel, Kathmandu, we are an approved local mountaineering operator registered with the Ministry of Tourism, TAAN, and NMA. Since 2010, we have guided thousands of high-altitude trekkers safely across the Himalayas.</p>",
+    "seo_title": "About Us | Top Mountain Treks Pvt. Ltd.",
+    "seo_description": "Read our legal credentials, tourism agency licenses, and company story. We offer professional, safety-first Himalayan expeditions.",
+    "seo_keywords": "about top mountain treks, local nepal agency"
+  },
+  {
+    "id": "page_why_travel",
+    "title": "Why Travel With Us?",
+    "slug": "why-travel-with-us",
+    "content": "<h2>Why Choose Top Mountain Treks?</h2><p>When you embark on a high-altitude adventure in the Himalayas, your safety, experience, and comfort depend entirely on the team you choose. Here is why thousands of adventurers choose us:</p><ul><li><strong>100% Local Expertise:</strong> Owned and operated by experienced mountain guides born in the Everest and Annapurna regions.</li><li><strong>Safety First:</strong> We carry oxygen chambers, sat-phones, and comprehensive medical kits on all high-altitude trips.</li><li><strong>Transparent Pricing:</strong> No hidden costs, local taxes, or surprise fees. What you book is what you pay.</li><li><strong>Sustainable Tourism:</strong> We support local schools, pay fair wages to our porters, and follow strict Leave No Trace guidelines.</li></ul>",
+    "seo_title": "Why Choose Us for Nepal Trekking | Top Mountain Treks",
+    "seo_description": "Find out why Top Mountain Treks is Nepal's top choice for safety-first trekking and peak climbing expeditions.",
+    "seo_keywords": "why choose top mountain treks, safe trekking nepal, local agency advantage"
+  },
+  {
+    "id": "page_our_team",
+    "title": "Our Expert Team",
+    "slug": "our-team",
+    "content": "<h2>Our High-Altitude Sherpa Guides & Team</h2><p>Our greatest asset is our team. Guided by years of experience and deep cultural roots, our Sherpa crew ensures you reach the summits safely.</p><div style=\"display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-top:1.5rem;\"><div><h4>Pasang Sherpa</h4><p><em>Lead Expedition Guide (12x Everest Summiteer)</em><br>Pasang has guided climbs for over two decades and handles logistics and route safety for all peak climbing operations.</p></div><div><h4>Ang Gelu Sherpa</h4><p><em>Senior Trekking Guide (EBC Specialist)</em><br>With a degree in mountain history and advanced wilderness first-aid, Ang Gelu makes every trek educational and safe.</p></div></div>",
+    "seo_title": "Meet Our Sherpa Guides and Expedition Leaders",
+    "seo_description": "Get to know our certified mountain guides, Sherpas, and support staff. Safety trained and highly experienced.",
+    "seo_keywords": "sherpa guides nepal, trekking crew, everest guides"
+  },
+  {
+    "id": "page_legal",
+    "title": "Legal Documents & Tourism Licenses",
+    "slug": "legal-documents",
+    "content": "<h2>Official Tourism Registrations & Credentials</h2><p>We are a fully licensed and government-authorized travel agency in Nepal. Below are our legal corporate details:</p><table><tr><th>Document/License</th><th>Registration No.</th><th>Authority</th></tr><tr><td>Company Registration</td><td>104825/067/068</td><td>Office of Company Registrar</td></tr><tr><td>Tourism License</td><td>1235/068</td><td>Ministry of Tourism & Civil Aviation</td></tr><tr><td>Foreign Exchange Permit</td><td>4820/068</td><td>Nepal Rastra Bank</td></tr><tr><td>Taxpayer Registration</td><td>600234851</td><td>Inland Revenue Department (PAN/VAT)</td></tr></table>",
+    "seo_title": "Legal Credentials and Licenses | Top Mountain Treks",
+    "seo_description": "View company registrations, tax details, and tourism permits for Top Mountain Treks Pvt. Ltd.",
+    "seo_keywords": "tourism license nepal, registered trekking agency"
+  },
+  {
+    "id": "page_terms",
+    "title": "Terms & Conditions",
+    "slug": "terms-and-conditions",
+    "content": "<h2>Terms & Booking Policy</h2><p>Please review our booking requirements and policies below:</p><ol><li><strong>Deposit Requirements:</strong> A non-refundable 20% deposit is required at the time of booking to secure your permits, flights, and lodge reservations.</li><li><strong>Cancellation Policy:</strong> Cancellations made 30 days or more before the departure date will lose the deposit. Cancellations within 14 days of departure are subject to 100% cancellation fee.</li><li><strong>Mandatory Insurance:</strong> All travelers must have comprehensive travel insurance covering emergency helicopter evacuation up to 6,000 meters.</li></ol>",
+    "seo_title": "Booking Terms and Cancellation Policy | Top Mountain Treks",
+    "seo_description": "Read our trekking deposit requirements, refund policies, and mandatory helicopter rescue insurance rules.",
+    "seo_keywords": "trekking terms and conditions, cancellation policy nepal"
+  },
+  {
+    "id": "page_awards",
+    "title": "Awards and Achievements",
+    "slug": "awards",
+    "content": "<h2>Our Awards & Sustainable Certifications</h2><p>Through our commitment to quality service and eco-friendly trekking, we have received multiple national and international recognitions:</p><ul><li><strong>TripAdvisor Certificate of Excellence (2018 - 2025):</strong> Awarded for consistently receiving five-star traveler feedback.</li><li><strong>Eco-Trekking Partner (TAAN):</strong> Certified for our plastic-free camping and environment preservation initiatives in national parks.</li><li><strong>Nepal Tourism Board Excellence Award (2022):</strong> Recognized for outstanding contribution to safe high-altitude trekking.</li></ul>",
+    "seo_title": "Company Awards and Eco-Tourism Credentials",
+    "seo_description": "View TripAdvisor awards and sustainable tourism certificates earned by Top Mountain Treks.",
+    "seo_keywords": "tripadvisor nepal trekking, eco tourism awards"
+  },
+  {
+    "id": "page_destination_fallback",
+    "title": "Our Destinations",
+    "slug": "destination",
+    "content": "<h2>Explore Nepal's Majestic Regions</h2><p>From the towering giants of the Khumbu to the pristine lakes of Langtang and the cultural riches of Kathmandu Valley, Nepal offers unparalleled destinations.</p>",
+    "seo_title": "Nepal Trekking Destinations and Regions",
+    "seo_description": "Explore the major trekking regions of Nepal including Everest, Annapurna, Manaslu, Langtang, and more.",
+    "seo_keywords": "nepal travel regions, everest base camp, annapurna route"
+  }
+]

@@ -1,0 +1,11 @@
+# Database recovery OTP logs (security sensitive)
+data/recovery_otp.txt
+
+# Local workspace temporary scripts
+scratch/
+scripts/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+Desktop.ini
