@@ -1,0 +1,9 @@
+# Keep server-side session files private if this directory is ever reached directly.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+
+<IfModule !mod_authz_core.c>
+    Order Deny,Allow
+    Deny from all
+</IfModule>

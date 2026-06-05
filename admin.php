@@ -1,4 +1,57 @@
 <?php
+function is_https_request() {
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        return true;
+    }
+    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+        return true;
+    }
+    if (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on') {
+        return true;
+    }
+    return false;
+}
+
+function admin_url($query = '') {
+    $query = ltrim($query, '?');
+    return '/admin' . ($query !== '' ? '?' . $query : '');
+}
+
+$request_path = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+if ($request_path === '/admin.php') {
+    header('Location: ' . admin_url($_SERVER['QUERY_STRING'] ?? ''), true, 302);
+    exit;
+}
+
+$secure_cookie = is_https_request();
+
+if (!headers_sent() && isset($_COOKIE['PHPSESSID'])) {
+    setcookie('PHPSESSID', '', time() - 42000, '/', '', $secure_cookie, true);
+    unset($_COOKIE['PHPSESSID']);
+}
+
+session_name('TMTADMINSESSID');
+$session_dir = __DIR__ . '/data/sessions';
+if (!is_dir($session_dir)) {
+    mkdir($session_dir, 0755, true);
+}
+if (is_dir($session_dir) && is_writable($session_dir)) {
+    session_save_path($session_dir);
+}
+
+if (PHP_VERSION_ID >= 70300) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/admin',
+        'domain' => '',
+        'secure' => $secure_cookie,
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+} else {
+    session_set_cookie_params(0, '/admin; samesite=Lax', '', $secure_cookie, true);
+}
+
 session_start();
 
 // Define database paths
@@ -143,8 +196,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_upload_media']))
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     unset($_SESSION['admin_logged']);
     unset($_SESSION['admin_name']);
+    if (ini_get('session.use_cookies')) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
+    }
     session_destroy();
-    header("Location: admin.php");
+    header('Location: ' . admin_url());
     exit;
 }
 
@@ -154,8 +211,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
     $pass = isset($_POST['password']) ? trim($_POST['password']) : '';
 
     if ($user === $admin_creds['username'] && $pass === $admin_creds['password']) {
+        session_regenerate_id(true);
         $_SESSION['admin_logged'] = true;
         $_SESSION['admin_name'] = $admin_creds['name'];
+        header('Location: ' . admin_url());
+        exit;
     } else {
         $login_error = "Invalid username or password.";
     }
@@ -1065,17 +1125,17 @@ foreach ($packages as $pkg) {
             </div>
           <?php endif; ?>
 
-          <form method="POST" action="">
+          <form method="POST" action="/admin">
             <div class="form-group">
               <label for="username">Username</label>
-              <input type="text" id="username" name="username" class="form-input" required placeholder="admin">
+              <input type="text" id="username" name="username" class="form-input" required placeholder="Username">
             </div>
             <div class="form-group" style="margin-bottom:1.25rem;">
               <label for="password">Password</label>
-              <input type="password" id="password" name="password" class="form-input" required placeholder="••••••••">
+              <input type="password" id="password" name="password" class="form-input" required placeholder="Password">
             </div>
             <div style="display:flex; justify-content:flex-end; margin-bottom:1.5rem;">
-              <a href="admin.php?action=forgot_password" style="font-size:0.85rem; color:var(--color-primary); text-decoration:none; font-weight:600;">Forgot Password?</a>
+              <a href="/admin?action=forgot_password" style="font-size:0.85rem; color:var(--color-primary); text-decoration:none; font-weight:600;">Forgot Password?</a>
             </div>
             <button type="submit" name="login_submit" class="btn btn-primary" style="width:100%; height:46px; font-weight:700;">Sign In</button>
           </form>
@@ -1095,15 +1155,15 @@ foreach ($packages as $pkg) {
             <div style="margin-top:0.5rem;"><strong>Recovery Phone:</strong> <?php echo htmlspecialchars($admin_creds['phone'] ?? 'Not Configured'); ?></div>
           </div>
 
-          <form method="POST" action="">
+          <form method="POST" action="/admin">
             <input type="hidden" name="action_send_otp" value="1">
             <button type="submit" class="btn btn-primary" style="width:100%; height:46px; font-weight:700; margin-bottom:1rem;">Generate & Send OTP</button>
-            <a href="admin.php" class="btn btn-outline" style="display:flex; justify-content:center; align-items:center; width:100%; height:46px; font-weight:700; text-decoration:none; box-sizing:border-box;">Cancel</a>
+            <a href="/admin" class="btn btn-outline" style="display:flex; justify-content:center; align-items:center; width:100%; height:46px; font-weight:700; text-decoration:none; box-sizing:border-box;">Cancel</a>
           </form>
 
         <?php elseif ($recovery_state === 'verify_otp'): ?>
           <h2 style="font-family:var(--font-heading); font-size:1.8rem; font-weight:800; text-align:center; color:var(--color-primary); margin-bottom:0.5rem;">Verify OTP</h2>
-          <p style="text-align:center; color:var(--text-muted); font-size:0.9rem; margin-bottom:2rem;">Enter the code logged in <code>data/recovery_otp.txt</code>.</p>
+          <p style="text-align:center; color:var(--text-muted); font-size:0.9rem; margin-bottom:2rem;">Enter the recovery code generated for this account.</p>
           
           <?php if (!empty($recovery_msg)): ?>
             <div style="padding:0.75rem 1rem; background-color:#ecfdf5; border:1px solid var(--color-success); color:#065f46; border-radius:var(--radius-sm); font-size:0.88rem; margin-bottom:1.5rem; font-weight:600;">
@@ -1117,14 +1177,14 @@ foreach ($packages as $pkg) {
             </div>
           <?php endif; ?>
 
-          <form method="POST" action="">
+          <form method="POST" action="/admin">
             <div class="form-group" style="margin-bottom:2rem;">
               <label for="otp">Enter 6-Digit OTP</label>
               <input type="text" id="otp" name="otp" class="form-input" required placeholder="123456" pattern="\d{6}" maxlength="6" style="text-align:center; letter-spacing:0.5rem; font-size:1.25rem; font-weight:700;">
             </div>
             <input type="hidden" name="action_verify_otp" value="1">
             <button type="submit" class="btn btn-primary" style="width:100%; height:46px; font-weight:700; margin-bottom:1rem;">Verify OTP</button>
-            <a href="admin.php" class="btn btn-outline" style="display:flex; justify-content:center; align-items:center; width:100%; height:46px; font-weight:700; text-decoration:none; box-sizing:border-box;">Cancel</a>
+            <a href="/admin" class="btn btn-outline" style="display:flex; justify-content:center; align-items:center; width:100%; height:46px; font-weight:700; text-decoration:none; box-sizing:border-box;">Cancel</a>
           </form>
 
         <?php elseif ($recovery_state === 'reset_password'): ?>
@@ -1137,7 +1197,7 @@ foreach ($packages as $pkg) {
             </div>
           <?php endif; ?>
 
-          <form method="POST" action="">
+          <form method="POST" action="/admin">
             <div class="form-group">
               <label for="new_password">New Password</label>
               <input type="password" id="new_password" name="new_password" class="form-input" required placeholder="New Password">
@@ -1159,7 +1219,7 @@ foreach ($packages as $pkg) {
     <header class="admin-nav">
       <div class="container" style="display:flex; justify-content:space-between; align-items:center; padding:0 1rem;">
         <h2 style="font-family:var(--font-heading); font-size:1.4rem; font-weight:800; margin:0;">Top Mountain Treks | Admin Panel <span style="font-size:0.9rem; font-weight:600; color:white; opacity:0.8; margin-left:0.5rem;">(Hello, <?php echo htmlspecialchars($_SESSION['admin_name'] ?? $admin_creds['name']); ?>)</span></h2>
-        <a href="admin.php?action=logout" class="btn btn-outline" style="color:white; border-color:white; height:36px; padding:0.5rem 1rem;">Sign Out</a>
+        <a href="/admin?action=logout" class="btn btn-outline" style="color:white; border-color:white; height:36px; padding:0.5rem 1rem;">Sign Out</a>
       </div>
     </header>
 
@@ -1223,7 +1283,7 @@ foreach ($packages as $pkg) {
                     <td>$<?php echo number_format($pkg['priceUSD']); ?></td>
                     <td style="display:flex; gap:0.5rem;">
                       <button class="btn btn-primary btn-sm" onclick="editPackage(<?php echo htmlspecialchars(json_encode($pkg)); ?>)">Edit</button>
-                      <form method="POST" action="admin.php" onsubmit="return confirm('Are you sure you want to delete this package?')">
+                      <form method="POST" action="/admin" onsubmit="return confirm('Are you sure you want to delete this package?')">
                         <input type="hidden" name="package_id" value="<?php echo $pkg['id']; ?>">
                         <button type="submit" name="delete_package" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger);">Delete</button>
                       </form>
@@ -1241,7 +1301,7 @@ foreach ($packages as $pkg) {
         <div class="glass-card" style="padding:2.5rem; background-color: white; border:1px solid var(--border-color); border-radius:var(--radius-lg);">
           <h3 style="font-family:var(--font-heading); font-size:1.5rem; color:var(--color-primary); margin-bottom:2rem;" id="package-form-title">Create New Package</h3>
           
-          <form method="POST" action="admin.php" enctype="multipart/form-data">
+          <form method="POST" action="/admin" enctype="multipart/form-data">
             <input type="hidden" id="edit-id" name="id" value="">
             <input type="hidden" id="edit-existing_image" name="existing_image" value="">
             <input type="hidden" id="edit-existing_route_map" name="existing_route_map" value="">
@@ -1504,7 +1564,7 @@ foreach ($packages as $pkg) {
         <div class="glass-card" style="padding:2rem; background-color: white; border:1px solid var(--border-color); border-radius:var(--radius-lg);">
           <h3 style="font-family:var(--font-heading); font-size:1.35rem; color:var(--color-primary); margin-bottom:1.5rem;">Manage Region & Activity Subtitles</h3>
           
-          <form method="POST" action="admin.php" enctype="multipart/form-data" class="form-card" style="padding:1.5rem; background:#f8fafc; border-radius:var(--radius-md); margin-bottom:2.5rem;">
+          <form method="POST" action="/admin" enctype="multipart/form-data" class="form-card" style="padding:1.5rem; background:#f8fafc; border-radius:var(--radius-md); margin-bottom:2.5rem;">
             <input type="hidden" id="act-id" name="act_id" value="">
             <input type="hidden" id="act-existing-route-map" name="existing_act_route_map" value="">
             
@@ -1571,7 +1631,7 @@ foreach ($packages as $pkg) {
                     </td>
                     <td style="display:flex; gap:0.5rem;">
                       <button class="btn btn-primary btn-sm" onclick="editActivity(<?php echo htmlspecialchars(json_encode($act)); ?>)">Edit</button>
-                      <form method="POST" action="admin.php" onsubmit="return confirm('Are you sure you want to delete this region category?')">
+                      <form method="POST" action="/admin" onsubmit="return confirm('Are you sure you want to delete this region category?')">
                         <input type="hidden" name="act_id" value="<?php echo $act['id']; ?>">
                         <button type="submit" name="delete_activity" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger);">Delete</button>
                       </form>
@@ -1592,7 +1652,7 @@ foreach ($packages as $pkg) {
           <div class="glass-card" style="padding:2rem; background-color:white; border:1px solid var(--border-color); border-radius:var(--radius-lg);">
             <h3 style="font-family:var(--font-heading); font-size:1.35rem; color:var(--color-primary); margin-bottom:1.5rem;">Himalayan Blogs CRUD</h3>
             
-            <form method="POST" action="admin.php" enctype="multipart/form-data" class="form-card" style="padding:1.5rem; background:#f8fafc; border-radius:var(--radius-md); margin-bottom:2.5rem;">
+            <form method="POST" action="/admin" enctype="multipart/form-data" class="form-card" style="padding:1.5rem; background:#f8fafc; border-radius:var(--radius-md); margin-bottom:2.5rem;">
               <input type="hidden" id="blog-id" name="blog_id" value="">
               <input type="hidden" id="blog-existing-image" name="existing_blog_image" value="">
               <input type="hidden" id="blog-existing-route-map" name="existing_blog_route_map" value="">
@@ -1662,7 +1722,7 @@ foreach ($packages as $pkg) {
                       <td><?php echo htmlspecialchars($b['date']); ?></td>
                       <td style="display:flex; gap:0.5rem;">
                         <button class="btn btn-primary btn-sm" onclick="editBlog(<?php echo htmlspecialchars(json_encode($b)); ?>)">Edit</button>
-                        <form method="POST" action="admin.php" onsubmit="return confirm('Delete this blog post?')">
+                        <form method="POST" action="/admin" onsubmit="return confirm('Delete this blog post?')">
                           <input type="hidden" name="blog_id" value="<?php echo $b['id']; ?>">
                           <button type="submit" name="delete_blog" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger);">Delete</button>
                         </form>
@@ -1678,7 +1738,7 @@ foreach ($packages as $pkg) {
           <div class="glass-card" style="padding:2rem; background-color:white; border:1px solid var(--border-color); border-radius:var(--radius-lg);">
             <h3 style="font-family:var(--font-heading); font-size:1.35rem; color:var(--color-primary); margin-bottom:1.5rem;">Static Pages CRUD</h3>
             
-            <form method="POST" action="admin.php" enctype="multipart/form-data" class="form-card" style="padding:1.5rem; background:#f8fafc; border-radius:var(--radius-md); margin-bottom:2.5rem;">
+            <form method="POST" action="/admin" enctype="multipart/form-data" class="form-card" style="padding:1.5rem; background:#f8fafc; border-radius:var(--radius-md); margin-bottom:2.5rem;">
               <input type="hidden" id="page-id" name="page_id" value="">
               <input type="hidden" id="page-existing-route-map" name="existing_page_route_map" value="">
               
@@ -1733,7 +1793,7 @@ foreach ($packages as $pkg) {
                       <td><code>/page/<?php echo htmlspecialchars($p['slug']); ?></code></td>
                       <td style="display:flex; gap:0.5rem;">
                         <button class="btn btn-primary btn-sm" onclick="editPage(<?php echo htmlspecialchars(json_encode($p)); ?>)">Edit</button>
-                        <form method="POST" action="admin.php" onsubmit="return confirm('Delete this static page?')">
+                        <form method="POST" action="/admin" onsubmit="return confirm('Delete this static page?')">
                           <input type="hidden" name="page_id" value="<?php echo $p['id']; ?>">
                           <button type="submit" name="delete_page" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger);">Delete</button>
                         </form>
@@ -1791,13 +1851,13 @@ foreach ($packages as $pkg) {
                   
                   <div style="display:flex; gap:0.5rem; align-items:center;">
                     <?php if (!$rev['approved']): ?>
-                      <form method="POST" action="admin.php">
+                      <form method="POST" action="/admin">
                         <input type="hidden" name="rev_pkg_id" value="<?php echo $rev['pkg_id']; ?>">
                         <input type="hidden" name="rev_idx" value="<?php echo $rev['rev_idx']; ?>">
                         <button type="submit" name="approve_review" class="btn btn-primary btn-sm" style="background-color:var(--color-success);">Approve Review</button>
                       </form>
                     <?php endif; ?>
-                    <form method="POST" action="admin.php" onsubmit="return confirm('Delete this review?')">
+                    <form method="POST" action="/admin" onsubmit="return confirm('Delete this review?')">
                       <input type="hidden" name="rev_pkg_id" value="<?php echo $rev['pkg_id']; ?>">
                       <input type="hidden" name="rev_idx" value="<?php echo $rev['rev_idx']; ?>">
                       <button type="submit" name="delete_review" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger);">Delete</button>
@@ -1816,7 +1876,7 @@ foreach ($packages as $pkg) {
           <h3 style="font-family:var(--font-heading); font-size:1.35rem; color:var(--color-primary); margin-bottom:1rem;">General Media Library & Uploader</h3>
           <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.5rem;">Upload images, videos, maps, and copy their relative links to insert them inside packages, itineraries, FAQs, blogs, or page details.</p>
           
-          <form method="POST" action="admin.php" enctype="multipart/form-data" class="form-card" style="padding:1.5rem; background:#f8fafc; border-radius:var(--radius-md); margin-bottom:2.5rem; display:flex; gap:1.5rem; align-items:flex-end; flex-wrap:wrap;">
+          <form method="POST" action="/admin" enctype="multipart/form-data" class="form-card" style="padding:1.5rem; background:#f8fafc; border-radius:var(--radius-md); margin-bottom:2.5rem; display:flex; gap:1.5rem; align-items:flex-end; flex-wrap:wrap;">
             <div class="form-group" style="margin-bottom:0; flex-grow:1; min-width:250px;">
               <label for="media_file">Choose File to Upload</label>
               <input type="file" id="media_file" name="media_file" class="form-input" required>
@@ -1862,7 +1922,7 @@ foreach ($packages as $pkg) {
                     <code style="display:block; font-size:0.75rem; word-break:break-all; margin-bottom:0.75rem; background:#fff; padding:4px; border:1px solid var(--border-color); border-radius:2px;"><?php echo htmlspecialchars($filepath); ?></code>
                     <div style="display:flex; justify-content:space-between; gap:0.5rem;">
                       <button type="button" class="btn btn-outline btn-sm" style="flex-grow:1; padding:0.4rem 0.5rem; font-size:0.72rem; font-weight:700;" onclick="copyToClipboard('<?php echo htmlspecialchars($filepath); ?>')">Copy Link</button>
-                      <form method="POST" action="admin.php" onsubmit="return confirm('Delete file permanently?')" style="margin:0;">
+                      <form method="POST" action="/admin" onsubmit="return confirm('Delete file permanently?')" style="margin:0;">
                         <input type="hidden" name="media_path" value="<?php echo $filepath; ?>">
                         <button type="submit" name="delete_media_file" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger); padding:0.4rem 0.5rem; font-size:0.72rem;">Delete</button>
                       </form>
@@ -1882,7 +1942,7 @@ foreach ($packages as $pkg) {
           <div class="glass-card" style="padding:2rem; background-color: white; border:1px solid var(--border-color); border-radius:var(--radius-lg);">
             <h3 style="font-family:var(--font-heading); font-size:1.35rem; color:var(--color-primary); margin-bottom:1.5rem;">Global Company Details</h3>
             
-            <form method="POST" action="admin.php" enctype="multipart/form-data" style="display:flex; flex-direction:column; gap:1.25rem;">
+            <form method="POST" action="/admin" enctype="multipart/form-data" style="display:flex; flex-direction:column; gap:1.25rem;">
               <div class="form-group">
                 <label for="company_name">Company Name</label>
                 <input type="text" id="company_name" name="company_name" class="form-input" required value="<?php echo htmlspecialchars($site_name); ?>">
@@ -1957,7 +2017,7 @@ foreach ($packages as $pkg) {
                   <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border-color); padding:0.75rem; border-radius:var(--radius-sm); background:#f8fafc;">
                     <img src="/<?php echo htmlspecialchars($path); ?>" style="height:36px; max-width:120px; object-fit:contain;">
                     <code style="font-size:0.75rem; word-break:break-all; max-width:200px;"><?php echo htmlspecialchars($path); ?></code>
-                    <form method="POST" action="admin.php" style="margin:0;">
+                    <form method="POST" action="/admin" style="margin:0;">
                       <input type="hidden" name="delete_footer_icon_idx" value="<?php echo $idx; ?>">
                       <!-- Reuses settings save trigger with delete variable index -->
                       <input type="hidden" name="company_name" value="<?php echo htmlspecialchars($site_name); ?>">
@@ -1984,7 +2044,7 @@ foreach ($packages as $pkg) {
         <div class="glass-card" style="padding:2.5rem; background-color: white; border:1px solid var(--border-color); border-radius:var(--radius-lg); max-width:1200px; margin:0 auto;">
           <h3 style="font-family:var(--font-heading); font-size:1.45rem; color:var(--color-primary); margin-bottom:1.5rem; border-bottom:2px solid var(--color-primary); padding-bottom:0.5rem;">Theme Text and Color Setup</h3>
           
-          <form method="POST" action="admin.php" style="display:flex; flex-direction:column; gap:2.5rem;">
+          <form method="POST" action="/admin" style="display:flex; flex-direction:column; gap:2.5rem;">
             
             <!-- SECTION 1: Brand & Page Colors -->
             <div>
@@ -2406,7 +2466,7 @@ foreach ($packages as $pkg) {
             <span>👤</span> Admin Profile & Security
           </h3>
           
-          <form method="POST" action="admin.php">
+          <form method="POST" action="/admin">
             <div class="form-group" style="margin-bottom:1.25rem;">
               <label for="admin_name" style="font-weight:700;">Profile Name</label>
               <input type="text" id="admin_name" name="admin_name" class="form-input" required value="<?php echo htmlspecialchars($admin_creds['name']); ?>" placeholder="e.g. Administrator">
@@ -2632,7 +2692,7 @@ foreach ($packages as $pkg) {
              formData.append('media_file', input.files[0]);
              formData.append('ajax_upload_media', '1');
              
-             fetch('admin.php', {
+             fetch('/admin', {
                  method: 'POST',
                  body: formData
              })
@@ -2706,7 +2766,7 @@ foreach ($packages as $pkg) {
              formData.append('media_file', input.files[0]);
              formData.append('ajax_upload_media', '1');
              
-             fetch('admin.php', {
+             fetch('/admin', {
                  method: 'POST',
                  body: formData
              })
