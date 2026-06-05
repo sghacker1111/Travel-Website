@@ -1,20 +1,16 @@
 RewriteEngine On
 RewriteBase /
 
-# 1. Force removing of trailing slash if it is not a directory
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)/$ /$1 [L,R=301]
+# 1. Rewrite root sections with optional trailing slash
+RewriteRule ^trekking/?$ trekking.php [L]
+RewriteRule ^tour/?$ tour.php [L]
+RewriteRule ^peak-climbing/?$ peak-climbing.php [L]
+RewriteRule ^blog/?$ blog.php [L]
+RewriteRule ^about/?$ about.php [L]
+RewriteRule ^contact/?$ contact.php [L]
+RewriteRule ^admin/?$ admin.php [L]
 
-# 2. Rewrite root sections
-RewriteRule ^trekking$ trekking.php [L]
-RewriteRule ^tour$ tour.php [L]
-RewriteRule ^peak-climbing$ peak-climbing.php [L]
-RewriteRule ^blog$ blog.php [L]
-RewriteRule ^about$ about.php [L]
-RewriteRule ^contact$ contact.php [L]
-RewriteRule ^admin$ admin.php [L]
-
-# 3. Rewrite details pages (trekking/slug, tour/slug, climbing/slug, page/slug, blog/slug, activity/slug)
+# 2. Rewrite details pages with optional trailing slash
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(trekking|tour|climbing|page|blog|activity)/([^/]+)$ route.php?type=$1&slug=$2 [QSA,L]
+RewriteRule ^(trekking|tour|climbing|page|blog|activity)/([^/]+)/?$ route.php?type=$1&slug=$2 [QSA,L]
