@@ -42,8 +42,10 @@ function initMobileMenu() {
   // Toggle dropdown items on click for mobile devices
   navItems.forEach(item => {
     const link = item.querySelector('.nav-link');
+    const dropdown = item.querySelector('.dropdown-menu');
+    if (!link) return;
     link.addEventListener('click', (e) => {
-      if (window.innerWidth <= 992) {
+      if (window.innerWidth <= 992 && dropdown) {
         e.preventDefault();
         item.classList.toggle('open-mobile');
       }

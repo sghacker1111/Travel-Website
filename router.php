@@ -1,6 +1,7 @@
 <?php
 // PHP Built-in Server Router for Local Development
 $uri = urldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+$route = $uri === '/' ? '/' : rtrim($uri, '/');
 
 // Serve physical files as-is
 if ($uri !== '/' && file_exists(__DIR__ . $uri)) {
@@ -8,45 +9,45 @@ if ($uri !== '/' && file_exists(__DIR__ . $uri)) {
 }
 
 // Emulate rewrite rules of .htaccess
-if ($uri === '/sitemap.xml') {
+if ($route === '/sitemap.xml') {
     include 'sitemap.php';
     exit;
 }
-if ($uri === '/trekking') {
+if ($route === '/trekking') {
     include 'trekking.php';
     exit;
 }
-if ($uri === '/tour') {
+if ($route === '/tour') {
     include 'tour.php';
     exit;
 }
-if ($uri === '/peak-climbing') {
+if ($route === '/peak-climbing') {
     include 'peak-climbing.php';
     exit;
 }
-if ($uri === '/blog') {
+if ($route === '/blog') {
     include 'blog.php';
     exit;
 }
-if ($uri === '/destination') {
+if ($route === '/destination') {
     include 'destination.php';
     exit;
 }
-if ($uri === '/about') {
+if ($route === '/about') {
     include 'about.php';
     exit;
 }
-if ($uri === '/contact') {
+if ($route === '/contact') {
     include 'contact.php';
     exit;
 }
-if ($uri === '/admin') {
+if ($route === '/admin') {
     include 'admin.php';
     exit;
 }
 
 // Matches pattern: /(trekking|tour|climbing|peak-climbing|page|blog|activity)/slug
-if (preg_match('#^/(trekking|tour|climbing|peak-climbing|page|blog|activity)/([^/]+)$#', $uri, $matches)) {
+if (preg_match('#^/(trekking|tour|climbing|peak-climbing|page|blog|activity)/([^/]+)$#', $route, $matches)) {
     $_GET['type'] = $matches[1];
     $_GET['slug'] = $matches[2];
     include 'route.php';

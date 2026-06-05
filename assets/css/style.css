@@ -400,6 +400,9 @@ nav {
   justify-content: space-between;
   width: 24px;
   height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   cursor: pointer;
   z-index: 1100;
 }
@@ -1157,5 +1160,4 @@ footer {
 .map-label-tooltip::before {
   border-top-color: rgba(15, 23, 42, 0.85) !important;
 }
-
 

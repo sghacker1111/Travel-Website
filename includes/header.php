@@ -245,6 +245,60 @@ if (!is_array($packages)) $packages = [];
       display: flex;
       align-items: center;
     }
+    .header-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    @media (max-width: 992px) {
+      #site-header .menu-btn {
+        display: flex !important;
+        width: 42px;
+        height: 42px;
+        padding: 10px;
+        border-radius: var(--radius-sm);
+        background: var(--color-primary) !important;
+        align-items: center;
+        justify-content: space-between;
+      }
+      #site-header .menu-btn span {
+        width: 100%;
+        background-color: #ffffff !important;
+      }
+    }
+    @media (max-width: 640px) {
+      .header-top-row {
+        position: relative;
+        padding: 0.75rem 1rem;
+        padding-right: 4.25rem;
+        gap: 0.75rem;
+      }
+      #site-header .logo-wrapper {
+        min-width: 0;
+      }
+      #site-header .logo-wrapper img {
+        height: 42px !important;
+        flex-shrink: 0;
+      }
+      #site-header .logo-text {
+        font-size: 18px !important;
+        max-width: 210px;
+      }
+      .header-actions-right {
+        position: absolute;
+        top: 50%;
+        right: 1rem;
+        transform: translateY(-50%);
+        margin-left: 0;
+        flex-shrink: 0;
+      }
+      .header-whatsapp-right {
+        display: none;
+      }
+      .header-bottom-row {
+        padding: 0 !important;
+      }
+    }
   </style>
 
   <!-- Injected Custom Headers -->
@@ -264,7 +318,8 @@ if (!is_array($packages)) $packages = [];
         </div>
       </a>
 
-      <!-- Section 3: WhatsApp hotline (Right) -->
+      <!-- Section 3: WhatsApp hotline and mobile navigation (Right) -->
+      <div class="header-actions-right">
       <div class="header-whatsapp-right">
         <div style="text-align:right;">
           <span style="font-size:0.7rem; color:var(--text-muted); display:block; font-weight:700; text-transform:uppercase;">WhatsApp Hotline</span>
@@ -272,6 +327,12 @@ if (!is_array($packages)) $packages = [];
             🟢 <?php echo htmlspecialchars($site_whatsapp); ?>
           </a>
         </div>
+      </div>
+      <button type="button" class="menu-btn" id="mobile-menu-btn" aria-label="Open navigation menu" aria-controls="site-nav" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
       </div>
     </div>
 
@@ -296,6 +357,7 @@ if (!is_array($packages)) $packages = [];
                 if ($is_trekking) $cat_filter = 'trekking';
                 elseif ($is_tours) $cat_filter = 'tour';
                 elseif ($is_climbing) $cat_filter = 'climbing';
+                $cat_path = $cat_filter === 'climbing' ? 'peak-climbing' : $cat_filter;
             ?>
               <li class="nav-item">
                 <a href="<?php echo htmlspecialchars($nav_link); ?>" class="nav-link">
@@ -379,7 +441,7 @@ if (!is_array($packages)) $packages = [];
                             // Fallback direct packages
                             foreach ($packages as $pkg) {
                                 if ($pkg['category'] === $cat_filter) {
-                                    echo '<a href="/' . $cat_filter . '/' . htmlspecialchars($pkg['slug']) . '" class="dropdown-link">' . htmlspecialchars($pkg['title']) . '</a>';
+                                    echo '<a href="/' . $cat_path . '/' . htmlspecialchars($pkg['slug']) . '" class="dropdown-link">' . htmlspecialchars($pkg['title']) . '</a>';
                                 }
                             }
                         else:
@@ -391,10 +453,10 @@ if (!is_array($packages)) $packages = [];
                                     }
                                 }
                                 if (empty($act_packages)) continue;
-                                $act_link = '/' . $cat_filter . '/' . htmlspecialchars($act['slug']);
+                                $act_link = '/' . $cat_path . '/' . htmlspecialchars($act['slug']);
                                 echo '<a href="' . $act_link . '" style="text-decoration:none; display:block;"><div style="font-family:var(--font-heading); font-size:0.75rem; font-weight:800; color:#000000; text-transform:uppercase; margin-top:0.5rem; margin-bottom:0.25rem; border-bottom:1px solid var(--border-color); padding-bottom:2px; transition: color 0.2s;" onmouseover="this.style.color=\'var(--color-secondary)\'" onmouseout="this.style.color=\'#000000\'">' . htmlspecialchars($act['name']) . '</div></a>';
                                 foreach ($act_packages as $pkg) {
-                                    echo '<a href="/' . $cat_filter . '/' . htmlspecialchars($pkg['slug']) . '" class="dropdown-link" style="font-size:0.8rem; padding: 0.25rem 0.5rem;">' . htmlspecialchars($pkg['title']) . '</a>';
+                                    echo '<a href="/' . $cat_path . '/' . htmlspecialchars($pkg['slug']) . '" class="dropdown-link" style="font-size:0.8rem; padding: 0.25rem 0.5rem;">' . htmlspecialchars($pkg['title']) . '</a>';
                                 }
                             endforeach;
                         endif;

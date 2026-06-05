@@ -34,6 +34,15 @@ if (!is_array($settings)) $settings = [];
 $site_name = $settings['company_name'] ?? 'Top Mountain Treks';
 $site_whatsapp = $settings['whatsapp_number'] ?? '+977 985-1123456';
 
+function package_detail_url($pkg, $anchor = '') {
+    $category = strtolower($pkg['category'] ?? 'trekking');
+    $section = $category === 'climbing' ? 'peak-climbing' : $category;
+    if (!in_array($section, ['trekking', 'tour', 'peak-climbing'], true)) {
+        $section = 'trekking';
+    }
+    return '/' . $section . '/' . rawurlencode($pkg['slug'] ?? '') . $anchor;
+}
+
 $cleanQuery = strtolower($query);
 
 // 1. Check for Contact/Office Location info
@@ -141,7 +150,7 @@ foreach ($regions as $r) {
         $matching = [];
         foreach ($packages as $pkg) {
             if (strpos(strtolower($pkg['region']), $r) !== false || strpos(strtolower($pkg['title']), $r) !== false) {
-                $matching[] = "• <a href=\"/trekking/{$pkg['slug']}\" style=\"color:var(--color-primary); font-weight:700;\">{$pkg['title']}</a> - **\${$pkg['priceUSD']} USD** ({$pkg['duration']} Days)";
+                $matching[] = "• <a href=\"" . package_detail_url($pkg) . "\" style=\"color:var(--color-primary); font-weight:700;\">{$pkg['title']}</a> - **\${$pkg['priceUSD']} USD** ({$pkg['duration']} Days)";
             }
         }
         if (!empty($matching)) {
@@ -187,7 +196,7 @@ if ($matchedPkg) {
     if (preg_match('/(price|cost|fee|charge|usd|npr|rate)/i', $cleanQuery)) {
         $reply = "The starting cost for the **{$matchedPkg['title']}** is **\${$matchedPkg['priceUSD']} USD** (approx. NPR " . number_format($matchedPkg['priceNPR']) . ") per person. <br>"
                . "• **What's included:** *{$matchedPkg['priceNote']}*.<br><br>"
-               . "For details on inclusions and exclusions, check the <a href=\"/trekking/{$matchedPkg['slug']}#detail-inclusions\" style=\"color:var(--color-secondary); font-weight:700;\">Price Inclusions page</a>.";
+               . "For details on inclusions and exclusions, check the <a href=\"" . package_detail_url($matchedPkg, '#detail-inclusions') . "\" style=\"color:var(--color-secondary); font-weight:700;\">Price Inclusions page</a>.";
         echo json_encode(['reply' => $reply]);
         exit;
     }
@@ -201,7 +210,7 @@ if ($matchedPkg) {
                . "Here is the start outline of the itinerary:<br>"
                . implode("<br>", $itinerary_outline) . "<br>"
                . "• ... and " . ($matchedPkg['duration'] - 5) . " more days.<br><br>"
-               . "Read the full day-by-day outline on the <a href=\"/trekking/{$matchedPkg['slug']}#detail-itinerary\" style=\"color:var(--color-secondary); font-weight:700;\">Detailed Itinerary section</a>.";
+               . "Read the full day-by-day outline on the <a href=\"" . package_detail_url($matchedPkg, '#detail-itinerary') . "\" style=\"color:var(--color-secondary); font-weight:700;\">Detailed Itinerary section</a>.";
         echo json_encode(['reply' => $reply]);
         exit;
     }
@@ -229,7 +238,7 @@ if ($matchedPkg) {
            . "• **Maximum elevation:** {$matchedPkg['maxAltitude']}<br>"
            . "• **Difficulty level:** {$matchedPkg['difficulty']}<br><br>"
            . "Overview: *" . substr(strip_tags($matchedPkg['overview']), 0, 250) . "...*<br><br>"
-           . "View full details and book on the <a href=\"/trekking/{$matchedPkg['slug']}\" style=\"color:var(--color-secondary); font-weight:700;\">Package Details Page</a>.";
+           . "View full details and book on the <a href=\"" . package_detail_url($matchedPkg) . "\" style=\"color:var(--color-secondary); font-weight:700;\">Package Details Page</a>.";
     echo json_encode(['reply' => $reply]);
     exit;
 }
@@ -254,7 +263,7 @@ if ($matchedBlog) {
 $matchesFound = [];
 foreach ($packages as $pkg) {
     if (strpos(strtolower($pkg['overview']), $cleanQuery) !== false) {
-        $matchesFound[] = "• Package: <a href=\"/trekking/{$pkg['slug']}\">{$pkg['title']}</a>";
+        $matchesFound[] = "• Package: <a href=\"" . package_detail_url($pkg) . "\">{$pkg['title']}</a>";
     }
 }
 foreach ($blogs as $b) {

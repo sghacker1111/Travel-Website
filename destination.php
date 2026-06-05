@@ -51,7 +51,7 @@ $page_desc_size = isset($theme_settings['page_desc_size']) ? $theme_settings['pa
             if ($category === 'tour') {
                 $link = "/tour/" . htmlspecialchars($slug);
             } elseif ($category === 'climbing') {
-                $link = "/climbing/" . htmlspecialchars($slug);
+                $link = "/peak-climbing/" . htmlspecialchars($slug);
             }
         ?>
           <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: var(--radius-lg); border: 1px solid var(--border-color); display: flex; flex-direction: column; height: 420px; transition: transform 0.3s ease, box-shadow 0.3s ease; background-color: #ffffff;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">

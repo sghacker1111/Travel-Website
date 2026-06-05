@@ -28,7 +28,7 @@ $review_status = "";
 $review_msg = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
     $rev_name = isset($_POST['rev_name']) ? trim($_POST['rev_name']) : '';
-    $rev_rating = isset($_POST['rev_rating']) ? (int)$_POST['rev_rating'] : 5;
+    $rev_rating = isset($_POST['rev_rating']) ? max(1, min(5, (int)$_POST['rev_rating'])) : 5;
     $rev_comment = isset($_POST['rev_comment']) ? trim($_POST['rev_comment']) : '';
 
     if (!empty($rev_name) && !empty($rev_comment)) {

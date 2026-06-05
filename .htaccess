@@ -6,11 +6,13 @@ RewriteRule ^trekking/?$ trekking.php [L]
 RewriteRule ^tour/?$ tour.php [L]
 RewriteRule ^peak-climbing/?$ peak-climbing.php [L]
 RewriteRule ^blog/?$ blog.php [L]
+RewriteRule ^destination/?$ destination.php [L]
 RewriteRule ^about/?$ about.php [L]
 RewriteRule ^contact/?$ contact.php [L]
 RewriteRule ^admin/?$ admin.php [L]
+RewriteRule ^sitemap\.xml/?$ sitemap.php [L]
 
 # 2. Rewrite details pages with optional trailing slash
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(trekking|tour|climbing|page|blog|activity)/([^/]+)/?$ route.php?type=$1&slug=$2 [QSA,L]
+RewriteRule ^(trekking|tour|climbing|peak-climbing|page|blog|activity)/([^/]+)/?$ route.php?type=$1&slug=$2 [QSA,L]

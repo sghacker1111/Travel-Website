@@ -10,6 +10,7 @@ $pages = [
     '/',
     '/about',
     '/contact',
+    '/destination',
     '/trekking',
     '/tour',
     '/peak-climbing'

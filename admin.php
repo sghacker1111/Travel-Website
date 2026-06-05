@@ -16,7 +16,7 @@ $settings = file_exists($settings_path) ? json_decode(file_get_contents($setting
 $site_name = isset($settings['company_name']) ? $settings['company_name'] : 'Top Mountain Treks Pvt. Ltd.';
 $site_logo = isset($settings['logo_path']) ? $settings['logo_path'] : 'assets/images/logo.png';
 $site_whatsapp = isset($settings['whatsapp_number']) ? $settings['whatsapp_number'] : '+977 985-1123456';
-$site_nav = isset($settings['navigation']) ? $settings['navigation'] : [
+$default_nav = [
     ["title" => "Home", "link" => "/"],
     ["title" => "Destination", "link" => "/destination"],
     ["title" => "Trekking", "link" => "/trekking"],
@@ -25,6 +25,7 @@ $site_nav = isset($settings['navigation']) ? $settings['navigation'] : [
     ["title" => "Company Info", "link" => "#"],
     ["title" => "Contact Us", "link" => "/contact"]
 ];
+$site_nav = !empty($settings['navigation']) && is_array($settings['navigation']) ? $settings['navigation'] : $default_nav;
 $activities = file_exists($activities_path) ? json_decode(file_get_contents($activities_path), true) : [];
 $blogs = file_exists($blogs_path) ? json_decode(file_get_contents($blogs_path), true) : [];
 $pages = file_exists($pages_path) ? json_decode(file_get_contents($pages_path), true) : [];
@@ -103,6 +104,18 @@ $login_error = "";
 $action_status = "";
 $action_msg = "";
 
+function ensure_uploads_dir() {
+    $upload_dir = 'assets/images/uploads';
+    if (!is_dir($upload_dir)) {
+        mkdir($upload_dir, 0755, true);
+    }
+    return $upload_dir;
+}
+
+function clean_upload_name($name) {
+    return preg_replace('/[^a-zA-Z0-9._-]/', '_', basename($name));
+}
+
 // 1. AJAX Media Upload Handler (Req 4, 6)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_upload_media'])) {
     header('Content-Type: application/json');
@@ -112,12 +125,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_upload_media']))
     }
     if (isset($_FILES['media_file']) && $_FILES['media_file']['error'] === UPLOAD_ERR_OK) {
         $tmp_name = $_FILES['media_file']['tmp_name'];
-        $name = basename($_FILES['media_file']['name']);
-        $name = preg_replace('/[^a-zA-Z0-9._-]/', '_', $name); // sanitize
-        $upload_dir = 'assets/images/uploads';
-        if (!file_exists($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
-        }
+        $name = clean_upload_name($_FILES['media_file']['name']);
+        $upload_dir = ensure_uploads_dir();
         $target = $upload_dir . '/' . time() . '_' . $name;
         if (move_uploaded_file($tmp_name, $target)) {
             echo json_encode(['success' => true, 'url' => '/' . $target]);
@@ -418,7 +427,7 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
         // Handle logo upload
         if (isset($_FILES['logo_file']) && $_FILES['logo_file']['error'] === UPLOAD_ERR_OK) {
             $tmp_name = $_FILES['logo_file']['tmp_name'];
-            $name = basename($_FILES['logo_file']['name']);
+            $name = clean_upload_name($_FILES['logo_file']['name']);
             if (!file_exists('assets/images')) {
                 mkdir('assets/images', 0755, true);
             }
@@ -431,11 +440,11 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
         // Handle footer icons multi-upload (Req 9)
         $footer_icons = isset($settings['footer_icons']) ? $settings['footer_icons'] : [];
         if (isset($_FILES['footer_logos'])) {
+            $upload_dir = ensure_uploads_dir();
             foreach ($_FILES['footer_logos']['tmp_name'] as $fkey => $ftmp) {
                 if ($_FILES['footer_logos']['error'][$fkey] === UPLOAD_ERR_OK) {
-                    $fname = basename($_FILES['footer_logos']['name'][$fkey]);
-                    $fname = preg_replace('/[^a-zA-Z0-9._-]/', '_', $fname);
-                    $target = 'assets/images/uploads/' . time() . '_' . $fname;
+                    $fname = clean_upload_name($_FILES['footer_logos']['name'][$fkey]);
+                    $target = $upload_dir . '/' . time() . '_' . $fname;
                     if (move_uploaded_file($ftmp, $target)) {
                         $footer_icons[] = $target;
                     }
@@ -471,7 +480,8 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             'navigation' => $nav,
             'footer_icons' => $footer_icons,
             'header_custom_html' => $_POST['header_custom_html'],
-            'footer_custom_html' => $_POST['footer_custom_html']
+            'footer_custom_html' => $_POST['footer_custom_html'],
+            'admin' => isset($settings['admin']) ? $settings['admin'] : $admin_creds
         ];
         file_put_contents($settings_path, json_encode($settings, JSON_PRETTY_PRINT));
         $action_status = "success";
@@ -493,9 +503,9 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $route_map_path = isset($_POST['existing_act_route_map']) ? $_POST['existing_act_route_map'] : '';
         if (isset($_FILES['route_map_file']) && $_FILES['route_map_file']['error'] === UPLOAD_ERR_OK) {
             $tmp_name = $_FILES['route_map_file']['tmp_name'];
-            $rname = basename($_FILES['route_map_file']['name']);
-            $rname = preg_replace('/[^a-zA-Z0-9._-]/', '_', $rname);
-            $target = 'assets/images/uploads/' . time() . '_' . $rname;
+            $rname = clean_upload_name($_FILES['route_map_file']['name']);
+            $upload_dir = ensure_uploads_dir();
+            $target = $upload_dir . '/' . time() . '_' . $rname;
             if (move_uploaded_file($tmp_name, $target)) {
                 $route_map_path = $target;
             }
@@ -559,8 +569,9 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $image_path = isset($_POST['existing_blog_image']) ? $_POST['existing_blog_image'] : 'assets/images/packages/hero_home.jpg';
         if (isset($_FILES['blog_image_file']) && $_FILES['blog_image_file']['error'] === UPLOAD_ERR_OK) {
             $tmp_name = $_FILES['blog_image_file']['tmp_name'];
-            $iname = basename($_FILES['blog_image_file']['name']);
-            $target = 'assets/images/uploads/' . time() . '_' . $iname;
+            $iname = clean_upload_name($_FILES['blog_image_file']['name']);
+            $upload_dir = ensure_uploads_dir();
+            $target = $upload_dir . '/' . time() . '_' . $iname;
             if (move_uploaded_file($tmp_name, $target)) {
                 $image_path = $target;
             }
@@ -570,8 +581,9 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $route_map_path = isset($_POST['existing_blog_route_map']) ? $_POST['existing_blog_route_map'] : '';
         if (isset($_FILES['route_map_file']) && $_FILES['route_map_file']['error'] === UPLOAD_ERR_OK) {
             $tmp_name = $_FILES['route_map_file']['tmp_name'];
-            $rname = basename($_FILES['route_map_file']['name']);
-            $target = 'assets/images/uploads/' . time() . '_' . $rname;
+            $rname = clean_upload_name($_FILES['route_map_file']['name']);
+            $upload_dir = ensure_uploads_dir();
+            $target = $upload_dir . '/' . time() . '_' . $rname;
             if (move_uploaded_file($tmp_name, $target)) {
                 $route_map_path = $target;
             }
@@ -637,8 +649,9 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $route_map_path = isset($_POST['existing_page_route_map']) ? $_POST['existing_page_route_map'] : '';
         if (isset($_FILES['route_map_file']) && $_FILES['route_map_file']['error'] === UPLOAD_ERR_OK) {
             $tmp_name = $_FILES['route_map_file']['tmp_name'];
-            $rname = basename($_FILES['route_map_file']['name']);
-            $target = 'assets/images/uploads/' . time() . '_' . $rname;
+            $rname = clean_upload_name($_FILES['route_map_file']['name']);
+            $upload_dir = ensure_uploads_dir();
+            $target = $upload_dir . '/' . time() . '_' . $rname;
             if (move_uploaded_file($tmp_name, $target)) {
                 $route_map_path = $target;
             }
@@ -774,9 +787,9 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $image_path = isset($_POST['existing_image']) ? $_POST['existing_image'] : 'assets/images/packages/hero_home.jpg';
         if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] === UPLOAD_ERR_OK) {
             $tmp_name = $_FILES['image_file']['tmp_name'];
-            $iname = basename($_FILES['image_file']['name']);
-            $iname = preg_replace('/[^a-zA-Z0-9._-]/', '_', $iname);
-            $target = 'assets/images/uploads/' . time() . '_' . $iname;
+            $iname = clean_upload_name($_FILES['image_file']['name']);
+            $upload_dir = ensure_uploads_dir();
+            $target = $upload_dir . '/' . time() . '_' . $iname;
             if (move_uploaded_file($tmp_name, $target)) {
                 $image_path = $target;
             }
@@ -786,9 +799,9 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $route_map_path = isset($_POST['existing_route_map']) ? $_POST['existing_route_map'] : '';
         if (isset($_FILES['route_map_file']) && $_FILES['route_map_file']['error'] === UPLOAD_ERR_OK) {
             $tmp_name = $_FILES['route_map_file']['tmp_name'];
-            $rname = basename($_FILES['route_map_file']['name']);
-            $rname = preg_replace('/[^a-zA-Z0-9._-]/', '_', $rname);
-            $target = 'assets/images/uploads/' . time() . '_' . $rname;
+            $rname = clean_upload_name($_FILES['route_map_file']['name']);
+            $upload_dir = ensure_uploads_dir();
+            $target = $upload_dir . '/' . time() . '_' . $rname;
             if (move_uploaded_file($tmp_name, $target)) {
                 $route_map_path = $target;
             }
@@ -800,11 +813,11 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $gallery = $_POST['existing_gallery_paths'];
         }
         if (isset($_FILES['gallery_files'])) {
+            $upload_dir = ensure_uploads_dir();
             foreach ($_FILES['gallery_files']['tmp_name'] as $gkey => $gtmp) {
                 if ($_FILES['gallery_files']['error'][$gkey] === UPLOAD_ERR_OK) {
-                    $gname = basename($_FILES['gallery_files']['name'][$gkey]);
-                    $gname = preg_replace('/[^a-zA-Z0-9._-]/', '_', $gname);
-                    $target = 'assets/images/uploads/' . time() . '_' . $gname;
+                    $gname = clean_upload_name($_FILES['gallery_files']['name'][$gkey]);
+                    $target = $upload_dir . '/' . time() . '_' . $gname;
                     if (move_uploaded_file($gtmp, $target)) {
                         $gallery[] = $target;
                     }
@@ -894,10 +907,8 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['upload_media_file'])) {
         if (isset($_FILES['media_file']) && $_FILES['media_file']['error'] === UPLOAD_ERR_OK) {
             $tmp_name = $_FILES['media_file']['tmp_name'];
-            $name = basename($_FILES['media_file']['name']);
-            $name = preg_replace('/[^a-zA-Z0-9._-]/', '_', $name);
-            $upload_dir = 'assets/images/uploads';
-            if (!file_exists($upload_dir)) mkdir($upload_dir, 0755, true);
+            $name = clean_upload_name($_FILES['media_file']['name']);
+            $upload_dir = ensure_uploads_dir();
             $target = $upload_dir . '/' . time() . '_' . $name;
             if (move_uploaded_file($tmp_name, $target)) {
                 $action_status = "success";
@@ -2414,7 +2425,7 @@ foreach ($packages as $pkg) {
             </div>
             <div class="form-group" style="margin-bottom:2rem;">
               <label for="admin_password" style="font-weight:700;">Change Password</label>
-              <input type="text" id="admin_password" name="admin_password" class="form-input" required value="<?php echo htmlspecialchars($admin_creds['password']); ?>" placeholder="Password">
+              <input type="password" id="admin_password" name="admin_password" class="form-input" required value="<?php echo htmlspecialchars($admin_creds['password']); ?>" placeholder="Password" autocomplete="new-password">
               <small style="color:var(--text-muted); display:block; margin-top:0.25rem;">Ensure you keep this safe, as it will be required to log in next time.</small>
             </div>
             
