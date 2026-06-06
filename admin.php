@@ -39,6 +39,36 @@ function clear_site_cookie($name, $path = '/admin') {
     set_site_cookie($name, '', time() - 42000, $path);
 }
 
+function clear_cookie_variants($name, $paths) {
+    global $secure_cookie;
+
+    $host = preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST'] ?? '');
+    $domains = [''];
+    if ($host !== '' && strpos($host, '.') !== false) {
+        $domains[] = $host;
+        $domains[] = '.' . ltrim($host, '.');
+    }
+
+    foreach (array_unique($domains) as $domain) {
+        foreach ($paths as $path) {
+            if (PHP_VERSION_ID >= 70300) {
+                setcookie($name, '', [
+                    'expires' => time() - 42000,
+                    'path' => $path,
+                    'domain' => $domain,
+                    'secure' => $secure_cookie,
+                    'httponly' => true,
+                    'samesite' => 'Lax'
+                ]);
+            } else {
+                setcookie($name, '', time() - 42000, $path . '; samesite=Lax', $domain, $secure_cookie, true);
+            }
+        }
+    }
+
+    unset($_COOKIE[$name]);
+}
+
 function admin_url($query = '') {
     $query = ltrim($query, '?');
     return '/admin' . ($query !== '' ? '?' . $query : '');
@@ -53,10 +83,10 @@ if ($request_path === '/admin.php') {
 $secure_cookie = is_https_request();
 
 if (!headers_sent() && isset($_COOKIE['PHPSESSID'])) {
-    clear_site_cookie('PHPSESSID', '/admin');
+    clear_cookie_variants('PHPSESSID', ['/', '/admin']);
 }
 if (!headers_sent() && isset($_COOKIE['TMTADMINSESSID'])) {
-    clear_site_cookie('TMTADMINSESSID', '/admin');
+    clear_cookie_variants('TMTADMINSESSID', ['/', '/admin']);
 }
 
 // Define database paths

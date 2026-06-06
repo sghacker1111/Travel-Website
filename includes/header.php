@@ -1,4 +1,41 @@
 <?php
+function expire_legacy_cookie_variants($name) {
+    if (headers_sent() || !isset($_COOKIE[$name])) {
+        return;
+    }
+
+    $secure_cookie = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+    $host = preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST'] ?? '');
+    $domains = [''];
+    if ($host !== '' && strpos($host, '.') !== false) {
+        $domains[] = $host;
+        $domains[] = '.' . ltrim($host, '.');
+    }
+    $paths = ['/', '/admin'];
+
+    foreach (array_unique($domains) as $domain) {
+        foreach ($paths as $path) {
+            if (PHP_VERSION_ID >= 70300) {
+                setcookie($name, '', [
+                    'expires' => time() - 42000,
+                    'path' => $path,
+                    'domain' => $domain,
+                    'secure' => $secure_cookie,
+                    'httponly' => true,
+                    'samesite' => 'Lax'
+                ]);
+            } else {
+                setcookie($name, '', time() - 42000, $path . '; samesite=Lax', $domain, $secure_cookie, true);
+            }
+        }
+    }
+
+    unset($_COOKIE[$name]);
+}
+
+expire_legacy_cookie_variants('PHPSESSID');
+
 // Load dynamic global settings
 $settings_path = __DIR__ . '/../data/settings.json';
 $site_name = "Top Mountain Treks Pvt. Ltd.";
