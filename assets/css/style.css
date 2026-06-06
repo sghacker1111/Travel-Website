@@ -1221,12 +1221,42 @@ table {
     padding-right: 1rem !important;
   }
 
+  *,
+  *::before,
+  *::after {
+    min-width: 0;
+  }
+
   section,
   main,
   header,
   footer {
     max-width: 100%;
     overflow-x: hidden;
+  }
+
+  body,
+  html {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
+  }
+
+  img,
+  video,
+  iframe,
+  table {
+    max-width: 100%;
+  }
+
+  p,
+  li,
+  td,
+  th,
+  a,
+  span,
+  div {
+    overflow-wrap: anywhere;
   }
 
   #site-nav.open {
@@ -1249,15 +1279,12 @@ table {
 
   #site-nav .dropdown-menu {
     position: static !important;
-    display: grid !important;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(175px, max-content);
-    gap: 0.6rem;
+    display: block !important;
     width: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;
     max-height: 0;
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: hidden;
     padding: 0 !important;
     margin: 0 !important;
@@ -1271,7 +1298,8 @@ table {
   }
 
   #site-nav .nav-item.open-mobile > .dropdown-menu {
-    max-height: 420px;
+    max-height: 72vh;
+    overflow-y: auto;
     opacity: 1;
     visibility: visible;
     transform: translateY(0) !important;
@@ -1280,11 +1308,14 @@ table {
 
   #site-nav .mega-menu-grid,
   #site-nav .mega-menu-wide .mega-menu-grid {
-    display: contents !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
   }
 
   #site-nav .mega-menu-column {
-    min-width: 190px;
+    min-width: 0;
+    width: 100%;
     background: #f8fafc;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
@@ -1292,17 +1323,25 @@ table {
   }
 
   #site-nav .mega-col-links {
-    max-height: 220px;
-    overflow-y: auto;
+    max-height: none;
+    overflow: visible;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
   }
 
+  #site-nav .mega-col-link,
   #site-nav .dropdown-link {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    width: 100%;
     min-height: 38px;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
     border: 1px solid var(--border-color);
     background: #f8fafc;
+    padding: 0.5rem 0.65rem !important;
+    border-radius: var(--radius-sm);
   }
 
   #site-header .menu-btn {
@@ -1789,6 +1828,101 @@ table {
 @media (max-width: 992px) {
   .booking-sidebar-stack {
     position: static;
+  }
+
+  #package-grid,
+  #inclusions-columns,
+  #gallery-grid,
+  #blog-detail-columns,
+  #contact-grid,
+  #form-dual-row,
+  #form-booking-details,
+  .grid,
+  .grid-2,
+  .grid-3,
+  .grid-4,
+  .edit-fields-grid,
+  .detail-facts-ribbon,
+  .package-details-main [style*="grid-template-columns"],
+  .container > [style*="grid-template-columns"],
+  section [style*="repeat(auto-fill"],
+  section [style*="repeat(3"],
+  section [style*="repeat(4"],
+  section [style*="2.2fr"],
+  section [style*="1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  #package-grid {
+    gap: 2rem !important;
+  }
+
+  .package-details-main,
+  .package-details-main .tab-pane,
+  .rich-highlights-content,
+  .blog-rich-content,
+  .region-overview-panel,
+  .card-wrapper,
+  .booking-widget,
+  .package-bottom-help {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .package-details-main table {
+    table-layout: fixed;
+    width: 100% !important;
+  }
+
+  .package-details-main th,
+  .package-details-main td {
+    display: block;
+    width: 100% !important;
+  }
+
+  .tabs {
+    flex-wrap: wrap !important;
+    overflow-x: hidden !important;
+    gap: 0.45rem !important;
+  }
+
+  .tabs .tab {
+    flex: 1 1 calc(50% - 0.5rem);
+    text-align: center;
+  }
+
+  .package-sticky-shortcuts {
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow-x: hidden;
+    max-height: 38vh;
+    overflow-y: auto;
+    border-radius: var(--radius-md);
+  }
+
+  .package-shortcut-button {
+    flex: 1 1 calc(50% - 0.45rem);
+    text-align: center;
+  }
+
+  .acc-content-inner {
+    padding: 1rem !important;
+  }
+
+  .acc-header h3 {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .booking-actions,
+  .package-bottom-help form {
+    grid-template-columns: 1fr !important;
+  }
+
+  .package-bottom-help .country-code-picker,
+  .package-bottom-help textarea,
+  .package-bottom-help button {
+    grid-column: auto;
   }
 
   .booking-actions {

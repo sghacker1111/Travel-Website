@@ -108,6 +108,42 @@ if (file_exists($packages_path)) {
     $packages = json_decode(file_get_contents($packages_path), true);
 }
 if (!is_array($packages)) $packages = [];
+
+if (!function_exists('header_activity_package_match')) {
+    function header_activity_package_keywords($activity_id) {
+        $map = [
+            'everest-region' => ['everest', 'khumbu', 'ebc', 'gokyo', 'lukla', 'namche', 'pikey', 'three passes', 'high passes'],
+            'annapurna-region' => ['annapurna', 'abc', 'poon', 'ghorepani', 'mardi', 'tilicho', 'khopra', 'nar phu', 'sikles', 'kapuche', 'kori', 'mohare', 'dhampus'],
+            'langtang-region' => ['langtang', 'gosaikunda', 'gosainkunda', 'helambu', 'tamang', 'ama yangri', 'ganja la'],
+            'manaslu-region' => ['manaslu', 'tsum', 'larkya', 'sama gaon', 'samdo'],
+            'mustang-region' => ['mustang', 'tiji', 'lo manthang', 'jomsom', 'muktinath', 'kagbeni'],
+            'restricted-areas' => ['restricted', 'remote', 'kanchenjunga', 'makalu', 'dolpo', 'rara', 'phoksundo'],
+            'peak-climbing-nepal' => ['peak', 'climbing', 'island', 'lobuche', 'mera', 'yala'],
+            'nepal-tours' => ['tour', 'kathmandu', 'pokhara', 'chitwan', 'helicopter', 'safari']
+        ];
+        return $map[$activity_id] ?? [];
+    }
+
+    function header_activity_package_match($activity, $package) {
+        if (($package['category'] ?? '') !== ($activity['category'] ?? '')) {
+            return false;
+        }
+        if (!empty($package['activity_id']) && $package['activity_id'] === ($activity['id'] ?? '')) {
+            return true;
+        }
+        $haystack = strtolower(
+            ($package['region'] ?? '') . ' ' .
+            ($package['title'] ?? '') . ' ' .
+            ($package['slug'] ?? '')
+        );
+        foreach (header_activity_package_keywords($activity['id'] ?? '') as $keyword) {
+            if ($keyword !== '' && strpos($haystack, strtolower($keyword)) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -303,6 +339,84 @@ if (!is_array($packages)) $packages = [];
         width: 100%;
         background-color: #ffffff !important;
       }
+      #site-nav {
+        width: min(92vw, 420px) !important;
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+      }
+      #site-nav .nav-links {
+        width: 100% !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+      #site-nav .nav-item,
+      #site-nav .nav-link {
+        width: 100% !important;
+      }
+      #site-nav .dropdown-menu {
+        position: static !important;
+        left: auto !important;
+        transform: translateY(-6px) !important;
+        display: block !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        max-height: 0;
+        overflow-x: hidden !important;
+        overflow-y: hidden;
+        opacity: 0;
+        visibility: hidden;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+      #site-nav .nav-item.open-mobile > .dropdown-menu {
+        max-height: 72vh;
+        overflow-y: auto;
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) !important;
+        padding: 0.55rem 0 0.8rem !important;
+      }
+      #site-nav .mega-menu-wide {
+        min-width: 0 !important;
+        padding: 0 !important;
+      }
+      #site-nav .mega-menu-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem !important;
+      }
+      #site-nav .mega-menu-column {
+        width: 100%;
+        min-width: 0;
+        background: #f8fafc;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        padding: 0.75rem;
+      }
+      #site-nav .mega-col-links {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.35rem;
+        max-height: none;
+        overflow: visible;
+      }
+      #site-nav .mega-col-link,
+      #site-nav .dropdown-link {
+        display: flex !important;
+        width: 100%;
+        min-height: 38px;
+        align-items: center;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        border: 1px solid var(--border-color);
+        background: #f8fafc;
+        border-radius: var(--radius-sm);
+        padding: 0.5rem 0.65rem !important;
+      }
     }
     @media (max-width: 640px) {
       .header-top-row {
@@ -435,7 +549,7 @@ if (!is_array($packages)) $packages = [];
                         foreach ($cat_activities as $act): 
                             $act_packages = [];
                             foreach ($packages as $pkg) {
-                                if (isset($pkg['activity_id']) && $pkg['activity_id'] === $act['id']) {
+                                if (header_activity_package_match($act, $pkg)) {
                                     $act_packages[] = $pkg;
                                 }
                             }
@@ -486,7 +600,7 @@ if (!is_array($packages)) $packages = [];
                             foreach ($cat_activities as $act):
                                 $act_packages = [];
                                 foreach ($packages as $pkg) {
-                                    if (isset($pkg['activity_id']) && $pkg['activity_id'] === $act['id']) {
+                                    if (header_activity_package_match($act, $pkg)) {
                                         $act_packages[] = $pkg;
                                     }
                                 }
