@@ -1,11 +1,4 @@
 <?php
-if (!headers_sent() && isset($_COOKIE['PHPSESSID'])) {
-    $secure_cookie = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-        || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
-    setcookie('PHPSESSID', '', time() - 42000, '/', '', $secure_cookie, true);
-    unset($_COOKIE['PHPSESSID']);
-}
-
 // Load dynamic global settings
 $settings_path = __DIR__ . '/../data/settings.json';
 $site_name = "Top Mountain Treks Pvt. Ltd.";

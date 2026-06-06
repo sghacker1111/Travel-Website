@@ -53,7 +53,6 @@ if ($request_path === '/admin.php') {
 $secure_cookie = is_https_request();
 
 if (!headers_sent() && isset($_COOKIE['PHPSESSID'])) {
-    clear_site_cookie('PHPSESSID', '/');
     clear_site_cookie('PHPSESSID', '/admin');
 }
 if (!headers_sent() && isset($_COOKIE['TMTADMINSESSID'])) {
