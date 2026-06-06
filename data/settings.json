@@ -2,7 +2,53 @@
     "company_name": "Top Mountain Treks Pvt. Ltd",
     "logo_path": "assets\/images\/logo.png",
     "whatsapp_number": "+977-9840019909",
-    "navigation": [],
+    "usd_to_npr_rate": 133,
+    "contact": {
+        "address": "Top Mountain Treks Pvt. Ltd.\r\nSatghumti Marg, Thamel-26\r\nKathmandu, Nepal (Post Box: 44600)",
+        "landline": "+977 1-4700720",
+        "emergency": "+977 98511-23456",
+        "email": "info@topmountaintreks.com",
+        "map_lat": "27.7150",
+        "map_lng": "85.3120",
+        "map_zoom": "16",
+        "intro": "Plan your custom Himalayan trail itinerary with our expert Nepalese guides."
+    },
+    "home_offers": {
+        "default_badge": "Hot Deal",
+        "default_group_text": "Group Offer",
+        "default_offer_days": "30",
+        "limited_text": "Limited time"
+    },
+    "navigation": [
+        {
+            "title": "Home",
+            "link": "\/"
+        },
+        {
+            "title": "Trekking",
+            "link": "\/trekking"
+        },
+        {
+            "title": "Peak Climbing",
+            "link": "\/peak-climbing"
+        },
+        {
+            "title": "Tours",
+            "link": "\/tour"
+        },
+        {
+            "title": "Company Info",
+            "link": "#"
+        },
+        {
+            "title": "Destination",
+            "link": "\/destination"
+        },
+        {
+            "title": "Contact Us",
+            "link": "\/contact"
+        }
+    ],
     "footer_icons": [],
     "header_custom_html": "",
     "footer_custom_html": "",

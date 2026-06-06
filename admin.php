@@ -114,6 +114,25 @@ $default_nav = [
     ["title" => "Contact Us", "link" => "/contact"]
 ];
 $site_nav = !empty($settings['navigation']) && is_array($settings['navigation']) ? $settings['navigation'] : $default_nav;
+$contact_defaults = [
+    'address' => "Top Mountain Treks Pvt. Ltd.\nSatghumti Marg, Thamel-26\nKathmandu, Nepal (Post Box: 44600)",
+    'landline' => '+977 1-4700720',
+    'emergency' => '+977 98511-23456',
+    'email' => 'info@topmountaintreks.com',
+    'map_lat' => '27.7150',
+    'map_lng' => '85.3120',
+    'map_zoom' => '16',
+    'intro' => 'Plan your custom Himalayan trail itinerary with our expert Nepalese guides.'
+];
+$contact_settings = array_merge($contact_defaults, isset($settings['contact']) && is_array($settings['contact']) ? $settings['contact'] : []);
+$home_offer_defaults = [
+    'default_badge' => 'Hot Deal',
+    'default_group_text' => 'Group Offer',
+    'default_offer_days' => '30',
+    'limited_text' => 'Limited time'
+];
+$home_offer_settings = array_merge($home_offer_defaults, isset($settings['home_offers']) && is_array($settings['home_offers']) ? $settings['home_offers'] : []);
+$usd_to_npr_rate = isset($settings['usd_to_npr_rate']) ? (float)$settings['usd_to_npr_rate'] : 133;
 $activities = file_exists($activities_path) ? json_decode(file_get_contents($activities_path), true) : [];
 $blogs = file_exists($blogs_path) ? json_decode(file_get_contents($blogs_path), true) : [];
 $pages = file_exists($pages_path) ? json_decode(file_get_contents($pages_path), true) : [];
@@ -302,6 +321,16 @@ function clear_admin_otp_cookie() {
     clear_site_cookie('TMTADMINOTP', '/admin');
 }
 
+function admin_delete_confirmed($admin_creds) {
+    $password = isset($_POST['delete_confirm_password']) ? (string)$_POST['delete_confirm_password'] : '';
+    return $password !== '' && hash_equals((string)($admin_creds['password'] ?? ''), $password);
+}
+
+function block_unconfirmed_delete(&$action_status, &$action_msg) {
+    $action_status = "error";
+    $action_msg = "Delete cancelled. Please enter the current admin password to confirm this action.";
+}
+
 $is_logged = is_admin_authenticated($settings_path, $admin_creds);
 
 // 1. AJAX Media Upload Handler (Req 4, 6)
@@ -432,20 +461,24 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // ACTION A: Delete Package
     if (isset($_POST['delete_package'])) {
-        $id = $_POST['package_id'];
-        $filtered = [];
-        $deleted_title = "";
-        foreach ($packages as $pkg) {
-            if ($pkg['id'] === $id) {
-                $deleted_title = $pkg['title'];
-                continue;
+        if (!admin_delete_confirmed($admin_creds)) {
+            block_unconfirmed_delete($action_status, $action_msg);
+        } else {
+            $id = $_POST['package_id'];
+            $filtered = [];
+            $deleted_title = "";
+            foreach ($packages as $pkg) {
+                if ($pkg['id'] === $id) {
+                    $deleted_title = $pkg['title'];
+                    continue;
+                }
+                $filtered[] = $pkg;
             }
-            $filtered[] = $pkg;
+            $packages = $filtered;
+            file_put_contents($packages_path, json_encode($packages, JSON_PRETTY_PRINT));
+            $action_status = "success";
+            $action_msg = "Successfully deleted package: '{$deleted_title}'";
         }
-        $packages = $filtered;
-        file_put_contents($packages_path, json_encode($packages, JSON_PRETTY_PRINT));
-        $action_status = "success";
-        $action_msg = "Successfully deleted package: '{$deleted_title}'";
     }
 
     // ACTION B: Theme Colors
@@ -637,10 +670,14 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Delete footer icon action
         if (isset($_POST['delete_footer_icon_idx'])) {
-            $del_idx = (int)$_POST['delete_footer_icon_idx'];
-            if (isset($footer_icons[$del_idx])) {
-                @unlink($footer_icons[$del_idx]);
-                array_splice($footer_icons, $del_idx, 1);
+            if (!admin_delete_confirmed($admin_creds)) {
+                block_unconfirmed_delete($action_status, $action_msg);
+            } else {
+                $del_idx = (int)$_POST['delete_footer_icon_idx'];
+                if (isset($footer_icons[$del_idx])) {
+                    @unlink($footer_icons[$del_idx]);
+                    array_splice($footer_icons, $del_idx, 1);
+                }
             }
         }
 
@@ -656,10 +693,31 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        $contact_settings = isset($_POST['contact_address']) ? [
+            'address' => trim($_POST['contact_address'] ?? ''),
+            'landline' => trim($_POST['contact_landline'] ?? ''),
+            'emergency' => trim($_POST['contact_emergency'] ?? ''),
+            'email' => trim($_POST['contact_email'] ?? ''),
+            'map_lat' => trim($_POST['contact_map_lat'] ?? ''),
+            'map_lng' => trim($_POST['contact_map_lng'] ?? ''),
+            'map_zoom' => trim($_POST['contact_map_zoom'] ?? '16'),
+            'intro' => trim($_POST['contact_intro'] ?? '')
+        ] : (isset($settings['contact']) && is_array($settings['contact']) ? $settings['contact'] : $contact_defaults);
+        $home_offer_settings = isset($_POST['offer_default_badge']) ? [
+            'default_badge' => trim($_POST['offer_default_badge'] ?? ''),
+            'default_group_text' => trim($_POST['offer_default_group_text'] ?? ''),
+            'default_offer_days' => trim($_POST['offer_default_days'] ?? ''),
+            'limited_text' => trim($_POST['offer_limited_text'] ?? '')
+        ] : (isset($settings['home_offers']) && is_array($settings['home_offers']) ? $settings['home_offers'] : $home_offer_defaults);
+        $usd_to_npr_rate = isset($_POST['usd_to_npr_rate']) ? (float)$_POST['usd_to_npr_rate'] : (isset($settings['usd_to_npr_rate']) ? (float)$settings['usd_to_npr_rate'] : 133);
+
         $settings = [
             'company_name' => trim($_POST['company_name']),
             'logo_path' => $logo_path,
             'whatsapp_number' => trim($_POST['whatsapp_number']),
+            'usd_to_npr_rate' => $usd_to_npr_rate,
+            'contact' => $contact_settings,
+            'home_offers' => $home_offer_settings,
             'navigation' => $nav,
             'footer_icons' => $footer_icons,
             'header_custom_html' => $_POST['header_custom_html'],
@@ -667,8 +725,10 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             'admin' => isset($settings['admin']) ? $settings['admin'] : $admin_creds
         ];
         file_put_contents($settings_path, json_encode($settings, JSON_PRETTY_PRINT));
-        $action_status = "success";
-        $action_msg = "Global company settings & WhatsApp details updated.";
+        if ($action_status !== "error") {
+            $action_status = "success";
+            $action_msg = "Global company settings, contact details, offers, and navigation updated.";
+        }
     }
 
     // ACTION D: Save Region / Activity Subtitle
@@ -681,6 +741,9 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $slug = strtolower(preg_replace('/[^a-zA-Z0-9-]+/', '-', $name));
         }
         $desc = trim($_POST['act_description']);
+        $act_seo_title = trim($_POST['act_seo_title'] ?? '');
+        $act_seo_description = trim($_POST['act_seo_description'] ?? '');
+        $act_seo_keywords = trim($_POST['act_seo_keywords'] ?? '');
 
         // Handle Route Map Image (Req 5)
         $route_map_path = isset($_POST['existing_act_route_map']) ? $_POST['existing_act_route_map'] : '';
@@ -700,7 +763,10 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             'slug' => $slug,
             'category' => $category,
             'description' => $desc,
-            'route_map' => $route_map_path
+            'route_map' => $route_map_path,
+            'seo_title' => $act_seo_title,
+            'seo_description' => $act_seo_description,
+            'seo_keywords' => $act_seo_keywords
         ];
 
         $found = false;
@@ -722,16 +788,20 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ACTION E: Delete Region / Activity
     if (isset($_POST['delete_activity'])) {
-        $id = $_POST['act_id'];
-        $filtered = [];
-        foreach ($activities as $act) {
-            if ($act['id'] === $id) continue;
-            $filtered[] = $act;
+        if (!admin_delete_confirmed($admin_creds)) {
+            block_unconfirmed_delete($action_status, $action_msg);
+        } else {
+            $id = $_POST['act_id'];
+            $filtered = [];
+            foreach ($activities as $act) {
+                if ($act['id'] === $id) continue;
+                $filtered[] = $act;
+            }
+            $activities = $filtered;
+            file_put_contents($activities_path, json_encode($activities, JSON_PRETTY_PRINT));
+            $action_status = "success";
+            $action_msg = "Deleted activity subtitle category.";
         }
-        $activities = $filtered;
-        file_put_contents($activities_path, json_encode($activities, JSON_PRETTY_PRINT));
-        $action_status = "success";
-        $action_msg = "Deleted activity subtitle category.";
     }
 
     // ACTION F: Save Blog Post
@@ -804,16 +874,20 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ACTION G: Delete Blog Post
     if (isset($_POST['delete_blog'])) {
-        $id = $_POST['blog_id'];
-        $filtered = [];
-        foreach ($blogs as $b) {
-            if ($b['id'] === $id) continue;
-            $filtered[] = $b;
+        if (!admin_delete_confirmed($admin_creds)) {
+            block_unconfirmed_delete($action_status, $action_msg);
+        } else {
+            $id = $_POST['blog_id'];
+            $filtered = [];
+            foreach ($blogs as $b) {
+                if ($b['id'] === $id) continue;
+                $filtered[] = $b;
+            }
+            $blogs = $filtered;
+            file_put_contents($blogs_path, json_encode($blogs, JSON_PRETTY_PRINT));
+            $action_status = "success";
+            $action_msg = "Deleted blog article.";
         }
-        $blogs = $filtered;
-        file_put_contents($blogs_path, json_encode($blogs, JSON_PRETTY_PRINT));
-        $action_status = "success";
-        $action_msg = "Deleted blog article.";
     }
 
     // ACTION H: Save Static Page
@@ -827,6 +901,7 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $content = $_POST['page_content'];
         $seo_title = trim($_POST['seo_title']);
         $seo_description = trim($_POST['seo_description']);
+        $seo_keywords = trim($_POST['seo_keywords'] ?? '');
 
         // Handle Static Page Route Map
         $route_map_path = isset($_POST['existing_page_route_map']) ? $_POST['existing_page_route_map'] : '';
@@ -840,6 +915,18 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        // Handle Static Page Document Uploads for legal files and PDFs
+        $document_file_path = isset($_POST['existing_page_document_file']) ? $_POST['existing_page_document_file'] : '';
+        if (isset($_FILES['page_document_file']) && $_FILES['page_document_file']['error'] === UPLOAD_ERR_OK) {
+            $tmp_name = $_FILES['page_document_file']['tmp_name'];
+            $dname = clean_upload_name($_FILES['page_document_file']['name']);
+            $upload_dir = ensure_uploads_dir();
+            $target = $upload_dir . '/' . time() . '_' . $dname;
+            if (move_uploaded_file($tmp_name, $target)) {
+                $document_file_path = $target;
+            }
+        }
+
         $page_obj = [
             'id' => $page_id,
             'title' => $title,
@@ -847,7 +934,9 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             'content' => $content,
             'seo_title' => $seo_title,
             'seo_description' => $seo_description,
-            'route_map' => $route_map_path
+            'seo_keywords' => $seo_keywords,
+            'route_map' => $route_map_path,
+            'document_file' => $document_file_path
         ];
 
         $found = false;
@@ -869,16 +958,20 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ACTION I: Delete Static Page
     if (isset($_POST['delete_page'])) {
-        $id = $_POST['page_id'];
-        $filtered = [];
-        foreach ($pages as $p) {
-            if ($p['id'] === $id) continue;
-            $filtered[] = $p;
+        if (!admin_delete_confirmed($admin_creds)) {
+            block_unconfirmed_delete($action_status, $action_msg);
+        } else {
+            $id = $_POST['page_id'];
+            $filtered = [];
+            foreach ($pages as $p) {
+                if ($p['id'] === $id) continue;
+                $filtered[] = $p;
+            }
+            $pages = $filtered;
+            file_put_contents($pages_path, json_encode($pages, JSON_PRETTY_PRINT));
+            $action_status = "success";
+            $action_msg = "Deleted static page.";
         }
-        $pages = $filtered;
-        file_put_contents($pages_path, json_encode($pages, JSON_PRETTY_PRINT));
-        $action_status = "success";
-        $action_msg = "Deleted static page.";
     }
 
     // ACTION J: Approve Review
@@ -901,20 +994,24 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ACTION K: Delete Review (Req 10)
     if (isset($_POST['delete_review'])) {
-        $pkg_id = $_POST['rev_pkg_id'];
-        $rev_idx = (int)$_POST['rev_idx'];
+        if (!admin_delete_confirmed($admin_creds)) {
+            block_unconfirmed_delete($action_status, $action_msg);
+        } else {
+            $pkg_id = $_POST['rev_pkg_id'];
+            $rev_idx = (int)$_POST['rev_idx'];
 
-        foreach ($packages as &$pkg) {
-            if ($pkg['id'] === $pkg_id) {
-                if (isset($pkg['reviews'][$rev_idx])) {
-                    array_splice($pkg['reviews'], $rev_idx, 1);
+            foreach ($packages as &$pkg) {
+                if ($pkg['id'] === $pkg_id) {
+                    if (isset($pkg['reviews'][$rev_idx])) {
+                        array_splice($pkg['reviews'], $rev_idx, 1);
+                    }
+                    break;
                 }
-                break;
             }
+            file_put_contents($packages_path, json_encode($packages, JSON_PRETTY_PRINT));
+            $action_status = "success";
+            $action_msg = "Traveler review deleted.";
         }
-        file_put_contents($packages_path, json_encode($packages, JSON_PRETTY_PRINT));
-        $action_status = "success";
-        $action_msg = "Traveler review deleted.";
     }
 
     // ACTION L: Create or Edit Package
@@ -1027,6 +1124,10 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             'priceUSD' => (int)$_POST['priceUSD'],
             'priceNPR' => (int)$_POST['priceNPR'],
             'priceNote' => trim($_POST['priceNote']),
+            'offer_badge' => trim($_POST['offer_badge'] ?? ''),
+            'offer_old_price_usd' => isset($_POST['offer_old_price_usd']) ? (int)$_POST['offer_old_price_usd'] : 0,
+            'offer_end_date' => trim($_POST['offer_end_date'] ?? ''),
+            'group_offer_text' => trim($_POST['group_offer_text'] ?? ''),
             'difficulty' => $_POST['difficulty'],
             'maxAltitude' => trim($_POST['maxAltitude']),
             'bestSeason' => trim($_POST['bestSeason']),
@@ -1050,7 +1151,7 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             'seo_title' => trim($_POST['seo_title']),
             'seo_description' => trim($_POST['seo_description']),
             'seo_keywords' => trim($_POST['seo_keywords']),
-            'image_alt' => trim($_POST['image_alt']),
+            'image_alt' => trim($_POST['image_alt'] ?? ''),
             'og_title' => trim($_POST['og_title']),
             'og_description' => trim($_POST['og_description']),
             'og_image' => trim($_POST['og_image']),
@@ -1077,12 +1178,16 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ACTION M: Delete Media File (Req 4)
     if (isset($_POST['delete_media_file'])) {
-        $del_path = $_POST['media_path'];
-        // Prevent directory traversal
-        if (strpos($del_path, 'assets/images/uploads/') === 0 && file_exists($del_path)) {
-            @unlink($del_path);
-            $action_status = "success";
-            $action_msg = "Media file deleted from server.";
+        if (!admin_delete_confirmed($admin_creds)) {
+            block_unconfirmed_delete($action_status, $action_msg);
+        } else {
+            $del_path = $_POST['media_path'];
+            // Prevent directory traversal
+            if (strpos($del_path, 'assets/images/uploads/') === 0 && file_exists($del_path)) {
+                @unlink($del_path);
+                $action_status = "success";
+                $action_msg = "Media file deleted from server.";
+            }
         }
     }
 
@@ -1406,7 +1511,7 @@ foreach ($packages as $pkg) {
                     <td>$<?php echo number_format($pkg['priceUSD']); ?></td>
                     <td style="display:flex; gap:0.5rem;">
                       <button class="btn btn-primary btn-sm" onclick="editPackage(<?php echo htmlspecialchars(json_encode($pkg)); ?>)">Edit</button>
-                      <form method="POST" action="/admin" onsubmit="return confirm('Are you sure you want to delete this package?')">
+                      <form method="POST" action="/admin" onsubmit="return confirmAdminDelete(this, 'this package')">
                         <input type="hidden" name="package_id" value="<?php echo $pkg['id']; ?>">
                         <button type="submit" name="delete_package" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger);">Delete</button>
                       </form>
@@ -1474,11 +1579,33 @@ foreach ($packages as $pkg) {
             <div class="edit-fields-grid">
               <div class="form-group">
                 <label for="edit-priceUSD">Price (USD)</label>
-                <input type="number" id="edit-priceUSD" name="priceUSD" class="form-input" required value="950" min="1">
+                <input type="number" id="edit-priceUSD" name="priceUSD" class="form-input" required value="950" min="1" data-rate="<?php echo htmlspecialchars($usd_to_npr_rate); ?>">
               </div>
               <div class="form-group">
-                <label for="edit-priceNPR">Price (NPR)</label>
+                <label for="edit-priceNPR">Price (NPR auto)</label>
                 <input type="number" id="edit-priceNPR" name="priceNPR" class="form-input" required value="126350" min="1">
+              </div>
+            </div>
+
+            <div class="edit-fields-grid">
+              <div class="form-group">
+                <label for="edit-offer_badge">Homepage Offer Badge</label>
+                <input type="text" id="edit-offer_badge" name="offer_badge" class="form-input" placeholder="e.g. Hot Deal, Group Offer" value="<?php echo htmlspecialchars($home_offer_settings['default_badge']); ?>">
+              </div>
+              <div class="form-group">
+                <label for="edit-group_offer_text">Booking Card Group Offer Text</label>
+                <input type="text" id="edit-group_offer_text" name="group_offer_text" class="form-input" placeholder="e.g. We offer group price" value="<?php echo htmlspecialchars($home_offer_settings['default_group_text']); ?>">
+              </div>
+            </div>
+
+            <div class="edit-fields-grid">
+              <div class="form-group">
+                <label for="edit-offer_old_price_usd">Old Price USD (optional strike-through)</label>
+                <input type="number" id="edit-offer_old_price_usd" name="offer_old_price_usd" class="form-input" min="0" value="0">
+              </div>
+              <div class="form-group">
+                <label for="edit-offer_end_date">Offer End Date / Countdown</label>
+                <input type="datetime-local" id="edit-offer_end_date" name="offer_end_date" class="form-input">
               </div>
             </div>
 
@@ -1572,6 +1699,8 @@ foreach ($packages as $pkg) {
                 <div class="form-group">
                   <label for="edit-image_file">Main Featured Image (Thumbnail)</label>
                   <input type="file" id="edit-image_file" name="image_file" class="form-input">
+                  <label for="edit-image_alt" style="margin-top:0.75rem;">Image SEO Alt Text</label>
+                  <input type="text" id="edit-image_alt" name="image_alt" class="form-input" placeholder="Describe the image for Google and accessibility">
                   <div id="main-image-preview" style="margin-top:0.5rem;"></div>
                 </div>
                 <div class="form-group">
@@ -1597,6 +1726,12 @@ foreach ($packages as $pkg) {
 
             <!-- Dynamic Itinerary Day Builder (Req 3, 6, 11) -->
             <div style="border-top:1px solid var(--border-color); padding-top:2rem; margin-top:2rem;">
+              <div style="background:#fff7ed; border:1px solid #fed7aa; padding:1rem; border-radius:var(--radius-md); margin-bottom:1.25rem;">
+                <h4 style="font-family:var(--font-heading); color:var(--color-primary); margin:0 0 0.5rem; font-weight:800;">Full Day Details Paste Parser</h4>
+                <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 0.75rem;">Paste each day as lines: Day, Day Title, Campsite / Location, Accommodation, Meals, Description. Separate days with a blank line or start the next block with "Day 2".</p>
+                <textarea id="itinerary-detail-paste" class="form-input" rows="6" placeholder="Day 1&#10;Arrival in Kathmandu&#10;Kathmandu&#10;Hotel&#10;Dinner&#10;Meet your guide and prepare permits.&#10;&#10;Day 2&#10;Fly to Lukla and trek to Phakding&#10;Phakding&#10;Teahouse Lodge&#10;Breakfast, Lunch, Dinner&#10;Trail details here..."></textarea>
+                <button type="button" class="btn btn-primary btn-sm" style="margin-top:0.75rem;" onclick="parseDetailedItinerary()">Parse & Fill Day Details</button>
+              </div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                 <h4 style="font-family:var(--font-heading); color:var(--color-primary); font-weight:800; margin:0;">Day-by-Day Itinerary Details</h4>
                 <button type="button" class="btn btn-outline btn-sm" onclick="addItineraryDayRow()">+ Add Day Row</button>
@@ -1606,6 +1741,12 @@ foreach ($packages as $pkg) {
 
             <!-- Dynamic FAQs Builder -->
             <div style="border-top:1px solid var(--border-color); padding-top:2rem; margin-top:2rem;">
+              <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:1rem; border-radius:var(--radius-md); margin-bottom:1.25rem;">
+                <h4 style="font-family:var(--font-heading); color:var(--color-primary); margin:0 0 0.5rem; font-weight:800;">Bulk FAQ Paste Parser</h4>
+                <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 0.75rem;">Paste Question on line 1, Answer on line 2, next Question on line 3, next Answer on line 4. The rows are created automatically.</p>
+                <textarea id="faq-bulk-paste" class="form-input" rows="5" placeholder="What is the best season?&#10;Spring and autumn are usually best.&#10;Do I need travel insurance?&#10;Yes, trekking insurance with evacuation cover is recommended."></textarea>
+                <button type="button" class="btn btn-primary btn-sm" style="margin-top:0.75rem;" onclick="parseBulkFaqs()">Parse & Fill FAQs</button>
+              </div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                 <h4 style="font-family:var(--font-heading); color:var(--color-primary); font-weight:800; margin:0;">Trip FAQs Details</h4>
                 <button type="button" class="btn btn-outline btn-sm" onclick="addFaqRow()">+ Add FAQ Row</button>
@@ -1719,7 +1860,25 @@ foreach ($packages as $pkg) {
 
             <div class="form-group">
               <label for="act-description">Region Description</label>
-              <textarea id="act-description" name="act_description" class="form-input" rows="2" placeholder="e.g. Classic trails in the Khumbu region..."></textarea>
+              <textarea id="act-description" name="act_description" class="form-input" rows="2" placeholder="e.g. Classic trails in the Khumbu region..." oninput="runMiniSEO('act')"></textarea>
+            </div>
+
+            <div style="border-top:1px solid var(--border-color); padding-top:1rem; margin-top:1rem;">
+              <div class="edit-fields-grid">
+                <div class="form-group">
+                  <label for="act-seo_title">SEO Page Title</label>
+                  <input type="text" id="act-seo_title" name="act_seo_title" class="form-input" oninput="runMiniSEO('act')">
+                </div>
+                <div class="form-group">
+                  <label for="act-seo_keywords">Focus Keyphrase</label>
+                  <input type="text" id="act-seo_keywords" name="act_seo_keywords" class="form-input" oninput="runMiniSEO('act')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="act-seo_description">SEO Meta Description</label>
+                <textarea id="act-seo_description" name="act_seo_description" class="form-input" rows="2" oninput="runMiniSEO('act')"></textarea>
+              </div>
+              <div id="act-seo-mini" style="font-size:0.82rem; background:white; border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.75rem;"></div>
             </div>
             
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1754,7 +1913,7 @@ foreach ($packages as $pkg) {
                     </td>
                     <td style="display:flex; gap:0.5rem;">
                       <button class="btn btn-primary btn-sm" onclick="editActivity(<?php echo htmlspecialchars(json_encode($act)); ?>)">Edit</button>
-                      <form method="POST" action="/admin" onsubmit="return confirm('Are you sure you want to delete this region category?')">
+                      <form method="POST" action="/admin" onsubmit="return confirmAdminDelete(this, 'this region category')">
                         <input type="hidden" name="act_id" value="<?php echo $act['id']; ?>">
                         <button type="submit" name="delete_activity" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger);">Delete</button>
                       </form>
@@ -1769,6 +1928,31 @@ foreach ($packages as $pkg) {
 
       <!-- Tab 4: Blogs & Pages CRUD -->
       <div class="admin-panel" id="panel-blogs">
+        <div class="glass-card" style="padding:1.5rem; background:#f8fafc; border:1px solid var(--border-color); border-radius:var(--radius-lg); margin-bottom:2rem;">
+          <h3 style="font-family:var(--font-heading); color:var(--color-primary); font-size:1.2rem; margin:0 0 1rem; font-weight:800;">Company Info Pages Quick Edit</h3>
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+            <?php
+              $company_page_slugs = ['why-travel-with-us', 'about-us', 'our-team', 'legal-documents', 'terms-and-conditions'];
+              foreach ($company_page_slugs as $company_slug):
+                $company_page = null;
+                foreach ($pages as $p) {
+                    if (($p['slug'] ?? '') === $company_slug) {
+                        $company_page = $p;
+                        break;
+                    }
+                }
+                if ($company_page):
+            ?>
+              <button type="button" class="btn btn-outline btn-sm" onclick="editPage(<?php echo htmlspecialchars(json_encode($company_page)); ?>)">
+                <?php echo htmlspecialchars($company_page['title']); ?>
+              </button>
+            <?php else: ?>
+              <button type="button" class="btn btn-primary btn-sm" onclick="resetPageForm(); document.getElementById('page-title').value='<?php echo ucwords(str_replace('-', ' ', $company_slug)); ?>'; document.getElementById('page-slug').value='<?php echo $company_slug; ?>';">
+                Add <?php echo htmlspecialchars(ucwords(str_replace('-', ' ', $company_slug))); ?>
+              </button>
+            <?php endif; endforeach; ?>
+          </div>
+        </div>
         <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:2.5rem;">
           
           <!-- Blogs CRUD -->
@@ -1782,7 +1966,7 @@ foreach ($packages as $pkg) {
               
               <div class="form-group">
                 <label for="blog-title">Article Title</label>
-                <input type="text" id="blog-title" name="blog_title" class="form-input" required placeholder="e.g. EBC Trek Packing Lists">
+                <input type="text" id="blog-title" name="blog_title" class="form-input" required placeholder="e.g. EBC Trek Packing Lists" oninput="runMiniSEO('blog')">
               </div>
               <div class="form-group">
                 <label for="blog-slug">Slug Link</label>
@@ -1804,24 +1988,25 @@ foreach ($packages as $pkg) {
               </div>
               <div class="form-group">
                 <label for="blog-content">Article Content (Rich Text)</label>
-                <textarea id="blog-content" name="blog_content" class="form-input" rows="8"></textarea>
+                <textarea id="blog-content" name="blog_content" class="form-input" rows="8" oninput="runMiniSEO('blog')"></textarea>
               </div>
 
               <!-- Blog SEO -->
               <div class="edit-fields-grid" style="border-top:1px solid var(--border-color); padding-top:1rem; margin-top:1rem;">
                 <div class="form-group">
                   <label for="blog-seo_title">SEO Page Title</label>
-                  <input type="text" id="blog-seo_title" name="seo_title" class="form-input">
+                  <input type="text" id="blog-seo_title" name="seo_title" class="form-input" oninput="runMiniSEO('blog')">
                 </div>
                 <div class="form-group">
                   <label for="blog-seo_keywords">SEO Keywords</label>
-                  <input type="text" id="blog-seo_keywords" name="seo_keywords" class="form-input">
+                  <input type="text" id="blog-seo_keywords" name="seo_keywords" class="form-input" oninput="runMiniSEO('blog')">
                 </div>
               </div>
               <div class="form-group">
                 <label for="blog-seo_description">SEO Meta Description</label>
-                <textarea id="blog-seo_description" name="seo_description" class="form-input" rows="2"></textarea>
+                <textarea id="blog-seo_description" name="seo_description" class="form-input" rows="2" oninput="runMiniSEO('blog')"></textarea>
               </div>
+              <div id="blog-seo-mini" style="font-size:0.82rem; background:white; border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.75rem;"></div>
 
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
                 <button type="button" class="btn btn-outline btn-sm" onclick="resetBlogForm()">Clear Form</button>
@@ -1845,7 +2030,7 @@ foreach ($packages as $pkg) {
                       <td><?php echo htmlspecialchars($b['date']); ?></td>
                       <td style="display:flex; gap:0.5rem;">
                         <button class="btn btn-primary btn-sm" onclick="editBlog(<?php echo htmlspecialchars(json_encode($b)); ?>)">Edit</button>
-                        <form method="POST" action="/admin" onsubmit="return confirm('Delete this blog post?')">
+                        <form method="POST" action="/admin" onsubmit="return confirmAdminDelete(this, 'this blog post')">
                           <input type="hidden" name="blog_id" value="<?php echo $b['id']; ?>">
                           <button type="submit" name="delete_blog" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger);">Delete</button>
                         </form>
@@ -1864,10 +2049,11 @@ foreach ($packages as $pkg) {
             <form method="POST" action="/admin" enctype="multipart/form-data" class="form-card" style="padding:1.5rem; background:#f8fafc; border-radius:var(--radius-md); margin-bottom:2.5rem;">
               <input type="hidden" id="page-id" name="page_id" value="">
               <input type="hidden" id="page-existing-route-map" name="existing_page_route_map" value="">
+              <input type="hidden" id="page-existing-document-file" name="existing_page_document_file" value="">
               
               <div class="form-group">
                 <label for="page-title">Page Title</label>
-                <input type="text" id="page-title" name="page_title" class="form-input" required placeholder="e.g. Terms & Booking Policy">
+                <input type="text" id="page-title" name="page_title" class="form-input" required placeholder="e.g. Terms & Booking Policy" oninput="runMiniSEO('page')">
               </div>
               <div class="form-group">
                 <label for="page-slug">Slug Link</label>
@@ -1878,20 +2064,29 @@ foreach ($packages as $pkg) {
                 <input type="file" id="page_route_map_file" name="route_map_file" class="form-input">
               </div>
               <div class="form-group">
+                <label for="page_document_file">Legal Document / PDF Upload</label>
+                <input type="file" id="page_document_file" name="page_document_file" class="form-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp">
+              </div>
+              <div class="form-group">
                 <label for="page-content">Page Content (Rich Text)</label>
-                <textarea id="page-content" name="page_content" class="form-input" rows="8"></textarea>
+                <textarea id="page-content" name="page_content" class="form-input" rows="8" oninput="runMiniSEO('page')"></textarea>
               </div>
 
               <!-- Page SEO -->
               <div style="border-top:1px solid var(--border-color); padding-top:1rem; margin-top:1rem;">
                 <div class="form-group">
                   <label for="page-seo_title">SEO Page Title</label>
-                  <input type="text" id="page-seo_title" name="seo_title" class="form-input">
+                  <input type="text" id="page-seo_title" name="seo_title" class="form-input" oninput="runMiniSEO('page')">
+                </div>
+                <div class="form-group">
+                  <label for="page-seo_keywords">Focus Keyphrase</label>
+                  <input type="text" id="page-seo_keywords" name="seo_keywords" class="form-input" oninput="runMiniSEO('page')">
                 </div>
                 <div class="form-group">
                   <label for="page-seo_description">SEO Meta Description</label>
-                  <textarea id="page-seo_description" name="seo_description" class="form-input" rows="2"></textarea>
+                  <textarea id="page-seo_description" name="seo_description" class="form-input" rows="2" oninput="runMiniSEO('page')"></textarea>
                 </div>
+                <div id="page-seo-mini" style="font-size:0.82rem; background:white; border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.75rem;"></div>
               </div>
 
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
@@ -1916,7 +2111,7 @@ foreach ($packages as $pkg) {
                       <td><code>/page/<?php echo htmlspecialchars($p['slug']); ?></code></td>
                       <td style="display:flex; gap:0.5rem;">
                         <button class="btn btn-primary btn-sm" onclick="editPage(<?php echo htmlspecialchars(json_encode($p)); ?>)">Edit</button>
-                        <form method="POST" action="/admin" onsubmit="return confirm('Delete this static page?')">
+                        <form method="POST" action="/admin" onsubmit="return confirmAdminDelete(this, 'this static page')">
                           <input type="hidden" name="page_id" value="<?php echo $p['id']; ?>">
                           <button type="submit" name="delete_page" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger);">Delete</button>
                         </form>
@@ -1980,7 +2175,7 @@ foreach ($packages as $pkg) {
                         <button type="submit" name="approve_review" class="btn btn-primary btn-sm" style="background-color:var(--color-success);">Approve Review</button>
                       </form>
                     <?php endif; ?>
-                    <form method="POST" action="/admin" onsubmit="return confirm('Delete this review?')">
+                    <form method="POST" action="/admin" onsubmit="return confirmAdminDelete(this, 'this review')">
                       <input type="hidden" name="rev_pkg_id" value="<?php echo $rev['pkg_id']; ?>">
                       <input type="hidden" name="rev_idx" value="<?php echo $rev['rev_idx']; ?>">
                       <button type="submit" name="delete_review" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger);">Delete</button>
@@ -2045,7 +2240,7 @@ foreach ($packages as $pkg) {
                     <code style="display:block; font-size:0.75rem; word-break:break-all; margin-bottom:0.75rem; background:#fff; padding:4px; border:1px solid var(--border-color); border-radius:2px;"><?php echo htmlspecialchars($filepath); ?></code>
                     <div style="display:flex; justify-content:space-between; gap:0.5rem;">
                       <button type="button" class="btn btn-outline btn-sm" style="flex-grow:1; padding:0.4rem 0.5rem; font-size:0.72rem; font-weight:700;" onclick="copyToClipboard('<?php echo htmlspecialchars($filepath); ?>')">Copy Link</button>
-                      <form method="POST" action="/admin" onsubmit="return confirm('Delete file permanently?')" style="margin:0;">
+                      <form method="POST" action="/admin" onsubmit="return confirmAdminDelete(this, 'this media file')" style="margin:0;">
                         <input type="hidden" name="media_path" value="<?php echo $filepath; ?>">
                         <button type="submit" name="delete_media_file" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger); padding:0.4rem 0.5rem; font-size:0.72rem;">Delete</button>
                       </form>
@@ -2083,6 +2278,77 @@ foreach ($packages as $pkg) {
                 </div>
               </div>
 
+              <div class="form-group">
+                <label for="usd_to_npr_rate">USD to NPR Auto Conversion Rate</label>
+                <input type="number" step="0.01" min="1" id="usd_to_npr_rate" name="usd_to_npr_rate" class="form-input" value="<?php echo htmlspecialchars($usd_to_npr_rate); ?>">
+              </div>
+
+              <div style="border-top:1px solid var(--border-color); padding-top:1.5rem; margin-top:0.5rem;">
+                <h4 style="font-family:var(--font-heading); color:var(--color-primary); margin-bottom:1rem; font-weight:800;">Editable Contact Us Details</h4>
+                <div class="form-group">
+                  <label for="contact_intro">Contact Page Intro</label>
+                  <input type="text" id="contact_intro" name="contact_intro" class="form-input" value="<?php echo htmlspecialchars($contact_settings['intro']); ?>">
+                </div>
+                <div class="form-group">
+                  <label for="contact_address">Office Address</label>
+                  <textarea id="contact_address" name="contact_address" class="form-input" rows="4"><?php echo htmlspecialchars($contact_settings['address']); ?></textarea>
+                </div>
+                <div class="edit-fields-grid">
+                  <div class="form-group">
+                    <label for="contact_landline">Direct Landline</label>
+                    <input type="text" id="contact_landline" name="contact_landline" class="form-input" value="<?php echo htmlspecialchars($contact_settings['landline']); ?>">
+                  </div>
+                  <div class="form-group">
+                    <label for="contact_emergency">Emergency Hotline</label>
+                    <input type="text" id="contact_emergency" name="contact_emergency" class="form-input" value="<?php echo htmlspecialchars($contact_settings['emergency']); ?>">
+                  </div>
+                </div>
+                <div class="edit-fields-grid">
+                  <div class="form-group">
+                    <label for="contact_email">Direct Email</label>
+                    <input type="email" id="contact_email" name="contact_email" class="form-input" value="<?php echo htmlspecialchars($contact_settings['email']); ?>">
+                  </div>
+                  <div class="form-group">
+                    <label for="contact_map_zoom">Map Zoom</label>
+                    <input type="number" id="contact_map_zoom" name="contact_map_zoom" class="form-input" min="1" max="20" value="<?php echo htmlspecialchars($contact_settings['map_zoom']); ?>">
+                  </div>
+                </div>
+                <div class="edit-fields-grid">
+                  <div class="form-group">
+                    <label for="contact_map_lat">Map Latitude</label>
+                    <input type="text" id="contact_map_lat" name="contact_map_lat" class="form-input" value="<?php echo htmlspecialchars($contact_settings['map_lat']); ?>">
+                  </div>
+                  <div class="form-group">
+                    <label for="contact_map_lng">Map Longitude</label>
+                    <input type="text" id="contact_map_lng" name="contact_map_lng" class="form-input" value="<?php echo htmlspecialchars($contact_settings['map_lng']); ?>">
+                  </div>
+                </div>
+              </div>
+
+              <div style="border-top:1px solid var(--border-color); padding-top:1.5rem; margin-top:0.5rem;">
+                <h4 style="font-family:var(--font-heading); color:var(--color-primary); margin-bottom:1rem; font-weight:800;">Home Package Offer Defaults</h4>
+                <div class="edit-fields-grid">
+                  <div class="form-group">
+                    <label for="offer_default_badge">Default Badge Text</label>
+                    <input type="text" id="offer_default_badge" name="offer_default_badge" class="form-input" value="<?php echo htmlspecialchars($home_offer_settings['default_badge']); ?>">
+                  </div>
+                  <div class="form-group">
+                    <label for="offer_default_group_text">Default Group Offer Text</label>
+                    <input type="text" id="offer_default_group_text" name="offer_default_group_text" class="form-input" value="<?php echo htmlspecialchars($home_offer_settings['default_group_text']); ?>">
+                  </div>
+                </div>
+                <div class="edit-fields-grid">
+                  <div class="form-group">
+                    <label for="offer_default_days">Default Offer Days</label>
+                    <input type="number" id="offer_default_days" name="offer_default_days" class="form-input" min="1" value="<?php echo htmlspecialchars($home_offer_settings['default_offer_days']); ?>">
+                  </div>
+                  <div class="form-group">
+                    <label for="offer_limited_text">Limited Time Text</label>
+                    <input type="text" id="offer_limited_text" name="offer_limited_text" class="form-input" value="<?php echo htmlspecialchars($home_offer_settings['limited_text']); ?>">
+                  </div>
+                </div>
+              </div>
+
               <!-- Header & Footer Code Customizers (Req 8) -->
               <div style="border-top:1px solid var(--border-color); padding-top:1.5rem; margin-top:0.5rem;">
                 <h4 style="font-family:var(--font-heading); color:var(--color-primary); margin-bottom:1rem; font-weight:800;">Dynamic Head & Footer Code Customizer</h4>
@@ -2113,9 +2379,11 @@ foreach ($packages as $pkg) {
                 </div>
                 <div id="navigation-links-container" style="display:flex; flex-direction:column; gap:0.75rem;">
                   <?php foreach ($site_nav as $idx => $nav_item): ?>
-                    <div style="display:flex; gap:0.75rem; align-items:center;">
+                    <div class="nav-edit-row" style="display:flex; gap:0.75rem; align-items:center;">
                       <input type="text" name="nav_titles[]" class="form-input" style="flex:1;" required value="<?php echo htmlspecialchars($nav_item['title']); ?>" placeholder="Title">
                       <input type="text" name="nav_links[]" class="form-input" style="flex:1.5;" required value="<?php echo htmlspecialchars($nav_item['link']); ?>" placeholder="Link URI">
+                      <button type="button" class="btn btn-outline btn-sm" onclick="moveNavRow(this, -1)">Up</button>
+                      <button type="button" class="btn btn-outline btn-sm" onclick="moveNavRow(this, 1)">Down</button>
                       <button type="button" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger);" onclick="this.parentElement.remove()">Delete</button>
                     </div>
                   <?php endforeach; ?>
@@ -2140,7 +2408,7 @@ foreach ($packages as $pkg) {
                   <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border-color); padding:0.75rem; border-radius:var(--radius-sm); background:#f8fafc;">
                     <img src="/<?php echo htmlspecialchars($path); ?>" style="height:36px; max-width:120px; object-fit:contain;">
                     <code style="font-size:0.75rem; word-break:break-all; max-width:200px;"><?php echo htmlspecialchars($path); ?></code>
-                    <form method="POST" action="/admin" style="margin:0;">
+                    <form method="POST" action="/admin" style="margin:0;" onsubmit="return confirmAdminDelete(this, 'this footer logo')">
                       <input type="hidden" name="delete_footer_icon_idx" value="<?php echo $idx; ?>">
                       <!-- Reuses settings save trigger with delete variable index -->
                       <input type="hidden" name="company_name" value="<?php echo htmlspecialchars($site_name); ?>">
@@ -2642,15 +2910,42 @@ foreach ($packages as $pkg) {
       function addNavigationRow() {
         const container = document.getElementById('navigation-links-container');
         const div = document.createElement('div');
+        div.className = 'nav-edit-row';
         div.style.display = 'flex';
         div.style.gap = '0.75rem';
         div.style.alignItems = 'center';
         div.innerHTML = `
           <input type="text" name="nav_titles[]" class="form-input" style="flex:1;" required placeholder="Title">
           <input type="text" name="nav_links[]" class="form-input" style="flex:1.5;" required placeholder="Link URI">
+          <button type="button" class="btn btn-outline btn-sm" onclick="moveNavRow(this, -1)">Up</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="moveNavRow(this, 1)">Down</button>
           <button type="button" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger);" onclick="this.parentElement.remove()">Delete</button>
         `;
         container.appendChild(div);
+      }
+
+      function moveNavRow(button, direction) {
+        const row = button.closest('.nav-edit-row');
+        if (!row) return;
+        if (direction < 0 && row.previousElementSibling) {
+          row.parentElement.insertBefore(row, row.previousElementSibling);
+        } else if (direction > 0 && row.nextElementSibling) {
+          row.parentElement.insertBefore(row.nextElementSibling, row);
+        }
+      }
+
+      function confirmAdminDelete(form, label) {
+        const pass = window.prompt('Enter current admin password to delete ' + label + ':');
+        if (!pass) return false;
+        let field = form.querySelector('input[name="delete_confirm_password"]');
+        if (!field) {
+          field = document.createElement('input');
+          field.type = 'hidden';
+          field.name = 'delete_confirm_password';
+          form.appendChild(field);
+        }
+        field.value = pass;
+        return window.confirm('Delete ' + label + ' permanently?');
       }
 
       // Rich Text CKEditor Instances
@@ -2671,6 +2966,8 @@ foreach ($packages as $pkg) {
           editor.model.document.on('change:data', () => {
             el.value = editor.getData();
             triggerSEO();
+            if (textareaId === 'blog-content') runMiniSEO('blog');
+            if (textareaId === 'page-content') runMiniSEO('page');
           });
         }).catch(error => {
           console.error(error);
@@ -2716,10 +3013,35 @@ foreach ($packages as $pkg) {
          initRichEditor('edit-requiredPermits');
          initRichEditor('blog-content');
          initRichEditor('page-content');
+         initAdminPriceSync();
          
          // Trigger default SEO
          triggerSEO();
+         runMiniSEO('act');
+         runMiniSEO('blog');
+         runMiniSEO('page');
       });
+
+      function initAdminPriceSync() {
+        const usd = document.getElementById('edit-priceUSD');
+        const npr = document.getElementById('edit-priceNPR');
+        const rateInput = document.getElementById('usd_to_npr_rate');
+        if (!usd || !npr) return;
+        const getRate = () => {
+          const rateFromSettings = rateInput ? parseFloat(rateInput.value) : NaN;
+          const rateFromField = parseFloat(usd.dataset.rate || '');
+          return !Number.isNaN(rateFromSettings) && rateFromSettings > 0 ? rateFromSettings : (!Number.isNaN(rateFromField) && rateFromField > 0 ? rateFromField : 133);
+        };
+        const sync = () => {
+          const usdValue = parseFloat(usd.value);
+          if (!Number.isNaN(usdValue)) {
+            npr.value = Math.round(usdValue * getRate());
+          }
+        };
+        usd.addEventListener('input', sync);
+        rateInput?.addEventListener('input', sync);
+        sync();
+      }
 
       // Generating dynamic URL slugs
       function generateSlug(text) {
@@ -2951,6 +3273,87 @@ foreach ($packages as $pkg) {
          document.getElementById('itinerary-outline-paste').value = '';
       }
 
+      function parseDetailedItinerary() {
+         const textarea = document.getElementById('itinerary-detail-paste');
+         const text = textarea.value.trim();
+         if (!text) {
+             alert('Please paste full itinerary details first.');
+             return;
+         }
+
+         const rawLines = text.split(/\r?\n/);
+         const blocks = [];
+         let current = [];
+         rawLines.forEach(line => {
+             const trimmed = line.trim();
+             const startsNewDay = /^Day\s*\d+/i.test(trimmed) && current.length > 0;
+             if (!trimmed) {
+                 if (current.length) {
+                     blocks.push(current);
+                     current = [];
+                 }
+             } else if (startsNewDay) {
+                 blocks.push(current);
+                 current = [trimmed];
+             } else {
+                 current.push(trimmed);
+             }
+         });
+         if (current.length) blocks.push(current);
+
+         if (!blocks.length) {
+             alert('No day blocks found. Start each block with Day 1, Day 2, etc.');
+             return;
+         }
+
+         document.getElementById('itinerary-rows-container').innerHTML = '';
+         let count = 0;
+         blocks.forEach((block, idx) => {
+             let dayNum = idx + 1;
+             let title = block[1] || block[0] || '';
+             const dayMatch = (block[0] || '').match(/^Day\s*(\d+)(?:[\s:-]+(.*))?$/i);
+             if (dayMatch) {
+                 dayNum = parseInt(dayMatch[1], 10);
+                 if (dayMatch[2]) title = dayMatch[2].trim();
+             }
+             const location = block[2] || '';
+             const accomm = block[3] || 'Teahouse Lodge';
+             const meals = block[4] || 'Breakfast, Lunch, Dinner';
+             const desc = block.slice(5).join('\n') || block.slice(2).join('\n');
+             addItineraryDayRow(dayNum, title, desc, accomm, meals, location);
+             count++;
+         });
+
+         textarea.value = '';
+         alert('Parsed and filled ' + count + ' detailed itinerary day rows.');
+      }
+
+      function parseBulkFaqs() {
+         const textarea = document.getElementById('faq-bulk-paste');
+         const text = textarea.value.trim();
+         if (!text) {
+             alert('Please paste FAQ question and answer lines first.');
+             return;
+         }
+         const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+         if (lines.length < 2) {
+             alert('Please paste at least one question line and one answer line.');
+             return;
+         }
+
+         document.getElementById('faq-rows-container').innerHTML = '';
+         let count = 0;
+         for (let i = 0; i < lines.length; i += 2) {
+             const question = lines[i] || '';
+             const answer = lines[i + 1] || '';
+             if (!question) continue;
+             addFaqRow(question, answer);
+             count++;
+         }
+         textarea.value = '';
+         alert('Parsed and filled ' + count + ' FAQ rows.');
+      }
+
       // Copy media path to clipboard
       function copyToClipboard(text) {
           navigator.clipboard.writeText(text).then(() => {
@@ -2978,6 +3381,10 @@ foreach ($packages as $pkg) {
          document.getElementById('edit-priceUSD').value = pkg.priceUSD;
          document.getElementById('edit-priceNPR').value = pkg.priceNPR;
          document.getElementById('edit-priceNote').value = pkg.priceNote || 'Estimated starting price per person';
+         document.getElementById('edit-offer_badge').value = pkg.offer_badge || '';
+         document.getElementById('edit-offer_old_price_usd').value = pkg.offer_old_price_usd || 0;
+         document.getElementById('edit-offer_end_date').value = pkg.offer_end_date || '';
+         document.getElementById('edit-group_offer_text').value = pkg.group_offer_text || '';
          document.getElementById('edit-difficulty').value = pkg.difficulty;
          document.getElementById('edit-maxAltitude').value = pkg.maxAltitude;
          document.getElementById('edit-bestSeason').value = pkg.bestSeason;
@@ -3074,6 +3481,10 @@ foreach ($packages as $pkg) {
          document.getElementById('edit-duration').value = '10';
          document.getElementById('edit-priceUSD').value = '950';
          document.getElementById('edit-priceNPR').value = '126350';
+         document.getElementById('edit-offer_badge').value = '<?php echo htmlspecialchars($home_offer_settings['default_badge'], ENT_QUOTES); ?>';
+         document.getElementById('edit-offer_old_price_usd').value = '0';
+         document.getElementById('edit-offer_end_date').value = '';
+         document.getElementById('edit-group_offer_text').value = '<?php echo htmlspecialchars($home_offer_settings['default_group_text'], ENT_QUOTES); ?>';
          document.getElementById('edit-maxAltitude').value = '';
          document.getElementById('edit-bestSeason').value = '';
          document.getElementById('edit-groupSize').value = '';
@@ -3114,6 +3525,10 @@ foreach ($packages as $pkg) {
          document.getElementById('act-category').value = act.category;
          document.getElementById('act-description').value = act.description || '';
          document.getElementById('act-existing-route-map').value = act.route_map || '';
+         document.getElementById('act-seo_title').value = act.seo_title || '';
+         document.getElementById('act-seo_keywords').value = act.seo_keywords || '';
+         document.getElementById('act-seo_description').value = act.seo_description || '';
+         runMiniSEO('act');
       }
 
       function resetActivityForm() {
@@ -3123,6 +3538,10 @@ foreach ($packages as $pkg) {
          document.getElementById('act-category').value = 'trekking';
          document.getElementById('act-description').value = '';
          document.getElementById('act-existing-route-map').value = '';
+         document.getElementById('act-seo_title').value = '';
+         document.getElementById('act-seo_keywords').value = '';
+         document.getElementById('act-seo_description').value = '';
+         runMiniSEO('act');
       }
 
       // Populate blog forms
@@ -3145,6 +3564,7 @@ foreach ($packages as $pkg) {
          document.getElementById('blog-seo_description').value = b.seo_description || '';
          
          if (richEditors['blog-content']) richEditors['blog-content'].setData(b.content || '');
+         runMiniSEO('blog');
       }
 
       function resetBlogForm() {
@@ -3158,6 +3578,7 @@ foreach ($packages as $pkg) {
          document.getElementById('blog-seo_keywords').value = '';
          document.getElementById('blog-seo_description').value = '';
          if (richEditors['blog-content']) richEditors['blog-content'].setData('');
+         runMiniSEO('blog');
       }
 
       // Populate static page forms
@@ -3171,10 +3592,13 @@ foreach ($packages as $pkg) {
          document.getElementById('page-title').value = p.title;
          document.getElementById('page-slug').value = p.slug;
          document.getElementById('page-existing-route-map').value = p.route_map || '';
+         document.getElementById('page-existing-document-file').value = p.document_file || '';
          document.getElementById('page-seo_title').value = p.seo_title || '';
+         document.getElementById('page-seo_keywords').value = p.seo_keywords || '';
          document.getElementById('page-seo_description').value = p.seo_description || '';
          
          if (richEditors['page-content']) richEditors['page-content'].setData(p.content || '');
+         runMiniSEO('page');
       }
 
       function resetPageForm() {
@@ -3182,9 +3606,102 @@ foreach ($packages as $pkg) {
          document.getElementById('page-title').value = '';
          document.getElementById('page-slug').value = '';
          document.getElementById('page-existing-route-map').value = '';
+         document.getElementById('page-existing-document-file').value = '';
          document.getElementById('page-seo_title').value = '';
+         document.getElementById('page-seo_keywords').value = '';
          document.getElementById('page-seo_description').value = '';
          if (richEditors['page-content']) richEditors['page-content'].setData('');
+         runMiniSEO('page');
+      }
+
+      function runMiniSEO(type) {
+        const config = {
+          act: {
+            title: 'act-seo_title',
+            keyword: 'act-seo_keywords',
+            desc: 'act-seo_description',
+            slug: 'act-slug',
+            body: 'act-description',
+            out: 'act-seo-mini'
+          },
+          blog: {
+            title: 'blog-seo_title',
+            keyword: 'blog-seo_keywords',
+            desc: 'blog-seo_description',
+            slug: 'blog-slug',
+            body: 'blog-content',
+            editor: 'blog-content',
+            out: 'blog-seo-mini'
+          },
+          page: {
+            title: 'page-seo_title',
+            keyword: 'page-seo_keywords',
+            desc: 'page-seo_description',
+            slug: 'page-slug',
+            body: 'page-content',
+            editor: 'page-content',
+            out: 'page-seo-mini'
+          }
+        }[type];
+        if (!config) return;
+        const out = document.getElementById(config.out);
+        if (!out) return;
+        const title = (document.getElementById(config.title)?.value || '').trim();
+        const keyword = (document.getElementById(config.keyword)?.value || '').trim().toLowerCase();
+        const desc = (document.getElementById(config.desc)?.value || '').trim();
+        const slug = (document.getElementById(config.slug)?.value || '').trim().toLowerCase();
+        const bodyHtml = config.editor && richEditors[config.editor]
+          ? richEditors[config.editor].getData()
+          : (document.getElementById(config.body)?.value || '');
+        const bodyText = bodyHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        const bodyLower = bodyText.toLowerCase();
+        const words = bodyText ? bodyText.split(/\s+/).length : 0;
+        const checks = [];
+        let passed = 0;
+        if (!keyword) {
+          out.innerHTML = '<strong style="color:#6b7280;">SEO:</strong> Add a focus keyphrase to start live checks.';
+          return;
+        }
+        if (title.toLowerCase().includes(keyword)) {
+          checks.push('<span style="color:#15803d;">Title has keyphrase</span>');
+          passed++;
+        } else {
+          checks.push('<span style="color:#b91c1c;">Add keyphrase to SEO title</span>');
+        }
+        if (desc.toLowerCase().includes(keyword)) {
+          checks.push('<span style="color:#15803d;">Description has keyphrase</span>');
+          passed++;
+        } else {
+          checks.push('<span style="color:#b91c1c;">Add keyphrase to meta description</span>');
+        }
+        const keywordSlug = keyword.replace(/\s+/g, '-');
+        if (slug.includes(keywordSlug) || slug.includes(keyword)) {
+          checks.push('<span style="color:#15803d;">Slug matches keyphrase</span>');
+          passed++;
+        } else {
+          checks.push('<span style="color:#b45309;">Use keyphrase in slug</span>');
+        }
+        if (bodyLower.includes(keyword)) {
+          checks.push('<span style="color:#15803d;">Content uses keyphrase</span>');
+          passed++;
+        } else {
+          checks.push('<span style="color:#b91c1c;">Use keyphrase in content</span>');
+        }
+        if (words >= 300) {
+          checks.push('<span style="color:#15803d;">Content length ' + words + ' words</span>');
+          passed++;
+        } else {
+          checks.push('<span style="color:#b45309;">Content is short: ' + words + ' words</span>');
+        }
+        if (desc.length >= 120 && desc.length <= 160) {
+          checks.push('<span style="color:#15803d;">Meta length is good</span>');
+          passed++;
+        } else {
+          checks.push('<span style="color:#b45309;">Meta length should be 120-160 chars</span>');
+        }
+        const score = Math.round((passed / 6) * 100);
+        const color = score >= 80 ? '#15803d' : (score >= 50 ? '#b45309' : '#b91c1c');
+        out.innerHTML = '<strong style="color:' + color + ';">SEO Score ' + score + '%</strong><div style="display:grid; gap:0.25rem; margin-top:0.45rem;">' + checks.map(c => '<div>' + c + '</div>').join('') + '</div>';
       }
 
       // Live Yoast SEO script (copied in full from lines 1500-1637)

@@ -3,6 +3,23 @@ $page_title = "Contact Us | Top Mountain Treks Pvt. Ltd.";
 $page_desc = "Get in touch with Top Mountain Treks Pvt. Ltd. Office location, hotline number, and dynamic inquiry booking form to personalize your Nepal adventure.";
 include 'includes/header.php';
 
+$contact_defaults = [
+    'address' => "Top Mountain Treks Pvt. Ltd.\nSatghumti Marg, Thamel-26\nKathmandu, Nepal (Post Box: 44600)",
+    'landline' => '+977 1-4700720',
+    'emergency' => '+977 98511-23456',
+    'email' => 'info@topmountaintreks.com',
+    'map_lat' => '27.7150',
+    'map_lng' => '85.3120',
+    'map_zoom' => '16',
+    'intro' => 'Plan your custom Himalayan trail itinerary with our expert Nepalese guides.'
+];
+$settings_data = [];
+if (file_exists('data/settings.json')) {
+    $settings_data = json_decode(file_get_contents('data/settings.json'), true);
+}
+if (!is_array($settings_data)) $settings_data = [];
+$contact_settings = array_merge($contact_defaults, isset($settings_data['contact']) && is_array($settings_data['contact']) ? $settings_data['contact'] : []);
+
 // Handle booking submission
 $inquiry_status = "";
 $inquiry_msg = "";
@@ -11,7 +28,8 @@ $inquiries_path = 'data/inquiries.json';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_inquiry'])) {
     $name = isset($_POST['name']) ? trim($_POST['name']) : '';
     $email = isset($_POST['email']) ? trim($_POST['email']) : '';
-    $phone = isset($_POST['phone']) ? trim($_POST['phone']) : '';
+    $country_code = isset($_POST['country_code']) ? trim($_POST['country_code']) : '';
+    $phone = isset($_POST['phone']) ? trim($country_code . ' ' . $_POST['phone']) : '';
     $package = isset($_POST['package']) ? trim($_POST['package']) : '';
     $travel_date = isset($_POST['travel_date']) ? trim($_POST['travel_date']) : '';
     $travelers = isset($_POST['travelers']) ? (int)$_POST['travelers'] : 1;
@@ -58,7 +76,7 @@ $preselected_travelers = isset($_GET['travelers']) ? (int)$_GET['travelers'] : 1
     <div class="container">
       <span class="card-badge" style="position:static; display:inline-block; margin-bottom:0.75rem;">Get In Touch</span>
       <h1 style="font-family:var(--font-heading); font-size:2.8rem; font-weight:800; color:var(--color-primary); margin-bottom:0.5rem;">Contact Top Mountain Treks</h1>
-      <p style="color:var(--text-medium); font-size:1.1rem; max-width:800px;">Plan your custom Himalayan trail itinerary with our expert Nepalese guides.</p>
+      <p style="color:var(--text-medium); font-size:1.1rem; max-width:800px;"><?php echo htmlspecialchars($contact_settings['intro']); ?></p>
     </div>
   </section>
 
@@ -82,9 +100,7 @@ $preselected_travelers = isset($_GET['travelers']) ? (int)$_GET['travelers'] : 1
             <div>
               <span style="font-weight:800; text-transform:uppercase; font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.25rem;">Headquarters Address</span>
               <p style="font-size:0.95rem; color:var(--text-dark); font-weight:600; line-height:1.5;">
-                Top Mountain Treks Pvt. Ltd.<br>
-                Satghumti Marg, Thamel-26<br>
-                Kathmandu, Nepal (Post Box: 44600)
+                <?php echo nl2br(htmlspecialchars($contact_settings['address'])); ?>
               </p>
             </div>
 
@@ -97,8 +113,8 @@ $preselected_travelers = isset($_GET['travelers']) ? (int)$_GET['travelers'] : 1
               </div>
               <div>
                 <span style="font-weight:800; text-transform:uppercase; font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.25rem;">Direct Landline</span>
-                <a href="tel:+97714700720" style="font-size:1.05rem; color:var(--color-primary); font-weight:800; text-decoration:none;">
-                  📞 +977 1-4700720
+                <a href="tel:<?php echo preg_replace('/[^0-9+]/', '', $contact_settings['landline']); ?>" style="font-size:1.05rem; color:var(--color-primary); font-weight:800; text-decoration:none;">
+                  <?php echo htmlspecialchars($contact_settings['landline']); ?>
                 </a>
               </div>
             </div>
@@ -106,14 +122,14 @@ $preselected_travelers = isset($_GET['travelers']) ? (int)$_GET['travelers'] : 1
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
               <div>
                 <span style="font-weight:800; text-transform:uppercase; font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.25rem;">Emergency 24/7 Hotline</span>
-                <a href="tel:+9779851123456" style="font-size:1.05rem; color:#dc2626; font-weight:800; text-decoration:none;">
-                  🚨 +977 98511-23456
+                <a href="tel:<?php echo preg_replace('/[^0-9+]/', '', $contact_settings['emergency']); ?>" style="font-size:1.05rem; color:#dc2626; font-weight:800; text-decoration:none;">
+                  <?php echo htmlspecialchars($contact_settings['emergency']); ?>
                 </a>
               </div>
               <div>
                 <span style="font-weight:800; text-transform:uppercase; font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.25rem;">Direct Emails</span>
-                <a href="mailto:info@topmountaintreks.com" style="font-size:0.95rem; color:var(--color-primary); font-weight:700; text-decoration:none;">
-                  info@topmountaintreks.com
+                <a href="mailto:<?php echo htmlspecialchars($contact_settings['email']); ?>" style="font-size:0.95rem; color:var(--color-primary); font-weight:700; text-decoration:none;">
+                  <?php echo htmlspecialchars($contact_settings['email']); ?>
                 </a>
               </div>
             </div>
@@ -126,16 +142,15 @@ $preselected_travelers = isset($_GET['travelers']) ? (int)$_GET['travelers'] : 1
             
             <script>
               document.addEventListener('DOMContentLoaded', function() {
-                // Thamel Thamel center coordinates: [27.7150, 85.3120]
-                var map = L.map('office-map').setView([27.7150, 85.3120], 16);
+                var map = L.map('office-map').setView([<?php echo (float)$contact_settings['map_lat']; ?>, <?php echo (float)$contact_settings['map_lng']; ?>], <?php echo (int)$contact_settings['map_zoom']; ?>);
                 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                   maxZoom: 19,
                   attribution: '&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors'
                 }).addTo(map);
                 
-                var marker = L.marker([27.7150, 85.3120]).addTo(map);
-                marker.bindPopup("<b>Top Mountain Treks Pvt. Ltd.</b><br>Satghumti Marg, Thamel, Kathmandu.").openPopup();
+                var marker = L.marker([<?php echo (float)$contact_settings['map_lat']; ?>, <?php echo (float)$contact_settings['map_lng']; ?>]).addTo(map);
+                marker.bindPopup(<?php echo json_encode('<b>' . $site_name . '</b><br>' . nl2br(htmlspecialchars($contact_settings['address']))); ?>).openPopup();
               });
             </script>
           </div>
@@ -158,7 +173,14 @@ $preselected_travelers = isset($_GET['travelers']) ? (int)$_GET['travelers'] : 1
               </div>
               <div class="form-group" style="margin-bottom:0;">
                 <label for="phone">Phone / WhatsApp</label>
-                <input type="text" id="phone" name="phone" class="form-input" placeholder="e.g. +1 (555) 123-456">
+                <div class="country-code-picker">
+                  <input type="search" class="form-input country-code-search" placeholder="Search country code">
+                  <div class="country-code-row">
+                    <select class="form-input country-code-select" aria-label="Country phone code"></select>
+                    <input type="text" id="phone" name="phone" class="form-input" placeholder="Phone number">
+                  </div>
+                  <input type="hidden" name="country_code" class="country-code-value" value="+977">
+                </div>
               </div>
             </div>
 

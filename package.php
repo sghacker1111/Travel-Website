@@ -86,10 +86,25 @@ include 'includes/header.php';
 $prefix = 'trek';
 if ($current_pkg['category'] === 'tour') $prefix = 'tour';
 elseif ($current_pkg['category'] === 'climbing') $prefix = 'climb';
+
+$gallery_images = isset($current_pkg['gallery']) && is_array($current_pkg['gallery']) ? $current_pkg['gallery'] : [];
+$hero_images = array_values(array_unique(array_filter(array_merge([$current_pkg['image']], $gallery_images))));
+$offer_badge = trim($current_pkg['offer_badge'] ?? '');
+$group_offer_text = trim($current_pkg['group_offer_text'] ?? 'We offer group price');
+$offer_end_date = trim($current_pkg['offer_end_date'] ?? '');
+$old_price_usd = isset($current_pkg['offer_old_price_usd']) ? (int)$current_pkg['offer_old_price_usd'] : 0;
+$review_count = 0;
+if (isset($current_pkg['reviews']) && is_array($current_pkg['reviews'])) {
+    foreach ($current_pkg['reviews'] as $rev) {
+        if (!empty($rev['approved'])) {
+            $review_count++;
+        }
+    }
+}
 ?>
 
   <!-- Header Hero Banner -->
-  <section class="hero" style="background-image: url('/<?php echo htmlspecialchars($current_pkg['image']); ?>'); padding: 6rem 0 4rem; min-height: 50vh; background-size:cover; background-position:center; position:relative; display:flex; align-items:center; background-attachment: fixed;">
+  <section id="package-hero" class="hero" data-images='<?php echo htmlspecialchars(json_encode($hero_images), ENT_QUOTES); ?>' style="background-image: url('/<?php echo htmlspecialchars($current_pkg['image']); ?>'); padding: 6rem 0 4rem; min-height: 50vh; background-size:cover; background-position:center; position:relative; display:flex; align-items:center; background-attachment: fixed; transition: background-image 0.6s ease;">
     <div style="position:absolute; inset:0; background:rgba(15,23,42,0.5);"></div>
     <div class="container" style="position:relative; z-index:10; text-align: var(--<?php echo $prefix; ?>-align, left); max-width: 900px; <?php if (($theme_settings[$prefix . '_align'] ?? 'left') === 'left') { echo 'margin: 0; padding-left: 2rem;'; } else { echo 'margin: 0 auto;'; } ?>">
       <span class="card-badge" style="position:static; display:inline-block; margin-bottom:1rem; background: rgba(255, 122, 0, 0.25); border-color: rgba(255, 122, 0, 0.4); color: white;"><?php echo htmlspecialchars($current_pkg['difficulty']); ?> Category</span>
@@ -138,6 +153,16 @@ elseif ($current_pkg['category'] === 'climbing') $prefix = 'climb';
             <span class="tab" data-tab="detail-reviews" style="cursor:pointer; padding:0.75rem 1.25rem; font-family:var(--font-heading); font-weight:800; font-size:0.92rem; border-radius:var(--radius-sm); transition:all 0.2s;">Reviews</span>
           </div>
 
+          <div class="package-sticky-shortcuts" id="package-sticky-shortcuts" aria-label="Package section shortcuts">
+            <button type="button" class="package-shortcut-button active" data-tab="detail-overview">Overview</button>
+            <button type="button" class="package-shortcut-button" data-tab="detail-itinerary">Itinerary</button>
+            <button type="button" class="package-shortcut-button" data-tab="detail-route">Route Map</button>
+            <button type="button" class="package-shortcut-button" data-tab="detail-inclusions">Inclusions</button>
+            <button type="button" class="package-shortcut-button" data-tab="detail-faqs">FAQs</button>
+            <button type="button" class="package-shortcut-button" data-tab="detail-gallery">Photo Gallery</button>
+            <button type="button" class="package-shortcut-button" data-tab="detail-reviews">Reviews</button>
+          </div>
+
           <!-- Tab Pane: Overview -->
           <div class="tab-pane active" id="detail-overview">
             <h2 style="font-family: var(--font-heading); font-size:1.75rem; color:var(--color-primary); margin-bottom:1rem; font-weight:800;">Trip Overview</h2>
@@ -182,7 +207,16 @@ elseif ($current_pkg['category'] === 'climbing') $prefix = 'climb';
               <?php endforeach; ?>
             </ul>
 
-            <h2 style="font-family: var(--font-heading); font-size:1.75rem; color:var(--color-primary); margin-bottom:1.5rem; font-weight:800;">Day-by-Day Detailed Itinerary</h2>
+            <div class="itinerary-toolbar">
+              <h2 style="font-family: var(--font-heading); font-size:1.75rem; color:var(--color-primary); margin:0; font-weight:800;">Day-by-Day Detailed Itinerary</h2>
+              <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                <label style="display:flex; align-items:center; gap:0.45rem; font-size:0.88rem; font-weight:700; color:var(--text-medium);">
+                  <input type="checkbox" id="itinerary-expand-mode" checked>
+                  Allow multiple open
+                </label>
+                <button type="button" class="btn btn-outline btn-sm" id="expand-all-itinerary">Expand All</button>
+              </div>
+            </div>
             
             <div class="accordion-wrapper">
               <?php foreach ($current_pkg['itinerary'] as $idx => $item): ?>
@@ -567,71 +601,85 @@ elseif ($current_pkg['category'] === 'climbing') $prefix = 'climb';
 
         </div>
 
-        <!-- Right Side: Booking Side Calculator Card -->
-        <div>
-          <div class="form-card" style="padding: 2rem; position: sticky; top: 100px; background: white; border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" id="price-calculator-card">
-            <h3 style="font-family: var(--font-heading); font-size:1.35rem; color:var(--color-primary); margin-bottom:1.25rem; font-weight:800;">Trip Calculator</h3>
-            
-            <div style="display:flex; flex-direction:column; gap:1.25rem; font-size:0.9rem;">
-              <div>
-                <label style="font-weight:700; display:block; margin-bottom:0.25rem;" for="calc-travelers">Group Size (People)</label>
-                <input type="number" id="calc-travelers" min="1" max="30" value="1" class="form-input" oninput="calculateTripTotal()">
+        <!-- Right Side: Booking and Help Stack -->
+        <aside class="booking-sidebar-stack">
+          <div class="booking-widget" id="price-calculator-card">
+            <?php if (!empty($offer_badge)): ?>
+              <div class="offer-pulse-badge" style="display:inline-flex; align-items:center; margin-bottom:0.75rem; background:#dc2626; color:white; border-radius:999px; padding:0.3rem 0.65rem; font-size:0.75rem; font-weight:900; letter-spacing:0.02em;">
+                <?php echo htmlspecialchars($offer_badge); ?>
               </div>
-              
-              <div>
-                <label style="font-weight:700; display:block; margin-bottom:0.25rem;" for="calc-guide">Guide Assistance Level</label>
-                <select id="calc-guide" class="form-input" onchange="calculateTripTotal()">
-                  <option value="standard">Standard Local Guide (Included)</option>
-                  <option value="expert">Senior Climber Guide (+$35/day)</option>
-                  <option value="porter">Guide + Porter Team (+$25/day)</option>
-                </select>
-              </div>
+            <?php endif; ?>
+            <button type="button" aria-label="Save trip" style="float:right; border:0; background:transparent; color:#1684d8; font-size:1.75rem; line-height:1; cursor:pointer;">♡</button>
+            <div style="font-size:0.9rem; color:#444; margin-bottom:0.15rem;">Price from:</div>
+            <div class="price-line">
+              <span class="current-price">US$<?php echo number_format($current_pkg['priceUSD']); ?></span>
+              <?php if ($old_price_usd > $current_pkg['priceUSD']): ?>
+                <span class="old-price">US$<?php echo number_format($old_price_usd); ?></span>
+              <?php endif; ?>
+              <span style="font-size:0.82rem; color:#444; font-weight:700;">P/P</span>
+            </div>
+            <?php if (!empty($offer_end_date)): ?>
+              <div class="package-countdown limited-time-text" data-offer-end="<?php echo htmlspecialchars($offer_end_date); ?>" style="margin-top:0.75rem;">Limited time offer</div>
+            <?php endif; ?>
 
-              <div>
-                <label style="font-weight:700; display:block; margin-bottom:0.5rem;">Add-On Services</label>
-                <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                  <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
-                    <input type="checkbox" id="add-insurance" onchange="calculateTripTotal()"> Helicopter Rescue Cover (+$150/person)
-                  </label>
-                  <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
-                    <input type="checkbox" id="add-kit" onchange="calculateTripTotal()"> Down Jacket & Gear Kit Hire (+$80/person)
-                  </label>
-                </div>
-              </div>
+            <div class="booking-offer-row">
+              <span><?php echo htmlspecialchars($group_offer_text); ?></span>
+              <span style="font-size:1.25rem; color:#16a34a;">+</span>
+            </div>
 
-              <div style="border-top:1px solid var(--border-color); padding-top:1.25rem; margin-top:0.5rem; text-align:center;">
-                <span style="font-size:0.85rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; display:block;">Estimated Total Price</span>
-                <span style="font-size:2.2rem; font-weight:800; color:var(--color-secondary); display:block; margin: 0.25rem 0;" id="calc-total-display">$0</span>
-                <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;" id="calc-per-person">($0 USD per person)</span>
+            <div class="form-group">
+              <label for="calc-travel-date">Departure Date</label>
+              <input type="date" id="calc-travel-date" class="form-input" onchange="calculateTripTotal()">
+            </div>
+
+            <div class="form-group">
+              <label for="calc-travelers">No. of Traveler</label>
+              <div class="booking-stepper">
+                <button type="button" onclick="stepTravelers(-1)" aria-label="Decrease travelers">-</button>
+                <input type="number" id="calc-travelers" min="1" max="100" value="1" oninput="calculateTripTotal()">
+                <button type="button" onclick="stepTravelers(1)" aria-label="Increase travelers">+</button>
               </div>
-              
-              <a href="/contact" class="btn btn-primary" style="text-align:center; height:44px; display:flex; align-items:center; justify-content:center; text-decoration:none; font-weight:700; margin-top:0.5rem;" id="calc-book-btn">
-                Book Expedition Now
-              </a>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin:1rem 0; font-size:1rem;">
+              <span>Total Price</span>
+              <strong id="calc-total-display" style="font-size:1.1rem;">US$<?php echo number_format($current_pkg['priceUSD']); ?></strong>
+            </div>
+            <div id="calc-per-person" style="font-size:0.75rem; color:var(--text-muted); margin-top:-0.5rem; margin-bottom:1rem;">US$<?php echo number_format($current_pkg['priceUSD']); ?> per person</div>
+
+            <div class="booking-actions">
+              <a href="/contact?package=<?php echo urlencode($current_pkg['title']); ?>" class="btn btn-primary" id="calc-book-btn">Book Now</a>
+              <button type="button" class="btn btn-primary" onclick="alert('Trip added to your planning list. You can continue with Check Availability or Send Inquiry.');">Add to Cart</button>
+            </div>
+            <div class="booking-actions-full">
+              <a href="/contact?package=<?php echo urlencode($current_pkg['title']); ?>" class="btn btn-outline" id="calc-availability-btn" style="background:#2d7dcc; color:white; border-color:#2d7dcc;">Check Availability</a>
+              <a href="#instant-help-widget" class="btn btn-outline" style="background:#2d7dcc; color:white; border-color:#2d7dcc;">Send Inquiry</a>
+            </div>
+
+            <div style="text-align:center; margin-top:1rem; color:#188038; font-weight:800;">
+              ★ 5.0 <span style="color:#555; font-weight:500;"><?php echo $review_count > 0 ? $review_count . ' reviews' : 'verified trip'; ?></span>
             </div>
           </div>
 
           <!-- Reusable Need Help WhatsApp Widget -->
-          <div class="glass-card help-whatsapp-widget" style="padding:1.75rem; background:white; border:1px solid var(--border-color); border-radius:var(--radius-lg); margin-top:2rem; box-shadow: var(--shadow-sm);">
+          <div class="glass-card help-whatsapp-widget" id="instant-help-widget" style="padding:1.25rem; background:white; border:1px solid var(--border-color); border-radius:var(--radius-lg); box-shadow: var(--shadow-sm);">
             <h3 style="font-family:var(--font-heading); font-size:1.2rem; color:var(--color-primary); margin-bottom:0.75rem; font-weight:800; display:flex; align-items:center; gap:0.5rem;">
               <span>💬</span> Need Instant Help?
             </h3>
-            <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1.25rem; line-height:1.4;">Chat directly with our Sherpa travel specialist on WhatsApp. Get answers in minutes!</p>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.4;">Ask our Nepal travel specialist directly on WhatsApp.</p>
             
             <form onsubmit="sendWhatsAppMessage(event)" style="display:flex; flex-direction:column; gap:0.85rem;">
-              <div>
-                <input type="text" placeholder="Your Name" required class="form-input wa-name" style="height:36px; font-size:0.85rem; padding:0 0.75rem;">
+              <input type="text" placeholder="Your Name" required class="form-input wa-name" style="height:38px; font-size:0.85rem;">
+              <input type="email" placeholder="Your Email" required class="form-input wa-email" style="height:38px; font-size:0.85rem;">
+              <div class="country-code-picker">
+                <input type="search" class="form-input country-code-search" placeholder="Search country code">
+                <div class="country-code-row">
+                  <select class="form-input country-code-select wa-code" aria-label="Country phone code"></select>
+                  <input type="text" placeholder="Phone Number" required class="form-input wa-phone">
+                </div>
+                <input type="hidden" class="country-code-value" value="+977">
               </div>
-              <div>
-                <input type="email" placeholder="Your Email" required class="form-input wa-email" style="height:36px; font-size:0.85rem; padding:0 0.75rem;">
-              </div>
-              <div style="display:flex; gap:0.5rem;">
-                <input type="text" placeholder="+1" required class="form-input wa-code" style="width:60px; height:36px; font-size:0.85rem; padding:0 0.5rem; text-align:center;" value="+977">
-                <input type="text" placeholder="Phone Number" required class="form-input wa-phone" style="flex:1; height:36px; font-size:0.85rem; padding:0 0.75rem;">
-              </div>
-              <div>
-                <textarea placeholder="Ask a question..." required class="form-input wa-question" rows="3" style="font-size:0.85rem; padding:0.5rem 0.75rem; resize:none;"></textarea>
-              </div>
+              <textarea placeholder="Ask a question..." required class="form-input wa-question" rows="3" style="font-size:0.85rem; resize:none;"></textarea>
               <button type="submit" class="btn btn-primary" style="height:38px; font-size:0.88rem; width:100%; display:flex; align-items:center; justify-content:center; gap:0.5rem; background-color:#25d366; border-color:#25d366; color:white; font-weight:700; border-radius:var(--radius-sm);">
                 Send WhatsApp Inquiry
               </button>
@@ -644,7 +692,7 @@ elseif ($current_pkg['category'] === 'climbing') $prefix = 'climb';
             var form = event.target;
             var name = form.querySelector('.wa-name').value.trim();
             var email = form.querySelector('.wa-email').value.trim();
-            var code = form.querySelector('.wa-code').value.trim();
+            var code = form.querySelector('.country-code-value') ? form.querySelector('.country-code-value').value.trim() : form.querySelector('.wa-code').value.trim();
             var phone = form.querySelector('.wa-phone').value.trim();
             var question = form.querySelector('.wa-question').value.trim();
             
@@ -660,7 +708,7 @@ elseif ($current_pkg['category'] === 'climbing') $prefix = 'climb';
             window.open(url, '_blank');
           }
           </script>
-        </div>
+        </aside>
 
       </div>
 
@@ -731,42 +779,38 @@ elseif ($current_pkg['category'] === 'climbing') $prefix = 'climb';
     const durationDays = <?php echo (int)$current_pkg['duration']; ?>;
     
     function calculateTripTotal() {
-        const travelers = parseInt(document.getElementById('calc-travelers').value) || 1;
-        const guide = document.getElementById('calc-guide').value;
-        const insurance = document.getElementById('add-insurance').checked;
-        const kit = document.getElementById('add-kit').checked;
+        const travelersInput = document.getElementById('calc-travelers');
+        const travelers = Math.max(1, parseInt(travelersInput.value, 10) || 1);
+        travelersInput.value = travelers;
         
-        // Calculate base price with group discounts
         let perPersonBase = basePriceUSD;
         if (travelers >= 10) {
-            perPersonBase *= 0.85; // 15% discount
+            perPersonBase *= 0.85;
         } else if (travelers >= 5) {
-            perPersonBase *= 0.90; // 10% discount
+            perPersonBase *= 0.90;
         } else if (travelers >= 3) {
-            perPersonBase *= 0.95; // 5% discount
+            perPersonBase *= 0.95;
         }
         
-        // Guide surcharges
-        let guideDayFee = 0;
-        if (guide === 'expert') guideDayFee = 35;
-        if (guide === 'porter') guideDayFee = 25;
-        
-        let perPersonSurcharges = guideDayFee * durationDays;
-        
-        // Addons
-        if (insurance) perPersonSurcharges += 150;
-        if (kit) perPersonSurcharges += 80;
-        
-        const totalPerPerson = perPersonBase + perPersonSurcharges;
+        const totalPerPerson = Math.round(perPersonBase);
         const grandTotal = totalPerPerson * travelers;
+        const dateValue = document.getElementById('calc-travel-date') ? document.getElementById('calc-travel-date').value : '';
         
-        // Display values
-        document.getElementById('calc-total-display').textContent = '$' + Math.round(grandTotal).toLocaleString();
-        document.getElementById('calc-per-person').textContent = '($' + Math.round(totalPerPerson).toLocaleString() + ' USD per person)';
+        document.getElementById('calc-total-display').textContent = 'US$' + Math.round(grandTotal).toLocaleString();
+        document.getElementById('calc-per-person').textContent = 'US$' + totalPerPerson.toLocaleString() + ' per person';
         
-        // Pre-fill links to contact form booking
+        const query = '&travelers=' + travelers + (dateValue ? '&travel_date=' + encodeURIComponent(dateValue) : '');
         const bookBtn = document.getElementById('calc-book-btn');
-        bookBtn.href = '/contact?package=<?php echo urlencode($current_pkg['title']); ?>&travelers=' + travelers;
+        const availabilityBtn = document.getElementById('calc-availability-btn');
+        if (bookBtn) bookBtn.href = '/contact?package=<?php echo urlencode($current_pkg['title']); ?>' + query;
+        if (availabilityBtn) availabilityBtn.href = '/contact?package=<?php echo urlencode($current_pkg['title']); ?>' + query;
+    }
+
+    function stepTravelers(delta) {
+        const input = document.getElementById('calc-travelers');
+        const current = parseInt(input.value, 10) || 1;
+        input.value = Math.min(100, Math.max(1, current + delta));
+        calculateTripTotal();
     }
     
     // Run calculator on initial load

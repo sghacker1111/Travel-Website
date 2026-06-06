@@ -56,8 +56,8 @@ if (in_array($type, ['trekking', 'tour', 'climbing', 'peak-climbing'])) {
             }
         }
 
-        $page_title = $current_act['name'] . " | Top Mountain Treks";
-        $page_desc = $current_act['description'];
+        $page_title = !empty($current_act['seo_title']) ? $current_act['seo_title'] : $current_act['name'] . " | Top Mountain Treks";
+        $page_desc = !empty($current_act['seo_description']) ? $current_act['seo_description'] : $current_act['description'];
         include 'includes/header.php';
         ?>
         <?php
@@ -143,6 +143,12 @@ if (in_array($type, ['trekking', 'tour', 'climbing', 'peak-climbing'])) {
     <section>
         <div class="container" style="max-width: 800px; line-height: 1.8; color: var(--text-medium); padding: 3rem 0;">
             <?php echo $current_page['content']; ?>
+            <?php if (!empty($current_page['document_file'])): ?>
+                <div style="margin-top:2rem; padding:1rem; border:1px solid var(--border-color); border-radius:var(--radius-md); background:var(--bg-light);">
+                    <strong style="display:block; margin-bottom:0.5rem; color:var(--color-primary);">Attached Document</strong>
+                    <a href="/<?php echo htmlspecialchars($current_page['document_file']); ?>" target="_blank" class="btn btn-primary btn-sm">View / Download Document</a>
+                </div>
+            <?php endif; ?>
         </div>
     </section>
     <?php

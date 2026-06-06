@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initAccordionSystem();
   initPriceCalculator();
   initAltitudeSimulator();
+  initCountryCodePickers();
+  initOfferCountdowns();
+  initPackageHeroRotation();
 });
 
 /* 1. Sticky Header Shadow on Scroll */
@@ -37,6 +40,8 @@ function initMobileMenu() {
   menuBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     nav.classList.toggle('open');
+    menuBtn.classList.toggle('active', nav.classList.contains('open'));
+    menuBtn.setAttribute('aria-expanded', nav.classList.contains('open') ? 'true' : 'false');
   });
 
   // Toggle dropdown items on click for mobile devices
@@ -47,6 +52,9 @@ function initMobileMenu() {
     link.addEventListener('click', (e) => {
       if (window.innerWidth <= 992 && dropdown) {
         e.preventDefault();
+        navItems.forEach(other => {
+          if (other !== item) other.classList.remove('open-mobile');
+        });
         item.classList.toggle('open-mobile');
       }
     });
@@ -56,6 +64,9 @@ function initMobileMenu() {
   document.addEventListener('click', (e) => {
     if (nav.classList.contains('open') && !nav.contains(e.target) && e.target !== menuBtn) {
       nav.classList.remove('open');
+      menuBtn.classList.remove('active');
+      menuBtn.setAttribute('aria-expanded', 'false');
+      navItems.forEach(item => item.classList.remove('open-mobile'));
     }
   });
 }
@@ -142,28 +153,59 @@ function initTabsSystem() {
   const tabsContainer = document.querySelector('.tabs');
   if (!tabsContainer) return;
 
-  const tabs = tabsContainer.querySelectorAll('.tab');
+  const tabs = document.querySelectorAll('.tab, .package-shortcut-button');
+  const sticky = document.getElementById('package-sticky-shortcuts');
   
   tabs.forEach(tab => {
     tab.addEventListener('click', (e) => {
+      e.preventDefault();
       const targetId = e.currentTarget.getAttribute('data-tab');
+      const targetPane = document.getElementById(targetId);
+      if (!targetPane) return;
       
       // Deactivate all
       tabs.forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
       
       // Activate target
-      e.currentTarget.classList.add('active');
-      const targetPane = document.getElementById(targetId);
-      if (targetPane) targetPane.classList.add('active');
+      document.querySelectorAll('[data-tab="' + targetId + '"]').forEach(t => t.classList.add('active'));
+      targetPane.classList.add('active');
+
+      const headerOffset = sticky && sticky.classList.contains('visible') ? sticky.offsetHeight + 24 : 96;
+      const top = targetPane.getBoundingClientRect().top + window.scrollY - headerOffset;
+      window.scrollTo({ top, behavior: 'smooth' });
+
+      if (targetId === 'detail-route' && window.map) {
+        setTimeout(() => {
+          window.map.invalidateSize();
+          if (window.polyline) {
+            window.map.fitBounds(window.polyline.getBounds(), { padding: [50, 50] });
+          }
+        }, 160);
+      }
     });
   });
+
+  if (sticky) {
+    const showAfter = tabsContainer;
+    const toggleSticky = () => {
+      const rect = showAfter.getBoundingClientRect();
+      const detailEnd = document.querySelector('.package-details-main');
+      const endRect = detailEnd ? detailEnd.getBoundingClientRect() : { bottom: 9999 };
+      sticky.classList.toggle('visible', rect.bottom < 0 && endRect.bottom > 160);
+    };
+    window.addEventListener('scroll', toggleSticky, { passive: true });
+    toggleSticky();
+  }
 }
 
 /* 5. Collapsible Accordion on Package Itinerary */
 function initAccordionSystem() {
   const items = document.querySelectorAll('.acc-item');
   if (items.length === 0) return;
+  const expandBtn = document.getElementById('expand-all-itinerary');
+  const modeToggle = document.getElementById('itinerary-expand-mode');
+  let expandedAll = false;
 
   items.forEach(item => {
     const header = item.querySelector('.acc-header');
@@ -171,21 +213,180 @@ function initAccordionSystem() {
 
     header.addEventListener('click', () => {
       const isActive = item.classList.contains('active');
+      const allowMulti = modeToggle && modeToggle.checked;
 
       // Collapse all
-      items.forEach(i => {
-        i.classList.remove('active');
-        i.querySelector('.acc-content').style.maxHeight = '0px';
-      });
+      if (!allowMulti) {
+        items.forEach(i => {
+          i.classList.remove('active');
+          i.querySelector('.acc-content').style.maxHeight = '0px';
+        });
+      }
 
       if (!isActive) {
         item.classList.add('active');
         // Calculate content inner height
         const height = content.querySelector('.acc-content-inner').scrollHeight + 40; // padding buffer
         content.style.maxHeight = `${height}px`;
+      } else if (allowMulti) {
+        item.classList.remove('active');
+        content.style.maxHeight = '0px';
       }
     });
   });
+
+  if (expandBtn) {
+    expandBtn.addEventListener('click', () => {
+      expandedAll = !expandedAll;
+      items.forEach(item => {
+        const content = item.querySelector('.acc-content');
+        if (expandedAll) {
+          item.classList.add('active');
+          content.style.maxHeight = content.querySelector('.acc-content-inner').scrollHeight + 40 + 'px';
+        } else {
+          item.classList.remove('active');
+          content.style.maxHeight = '0px';
+        }
+      });
+      expandBtn.textContent = expandedAll ? 'Collapse All' : 'Expand All';
+    });
+  }
+}
+
+function initCountryCodePickers() {
+  const widgets = document.querySelectorAll('.country-code-picker');
+  if (!widgets.length) return;
+
+  const fallbackCountries = [
+    { name: 'Nepal', code: '+977' },
+    { name: 'India', code: '+91' },
+    { name: 'United States', code: '+1' },
+    { name: 'United Kingdom', code: '+44' },
+    { name: 'Australia', code: '+61' },
+    { name: 'Canada', code: '+1' },
+    { name: 'Germany', code: '+49' },
+    { name: 'France', code: '+33' },
+    { name: 'Spain', code: '+34' },
+    { name: 'Italy', code: '+39' },
+    { name: 'Netherlands', code: '+31' },
+    { name: 'Switzerland', code: '+41' },
+    { name: 'China', code: '+86' },
+    { name: 'Japan', code: '+81' },
+    { name: 'South Korea', code: '+82' },
+    { name: 'Singapore', code: '+65' },
+    { name: 'Thailand', code: '+66' },
+    { name: 'Malaysia', code: '+60' },
+    { name: 'United Arab Emirates', code: '+971' },
+    { name: 'Qatar', code: '+974' },
+    { name: 'Saudi Arabia', code: '+966' },
+    { name: 'Bangladesh', code: '+880' },
+    { name: 'Sri Lanka', code: '+94' },
+    { name: 'Pakistan', code: '+92' },
+    { name: 'Brazil', code: '+55' },
+    { name: 'Mexico', code: '+52' },
+    { name: 'South Africa', code: '+27' }
+  ];
+
+  function optionLabel(country) {
+    return `${country.name} (${country.code})`;
+  }
+
+  function populate(widget, countries) {
+    const search = widget.querySelector('.country-code-search');
+    const select = widget.querySelector('.country-code-select');
+    const hidden = widget.querySelector('.country-code-value');
+    if (!select) return;
+
+    const sorted = countries
+      .filter(c => c.name && c.code)
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    function render(filter = '') {
+      const needle = filter.trim().toLowerCase();
+      const currentValue = select.value || hidden?.value || '+977';
+      select.innerHTML = '';
+      sorted
+        .filter(c => !needle || c.name.toLowerCase().includes(needle) || c.code.includes(needle))
+        .forEach(country => {
+          const option = document.createElement('option');
+          option.value = country.code;
+          option.textContent = optionLabel(country);
+          if (country.code === currentValue || (country.name === 'Nepal' && currentValue === '+977')) {
+            option.selected = true;
+          }
+          select.appendChild(option);
+        });
+      if (hidden) hidden.value = select.value || '+977';
+    }
+
+    search?.addEventListener('input', () => render(search.value));
+    select.addEventListener('change', () => {
+      if (hidden) hidden.value = select.value;
+    });
+    render();
+  }
+
+  widgets.forEach(widget => populate(widget, fallbackCountries));
+
+  fetch('https://restcountries.com/v3.1/all?fields=name,idd')
+    .then(res => res.ok ? res.json() : Promise.reject(new Error('country fetch failed')))
+    .then(list => list.map(item => {
+      const root = item.idd && item.idd.root ? item.idd.root : '';
+      const suffix = item.idd && item.idd.suffixes && item.idd.suffixes.length ? item.idd.suffixes[0] : '';
+      return {
+        name: item.name && item.name.common ? item.name.common : '',
+        code: root ? root + suffix : ''
+      };
+    }))
+    .then(countries => {
+      widgets.forEach(widget => populate(widget, countries));
+    })
+    .catch(() => {});
+}
+
+function initOfferCountdowns() {
+  const timers = document.querySelectorAll('[data-offer-end]');
+  if (!timers.length) return;
+
+  function render() {
+    const now = Date.now();
+    timers.forEach(timer => {
+      const endValue = timer.getAttribute('data-offer-end');
+      const end = new Date(endValue).getTime();
+      if (!end || Number.isNaN(end)) return;
+      const diff = end - now;
+      if (diff <= 0) {
+        timer.textContent = 'Offer ended';
+        timer.classList.remove('limited-time-text');
+        return;
+      }
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      timer.textContent = days > 0 ? `${days}d ${hours}h left` : `${hours}h ${minutes}m left`;
+    });
+  }
+
+  render();
+  setInterval(render, 60000);
+}
+
+function initPackageHeroRotation() {
+  const hero = document.getElementById('package-hero');
+  if (!hero || !hero.dataset.images) return;
+  let images = [];
+  try {
+    images = JSON.parse(hero.dataset.images);
+  } catch (err) {
+    images = [];
+  }
+  if (!Array.isArray(images) || images.length < 2) return;
+
+  let index = 0;
+  setInterval(() => {
+    index = (index + 1) % images.length;
+    hero.style.backgroundImage = `url('/${images[index]}')`;
+  }, 5000);
 }
 
 /* 6. Dynamic Package Booking Sidebar Calculator */
