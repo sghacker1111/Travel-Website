@@ -54,7 +54,17 @@ function initMobileMenu() {
 
   if (!menuBtn || !nav) return;
 
+  const navLinks = nav.querySelector('.nav-links');
   const regionToggles = nav.querySelectorAll('.mobile-region-toggle');
+  const syncMobileSubmenuPanelTop = () => {
+    if (window.innerWidth > 992 || !navLinks) return;
+    const panelTop = Math.min(
+      Math.max(navLinks.getBoundingClientRect().bottom + 10, 190),
+      window.innerHeight - 190
+    );
+    nav.style.setProperty('--mobile-submenu-top', `${panelTop}px`);
+  };
+
   const resetRegionToggles = (scope = nav) => {
     scope.querySelectorAll('.mobile-menu-group.open-region').forEach(group => {
       group.classList.remove('open-region');
@@ -73,9 +83,11 @@ function initMobileMenu() {
     document.body.classList.toggle('mobile-nav-open', isOpen);
     if (isOpen) {
       nav.scrollTop = 0;
+      window.requestAnimationFrame(syncMobileSubmenuPanelTop);
     } else {
       navItems.forEach(item => item.classList.remove('open-mobile'));
       resetRegionToggles();
+      nav.style.removeProperty('--mobile-submenu-top');
     }
   });
 
@@ -92,7 +104,14 @@ function initMobileMenu() {
         });
         resetRegionToggles();
         item.classList.toggle('open-mobile');
-        nav.scrollTop = 0;
+        const isItemOpen = item.classList.contains('open-mobile');
+        window.requestAnimationFrame(() => {
+          if (isItemOpen) {
+            syncMobileSubmenuPanelTop();
+            const openPanel = item.querySelector('.dropdown-menu');
+            if (openPanel) openPanel.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        });
       }
     });
   });
@@ -123,11 +142,23 @@ function initMobileMenu() {
       toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
       if (willOpen) {
         window.requestAnimationFrame(() => {
-          group.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+          const panel = group.closest('.dropdown-menu');
+          if (panel) {
+            panel.scrollTo({
+              top: Math.max(group.offsetTop - 12, 0),
+              behavior: 'smooth'
+            });
+          }
         });
       }
     });
   });
+
+  window.addEventListener('resize', () => {
+    if (nav.classList.contains('open')) {
+      syncMobileSubmenuPanelTop();
+    }
+  }, { passive: true });
 
   // Close when clicking outside
   document.addEventListener('click', (e) => {
@@ -138,6 +169,7 @@ function initMobileMenu() {
       document.body.classList.remove('mobile-nav-open');
       navItems.forEach(item => item.classList.remove('open-mobile'));
       resetRegionToggles();
+      nav.style.removeProperty('--mobile-submenu-top');
     }
   });
 }

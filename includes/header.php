@@ -433,6 +433,9 @@ if (!function_exists('header_activity_package_match')) {
         box-shadow: var(--shadow-lg) !important;
         overflow-x: hidden !important;
         overflow-y: auto !important;
+        scroll-behavior: smooth !important;
+        overscroll-behavior: contain !important;
+        -webkit-overflow-scrolling: touch;
         visibility: hidden !important;
         pointer-events: none !important;
         transform: none !important;
@@ -454,6 +457,9 @@ if (!function_exists('header_activity_package_match')) {
         margin: 0 !important;
         padding: 0 !important;
       }
+      #site-nav .nav-item {
+        position: static !important;
+      }
       #site-nav .nav-item,
       #site-nav .nav-link {
         width: 100% !important;
@@ -466,14 +472,30 @@ if (!function_exists('header_activity_package_match')) {
         border-radius: var(--radius-sm) !important;
         background: #ffffff !important;
       }
+      #site-nav .nav-link > span:last-child,
+      #site-nav .nav-link > svg:last-child {
+        transition: transform 0.2s ease;
+      }
+      #site-nav .nav-item.open-mobile > .nav-link {
+        border-color: var(--color-secondary) !important;
+        color: var(--color-primary) !important;
+      }
+      #site-nav .nav-item.open-mobile > .nav-link > span:last-child,
+      #site-nav .nav-item.open-mobile > .nav-link > svg:last-child {
+        transform: rotate(180deg);
+      }
       #site-nav .dropdown-menu {
-        position: static !important;
-        left: auto !important;
+        position: absolute !important;
+        top: var(--mobile-submenu-top, 28rem) !important;
+        left: 1rem !important;
+        right: 1rem !important;
+        bottom: 1rem !important;
         transform: translateY(-6px) !important;
-        display: block !important;
-        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        width: auto !important;
         min-width: 0 !important;
-        max-width: 100% !important;
+        max-width: none !important;
         max-height: 0;
         overflow-x: hidden !important;
         overflow-y: hidden;
@@ -481,13 +503,17 @@ if (!function_exists('header_activity_package_match')) {
         visibility: hidden;
         padding: 0 !important;
         margin: 0 !important;
-        border: 0 !important;
-        box-shadow: none !important;
-        background: transparent !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: var(--radius-md) !important;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12) !important;
+        background: #ffffff !important;
       }
       #site-nav .nav-item.open-mobile > .dropdown-menu {
-        max-height: calc(100dvh - 190px);
+        max-height: none;
         overflow-y: auto;
+        scroll-behavior: smooth;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
         opacity: 1;
         visibility: visible;
         transform: translateY(0) !important;
@@ -496,8 +522,10 @@ if (!function_exists('header_activity_package_match')) {
       #site-nav .mega-menu-wide {
         width: 100% !important;
         min-width: 0 !important;
-        max-height: calc(100dvh - 205px) !important;
+        max-height: none !important;
         overflow-y: auto !important;
+        scroll-behavior: smooth;
+        overscroll-behavior: contain;
         padding: 0 !important;
       }
       #site-nav .mega-menu-grid {
@@ -554,6 +582,9 @@ if (!function_exists('header_activity_package_match')) {
       #site-nav .mega-menu-wide .mega-col-links {
         max-height: clamp(210px, 38dvh, 360px);
         overflow-y: auto;
+        scroll-behavior: smooth;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
         padding-top: 0.45rem;
       }
       #site-nav .mega-menu-wide .mobile-region-arrow {
@@ -571,6 +602,9 @@ if (!function_exists('header_activity_package_match')) {
       #site-nav .mobile-menu-group.open-region > .standard-package-list {
         max-height: 72vh;
         overflow-y: auto;
+        scroll-behavior: smooth;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
         padding-top: 0.45rem;
       }
       #site-nav .mega-col-link,
