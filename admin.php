@@ -12,6 +12,33 @@ function is_https_request() {
     return false;
 }
 
+function set_site_cookie($name, $value, $expires, $path = '/admin') {
+    global $secure_cookie;
+
+    if (PHP_VERSION_ID >= 70300) {
+        setcookie($name, $value, [
+            'expires' => $expires,
+            'path' => $path,
+            'domain' => '',
+            'secure' => $secure_cookie,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+    } else {
+        setcookie($name, $value, $expires, $path . '; samesite=Lax', '', $secure_cookie, true);
+    }
+
+    if ($expires > time()) {
+        $_COOKIE[$name] = $value;
+    } else {
+        unset($_COOKIE[$name]);
+    }
+}
+
+function clear_site_cookie($name, $path = '/admin') {
+    set_site_cookie($name, '', time() - 42000, $path);
+}
+
 function admin_url($query = '') {
     $query = ltrim($query, '?');
     return '/admin' . ($query !== '' ? '?' . $query : '');
@@ -26,33 +53,12 @@ if ($request_path === '/admin.php') {
 $secure_cookie = is_https_request();
 
 if (!headers_sent() && isset($_COOKIE['PHPSESSID'])) {
-    setcookie('PHPSESSID', '', time() - 42000, '/', '', $secure_cookie, true);
-    unset($_COOKIE['PHPSESSID']);
+    clear_site_cookie('PHPSESSID', '/');
+    clear_site_cookie('PHPSESSID', '/admin');
 }
-
-session_name('TMTADMINSESSID');
-$session_dir = __DIR__ . '/data/sessions';
-if (!is_dir($session_dir)) {
-    mkdir($session_dir, 0755, true);
+if (!headers_sent() && isset($_COOKIE['TMTADMINSESSID'])) {
+    clear_site_cookie('TMTADMINSESSID', '/admin');
 }
-if (is_dir($session_dir) && is_writable($session_dir)) {
-    session_save_path($session_dir);
-}
-
-if (PHP_VERSION_ID >= 70300) {
-    session_set_cookie_params([
-        'lifetime' => 0,
-        'path' => '/admin',
-        'domain' => '',
-        'secure' => $secure_cookie,
-        'httponly' => true,
-        'samesite' => 'Lax'
-    ]);
-} else {
-    session_set_cookie_params(0, '/admin; samesite=Lax', '', $secure_cookie, true);
-}
-
-session_start();
 
 // Define database paths
 $packages_path = __DIR__ . '/data/packages.json';
@@ -169,10 +175,110 @@ function clean_upload_name($name) {
     return preg_replace('/[^a-zA-Z0-9._-]/', '_', basename($name));
 }
 
+function base64url_encode_value($value) {
+    return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
+}
+
+function base64url_decode_value($value) {
+    $padding = strlen($value) % 4;
+    if ($padding > 0) {
+        $value .= str_repeat('=', 4 - $padding);
+    }
+    return base64_decode(strtr($value, '-_', '+/'));
+}
+
+function admin_auth_secret($settings_path, $admin_creds) {
+    $username = isset($admin_creds['username']) ? $admin_creds['username'] : '';
+    $password = isset($admin_creds['password']) ? $admin_creds['password'] : '';
+    return hash('sha256', __DIR__ . '|' . $settings_path . '|' . $username . '|' . $password . '|top-mountain-admin-cookie', true);
+}
+
+function make_signed_admin_token($purpose, $payload, $settings_path, $admin_creds, $ttl_seconds) {
+    $payload['purpose'] = $purpose;
+    $payload['iat'] = time();
+    $payload['exp'] = time() + $ttl_seconds;
+
+    $body = base64url_encode_value(json_encode($payload));
+    $signature = base64url_encode_value(hash_hmac('sha256', $body, admin_auth_secret($settings_path, $admin_creds), true));
+
+    return $body . '.' . $signature;
+}
+
+function read_signed_admin_token($token, $purpose, $settings_path, $admin_creds) {
+    if (!is_string($token) || strpos($token, '.') === false) {
+        return false;
+    }
+
+    list($body, $signature) = explode('.', $token, 2);
+    $expected = base64url_encode_value(hash_hmac('sha256', $body, admin_auth_secret($settings_path, $admin_creds), true));
+
+    if (!hash_equals($expected, $signature)) {
+        return false;
+    }
+
+    $payload = json_decode(base64url_decode_value($body), true);
+    if (!is_array($payload)) {
+        return false;
+    }
+    if (($payload['purpose'] ?? '') !== $purpose) {
+        return false;
+    }
+    if (!isset($payload['exp']) || (int)$payload['exp'] < time()) {
+        return false;
+    }
+
+    return $payload;
+}
+
+function set_admin_auth_cookie($settings_path, $admin_creds) {
+    $ttl = 8 * 60 * 60;
+    $token = make_signed_admin_token('admin-login', [
+        'u' => $admin_creds['username'] ?? '',
+        'n' => $admin_creds['name'] ?? 'Administrator'
+    ], $settings_path, $admin_creds, $ttl);
+    set_site_cookie('TMTADMINAUTH', $token, time() + $ttl, '/admin');
+}
+
+function clear_admin_auth_cookie() {
+    clear_site_cookie('TMTADMINAUTH', '/admin');
+}
+
+function is_admin_authenticated($settings_path, $admin_creds) {
+    if (empty($_COOKIE['TMTADMINAUTH'])) {
+        return false;
+    }
+
+    $payload = read_signed_admin_token($_COOKIE['TMTADMINAUTH'], 'admin-login', $settings_path, $admin_creds);
+    if (!is_array($payload)) {
+        return false;
+    }
+
+    return isset($payload['u']) && hash_equals((string)($admin_creds['username'] ?? ''), (string)$payload['u']);
+}
+
+function set_admin_otp_cookie($settings_path, $admin_creds) {
+    $ttl = 10 * 60;
+    $token = make_signed_admin_token('admin-otp', ['v' => 1], $settings_path, $admin_creds, $ttl);
+    set_site_cookie('TMTADMINOTP', $token, time() + $ttl, '/admin');
+}
+
+function has_admin_otp_cookie($settings_path, $admin_creds) {
+    if (empty($_COOKIE['TMTADMINOTP'])) {
+        return false;
+    }
+    return is_array(read_signed_admin_token($_COOKIE['TMTADMINOTP'], 'admin-otp', $settings_path, $admin_creds));
+}
+
+function clear_admin_otp_cookie() {
+    clear_site_cookie('TMTADMINOTP', '/admin');
+}
+
+$is_logged = is_admin_authenticated($settings_path, $admin_creds);
+
 // 1. AJAX Media Upload Handler (Req 4, 6)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_upload_media'])) {
     header('Content-Type: application/json');
-    if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
+    if (!$is_logged) {
         echo json_encode(['success' => false, 'error' => 'Unauthorized access.']);
         exit;
     }
@@ -194,13 +300,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_upload_media']))
 
 // 2. Handle Logout
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    unset($_SESSION['admin_logged']);
-    unset($_SESSION['admin_name']);
-    if (ini_get('session.use_cookies')) {
-        $params = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
-    }
-    session_destroy();
+    clear_admin_auth_cookie();
+    clear_admin_otp_cookie();
     header('Location: ' . admin_url());
     exit;
 }
@@ -211,11 +312,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
     $pass = isset($_POST['password']) ? trim($_POST['password']) : '';
 
     if ($user === $admin_creds['username'] && $pass === $admin_creds['password']) {
-        session_regenerate_id(true);
-        $_SESSION['admin_logged'] = true;
-        $_SESSION['admin_name'] = $admin_creds['name'];
-        header('Location: ' . admin_url());
-        exit;
+        set_admin_auth_cookie($settings_path, $admin_creds);
+        $is_logged = true;
     } else {
         $login_error = "Invalid username or password.";
     }
@@ -226,7 +324,7 @@ $recovery_state = 'login';
 $recovery_error = '';
 $recovery_msg = '';
 
-if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
+if (!$is_logged) {
     if (isset($_GET['action']) && $_GET['action'] === 'forgot_password') {
         $recovery_state = 'send_otp';
     }
@@ -260,7 +358,7 @@ if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
         
         if (!empty($stored_otp) && $input_otp === $stored_otp && time() <= $expiry) {
             $recovery_state = 'reset_password';
-            $_SESSION['otp_verified'] = true;
+            set_admin_otp_cookie($settings_path, $admin_creds);
         } else {
             $recovery_state = 'verify_otp';
             $recovery_error = "Invalid or expired OTP code.";
@@ -269,7 +367,7 @@ if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
     
     // POST request to reset password
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_reset_password'])) {
-        if (isset($_SESSION['otp_verified']) && $_SESSION['otp_verified'] === true) {
+        if (has_admin_otp_cookie($settings_path, $admin_creds)) {
             $new_pass = isset($_POST['new_password']) ? trim($_POST['new_password']) : '';
             $confirm_pass = isset($_POST['confirm_password']) ? trim($_POST['confirm_password']) : '';
             
@@ -288,8 +386,7 @@ if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
                 unset($settings['admin']['recovery_otp_expiry']);
                 file_put_contents($settings_path, json_encode($settings, JSON_PRETTY_PRINT));
                 
-                // Clear session flag
-                unset($_SESSION['otp_verified']);
+                clear_admin_otp_cookie();
                 
                 $recovery_state = 'login';
                 $login_error = "Password updated successfully. Please log in with your new password.";
@@ -300,9 +397,6 @@ if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
         }
     }
 }
-
-// Check auth state
-$is_logged = isset($_SESSION['admin_logged']) && $_SESSION['admin_logged'] === true;
 
 // 4. Handle Admin Actions
 if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -998,7 +1092,7 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
             file_put_contents($settings_path, json_encode($settings, JSON_PRETTY_PRINT));
             $admin_creds = $settings['admin'];
-            $_SESSION['admin_name'] = $admin_name;
+            set_admin_auth_cookie($settings_path, $admin_creds);
             $action_status = "success";
             $action_msg = "Admin profile name and security details updated successfully.";
         }
@@ -1218,7 +1312,7 @@ foreach ($packages as $pkg) {
     <!-- Header bar -->
     <header class="admin-nav">
       <div class="container" style="display:flex; justify-content:space-between; align-items:center; padding:0 1rem;">
-        <h2 style="font-family:var(--font-heading); font-size:1.4rem; font-weight:800; margin:0;">Top Mountain Treks | Admin Panel <span style="font-size:0.9rem; font-weight:600; color:white; opacity:0.8; margin-left:0.5rem;">(Hello, <?php echo htmlspecialchars($_SESSION['admin_name'] ?? $admin_creds['name']); ?>)</span></h2>
+        <h2 style="font-family:var(--font-heading); font-size:1.4rem; font-weight:800; margin:0;">Top Mountain Treks | Admin Panel <span style="font-size:0.9rem; font-weight:600; color:white; opacity:0.8; margin-left:0.5rem;">(Hello, <?php echo htmlspecialchars($admin_creds['name']); ?>)</span></h2>
         <a href="/admin?action=logout" class="btn btn-outline" style="color:white; border-color:white; height:36px; padding:0.5rem 1rem;">Sign Out</a>
       </div>
     </header>

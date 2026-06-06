@@ -1,4 +1,4 @@
-# Prevent direct browser access to JSON settings, inquiries, OTP logs, and sessions.
+# Prevent direct browser access to JSON settings, inquiries, and OTP logs.
 <IfModule mod_authz_core.c>
     Require all denied
 </IfModule>
