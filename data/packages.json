@@ -53,7 +53,10 @@
             "Lunch and dinner in Kathmandu unless mentioned",
             "Tips for guide, porter, and support staff"
         ],
-        "requiredPermits": "<p>Sagarmatha National Park Permit Khumbu Pasang Lhamu Rural Municipality Permit<\/p>",
+        "requiredPermits": [
+            "Sagarmatha National Park Entry Permit",
+            "Khumbu Pasang Lhamu Rural Municipality Permit"
+        ],
         "image": "assets\/images\/packages\/everest-base-camp.jpg",
         "route_map": "",
         "gallery": [

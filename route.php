@@ -8,6 +8,91 @@ if (empty($type) || empty($slug)) {
     exit;
 }
 
+function route_category_from_type($type) {
+    if ($type === 'climbing' || $type === 'peak-climbing') {
+        return 'climbing';
+    }
+    return $type;
+}
+
+function activity_archive_profile($activity_id) {
+    $profiles = [
+        'everest-region' => [
+            'image' => 'assets/images/packages/hero_everest.jpg',
+            'overview' => 'The Everest Region, also known as the Khumbu, is Nepal most iconic trekking destination. Trails pass through Sherpa villages, Buddhist monasteries, suspension bridges, glacier valleys, and viewpoints below Everest, Lhotse, Nuptse, Ama Dablam, and the Gokyo lakes system.',
+            'keywords' => ['everest', 'khumbu', 'ebc', 'gokyo', 'lukla', 'namche', 'pikey', 'three passes', 'high passes']
+        ],
+        'annapurna-region' => [
+            'image' => 'assets/images/packages/hero_annapurna.jpg',
+            'overview' => 'The Annapurna Region offers Nepal widest variety of trekking routes, from short sunrise walks to high-pass circuits and sanctuary treks. Expect Gurung and Magar villages, rhododendron forests, terraced hillsides, hot springs, and close views of Annapurna, Machhapuchhre, Dhaulagiri, and Manaslu ranges.',
+            'keywords' => ['annapurna', 'abc', 'poon', 'ghorepani', 'mardi', 'tilicho', 'khopra', 'nar phu', 'sikles', 'kapuche', 'kori', 'mohare', 'dhampus']
+        ],
+        'langtang-region' => [
+            'image' => 'assets/images/packages/hero_langtang.jpg',
+            'overview' => 'Langtang Region treks are close to Kathmandu but feel deeply Himalayan, combining Tamang culture, yak pastures, sacred lakes, forest trails, and alpine viewpoints around Langtang Valley, Gosaikunda, Helambu, and nearby ridges.',
+            'keywords' => ['langtang', 'gosaikunda', 'gosainkunda', 'helambu', 'tamang', 'ama yangri', 'ganja la']
+        ],
+        'manaslu-region' => [
+            'image' => 'assets/images/packages/hero_manaslu.jpg',
+            'overview' => 'The Manaslu Region is a quieter high-Himalayan trekking area with remote villages, Tibetan Buddhist culture, deep river gorges, and the dramatic Larkya La crossing around the world eighth highest mountain.',
+            'keywords' => ['manaslu', 'tsum', 'larkya', 'sama gaon', 'samdo']
+        ],
+        'mustang-region' => [
+            'image' => 'assets/images/packages/hero_mustang.jpg',
+            'overview' => 'Mustang Region treks explore rain-shadow landscapes, red cliffs, cave settlements, ancient monasteries, and the Tibetan-influenced culture of Lower and Upper Mustang including Lo Manthang.',
+            'keywords' => ['mustang', 'tiji', 'lo manthang', 'jomsom', 'muktinath', 'kagbeni']
+        ],
+        'restricted-areas' => [
+            'image' => 'assets/images/packages/hero_home.jpg',
+            'overview' => 'Restricted and remote-area treks are designed for travelers seeking wild trails, special permits, low crowds, and deep cultural landscapes in places such as Kanchenjunga, Makalu, Dolpo, and far-western Nepal.',
+            'keywords' => ['restricted', 'remote', 'kanchenjunga', 'makalu', 'dolpo', 'rara', 'phoksundo']
+        ],
+        'peak-climbing-nepal' => [
+            'image' => 'assets/images/hero_home.png',
+            'overview' => 'Nepal peak climbing trips combine trekking routes with technical summit objectives, fixed rope practice, glacier travel, and licensed climbing support for Himalayan peaks between trekking and full expedition level.',
+            'keywords' => ['peak', 'climbing', 'island', 'lobuche', 'mera', 'yala']
+        ],
+        'nepal-tours' => [
+            'image' => 'assets/images/packages/kathmandu-pokhara-chitwan.jpg',
+            'overview' => 'Nepal tours combine cultural heritage, Himalayan viewpoints, wildlife safaris, scenic cities, helicopter flights, and relaxed custom itineraries for travelers who want Nepal beyond trekking.',
+            'keywords' => ['tour', 'kathmandu', 'pokhara', 'chitwan', 'helicopter', 'safari']
+        ]
+    ];
+
+    return $profiles[$activity_id] ?? [
+        'image' => 'assets/images/packages/hero_home.jpg',
+        'overview' => '',
+        'keywords' => []
+    ];
+}
+
+function activity_matches_package($activity, $package, $type) {
+    $route_category = route_category_from_type($type);
+    if (($package['category'] ?? '') !== $route_category) {
+        return false;
+    }
+
+    if (!empty($package['activity_id']) && $package['activity_id'] === ($activity['id'] ?? '')) {
+        return true;
+    }
+
+    $profile = activity_archive_profile($activity['id'] ?? '');
+    $haystack = strtolower(
+        ($package['region'] ?? '') . ' ' .
+        ($package['title'] ?? '') . ' ' .
+        ($package['slug'] ?? '') . ' ' .
+        ($package['activity_id'] ?? '')
+    );
+
+    foreach ($profile['keywords'] as $keyword) {
+        if ($keyword !== '' && strpos($haystack, strtolower($keyword)) !== false) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // Route resolvers based on category type
 if (in_array($type, ['trekking', 'tour', 'climbing', 'peak-climbing'])) {
     // First check if this slug is a package
@@ -49,8 +134,16 @@ if (in_array($type, ['trekking', 'tour', 'climbing', 'peak-climbing'])) {
         // Resolve Activity/Region archive lists
         $matching_packages = [];
         if (is_array($packages_data)) {
+            $seen_package_slugs = [];
             foreach ($packages_data as $pkg) {
-                if (isset($pkg['activity_id']) && $pkg['activity_id'] === $current_act['id']) {
+                if (activity_matches_package($current_act, $pkg, $type)) {
+                    $pkg_slug = $pkg['slug'] ?? '';
+                    if ($pkg_slug !== '' && isset($seen_package_slugs[$pkg_slug])) {
+                        continue;
+                    }
+                    if ($pkg_slug !== '') {
+                        $seen_package_slugs[$pkg_slug] = true;
+                    }
                     $matching_packages[] = $pkg;
                 }
             }
@@ -64,15 +157,28 @@ if (in_array($type, ['trekking', 'tour', 'climbing', 'peak-climbing'])) {
         $prefix = 'trek';
         if ($type === 'tour') $prefix = 'tour';
         elseif ($type === 'climbing' || $type === 'peak-climbing') $prefix = 'climb';
+        $archive_profile = activity_archive_profile($current_act['id']);
+        $archive_image = '/' . ltrim($archive_profile['image'], '/');
+        $archive_overview = !empty($archive_profile['overview']) ? $archive_profile['overview'] : $current_act['description'];
         ?>
-        <section class="section-bg-alternate" style="padding: 3rem 0; border-bottom:1px solid var(--border-color); text-align: var(--<?php echo $prefix; ?>-align, left);">
-            <div class="container">
-                <h1 style="font-family:var(--font-heading); font-size: var(--<?php echo $prefix; ?>-title-size, 2.5rem); font-weight:800; color: var(--<?php echo $prefix; ?>-title-color, var(--color-primary)); margin-bottom:0.5rem;"><?php echo htmlspecialchars($current_act['name']); ?></h1>
-                <p style="color: var(--<?php echo $prefix; ?>-desc-color, var(--text-medium)); font-size: var(--<?php echo $prefix; ?>-desc-size, 1.05rem);"><?php echo htmlspecialchars($current_act['description']); ?></p>
+        <section class="region-archive-hero">
+            <div class="region-archive-hero-inner" style="background-image:url('<?php echo htmlspecialchars($archive_image); ?>');">
+                <div class="container">
+                    <div class="region-archive-hero-content">
+                        <span class="card-badge" style="position:static; display:inline-block; margin-bottom:0.85rem; background:var(--color-secondary);"><?php echo htmlspecialchars($current_act['category']); ?></span>
+                        <h1><?php echo htmlspecialchars($current_act['name']); ?></h1>
+                        <p><?php echo htmlspecialchars($current_act['description']); ?></p>
+                    </div>
+                </div>
             </div>
         </section>
         <section>
             <div class="container" style="padding: 3rem 0;">
+                <div class="region-overview-panel">
+                    <h2><?php echo htmlspecialchars($current_act['name']); ?> Overview</h2>
+                    <p><?php echo htmlspecialchars($archive_overview); ?></p>
+                    <p style="margin-top:0.85rem; font-weight:800; color:var(--color-primary);"><?php echo count($matching_packages); ?> related package<?php echo count($matching_packages) === 1 ? '' : 's'; ?> available in this region.</p>
+                </div>
                 <?php if (empty($matching_packages)): ?>
                     <div style="text-align:center; padding:5rem 0;">
                       <h3 style="font-family:var(--font-heading); font-size:1.5rem; margin-bottom:0.5rem; color:var(--color-primary);">No Packages Found</h3>

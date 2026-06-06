@@ -24,10 +24,28 @@ if (isset($pkg) && is_array($pkg)):
     if ($card_image_alt === '') {
         $card_image_alt = $pkg['title'] . ' landscape scenery';
     }
+    $card_image = trim($pkg['image'] ?? '');
+    if ($card_image === '') {
+        $fallback_key = strtolower(($pkg['activity_id'] ?? '') . ' ' . ($pkg['region'] ?? '') . ' ' . ($pkg['title'] ?? ''));
+        if (strpos($fallback_key, 'everest') !== false || strpos($fallback_key, 'ebc') !== false || strpos($fallback_key, 'gokyo') !== false) {
+            $card_image = 'assets/images/packages/hero_everest.jpg';
+        } elseif (strpos($fallback_key, 'annapurna') !== false || strpos($fallback_key, 'abc') !== false || strpos($fallback_key, 'poon') !== false || strpos($fallback_key, 'mardi') !== false) {
+            $card_image = 'assets/images/packages/hero_annapurna.jpg';
+        } elseif (strpos($fallback_key, 'langtang') !== false || strpos($fallback_key, 'gosaikunda') !== false || strpos($fallback_key, 'helambu') !== false) {
+            $card_image = 'assets/images/packages/hero_langtang.jpg';
+        } elseif (strpos($fallback_key, 'manaslu') !== false || strpos($fallback_key, 'tsum') !== false) {
+            $card_image = 'assets/images/packages/hero_manaslu.jpg';
+        } elseif (strpos($fallback_key, 'mustang') !== false) {
+            $card_image = 'assets/images/packages/hero_mustang.jpg';
+        } else {
+            $card_image = 'assets/images/packages/hero_home.jpg';
+        }
+    }
+    $card_image_src = '/' . ltrim($card_image, '/');
 ?>
 <div class="card-wrapper">
   <div class="card-image-box">
-    <img src="<?php echo htmlspecialchars($pkg['image']); ?>" alt="<?php echo htmlspecialchars($card_image_alt); ?>" loading="lazy">
+    <img src="<?php echo htmlspecialchars($card_image_src); ?>" alt="<?php echo htmlspecialchars($card_image_alt); ?>" loading="lazy">
     <div class="card-badge"><?php echo htmlspecialchars($pkg['difficulty']); ?></div>
     <?php if (!empty($offer_badge)): ?>
       <div class="card-badge offer-pulse-badge" style="left:auto; right:0.85rem; top:0.85rem; background:#dc2626; color:white; border-color:#dc2626;"><?php echo htmlspecialchars($offer_badge); ?></div>

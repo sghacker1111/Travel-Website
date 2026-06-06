@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCountryCodePickers();
   initOfferCountdowns();
   initPackageHeroRotation();
+  initBackToTop();
 });
 
 /* 1. Sticky Header Shadow on Scroll */
@@ -27,6 +28,22 @@ function initStickyHeader() {
       header.classList.remove('scrolled');
     }
   });
+}
+
+function initBackToTop() {
+  const btn = document.getElementById('back-to-top-btn');
+  if (!btn) return;
+
+  const toggle = () => {
+    btn.classList.toggle('visible', window.scrollY > 520);
+  };
+
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  window.addEventListener('scroll', toggle, { passive: true });
+  toggle();
 }
 
 /* 2. Mobile Responsive Menu Dropdown */

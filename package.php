@@ -78,8 +78,9 @@ function getDayLocationFallback($title) {
 
 function renderPackagePointList($items, $type = 'include') {
     $is_exclude = $type === 'exclude';
-    $class = $is_exclude ? 'excludes' : 'includes';
-    $icon = $is_exclude ? '&#10005;' : '&#10003;';
+    $is_permit = $type === 'permit';
+    $class = $is_exclude ? 'excludes' : ($is_permit ? 'permits' : 'includes');
+    $icon = $is_exclude ? '&#10005;' : ($is_permit ? '&#9679;' : '&#10003;');
     $points = [];
 
     if (is_array($items)) {
@@ -560,6 +561,8 @@ if (isset($current_pkg['reviews']) && is_array($current_pkg['reviews'])) {
             <!-- Required Permits list -->
             <div style="border-top:1px solid var(--border-color); padding-top:2.5rem;">
               <h3 style="font-family:var(--font-heading); font-size:1.35rem; color:var(--color-primary); margin-bottom:1.25rem; font-weight:800;">Required Travel Permits</h3>
+              <?php renderPackagePointList($current_pkg['requiredPermits'] ?? [], 'permit'); ?>
+              <?php if (false): ?>
               <?php if (is_array($current_pkg['requiredPermits'])): ?>
                 <div style="display:flex; flex-wrap:wrap; gap:1rem;">
                   <?php foreach ($current_pkg['requiredPermits'] as $permit): ?>
@@ -572,6 +575,7 @@ if (isset($current_pkg['reviews']) && is_array($current_pkg['reviews'])) {
                 <div style="font-size:0.95rem; color:var(--text-medium); line-height:1.75;">
                   <?php echo $current_pkg['requiredPermits']; ?>
                 </div>
+              <?php endif; ?>
               <?php endif; ?>
             </div>
           </div>
@@ -745,7 +749,7 @@ if (isset($current_pkg['reviews']) && is_array($current_pkg['reviews'])) {
           </div>
 
           <!-- Reusable Need Help WhatsApp Widget -->
-          <div class="glass-card help-whatsapp-widget" id="instant-help-widget" style="padding:1.25rem; background:white; border:1px solid var(--border-color); border-radius:var(--radius-lg); box-shadow: var(--shadow-sm);">
+          <div class="glass-card help-whatsapp-widget" id="instant-help-widget-sidebar-old" style="display:none; padding:1.25rem; background:white; border:1px solid var(--border-color); border-radius:var(--radius-lg); box-shadow: var(--shadow-sm);">
             <h3 style="font-family:var(--font-heading); font-size:1.2rem; color:var(--color-primary); margin-bottom:0.75rem; font-weight:800; display:flex; align-items:center; gap:0.5rem;">
               <span>💬</span> Need Instant Help?
             </h3>
@@ -793,6 +797,25 @@ if (isset($current_pkg['reviews']) && is_array($current_pkg['reviews'])) {
           </script>
         </aside>
 
+      </div>
+
+      <div class="package-bottom-help help-whatsapp-widget" id="instant-help-widget">
+        <h3 style="font-family:var(--font-heading); font-size:1.35rem; color:var(--color-primary); margin-bottom:0.5rem; font-weight:900;">Need Instant Help?</h3>
+        <p style="font-size:0.92rem; color:var(--text-muted); margin-bottom:1.25rem; line-height:1.6;">Send your question to our Nepal travel specialist on WhatsApp after checking the package details.</p>
+        <form onsubmit="sendWhatsAppMessage(event)">
+          <input type="text" placeholder="Your Name" required class="form-input wa-name">
+          <input type="email" placeholder="Your Email" required class="form-input wa-email">
+          <div class="country-code-picker">
+            <input type="search" class="form-input country-code-search" placeholder="Search country code">
+            <div class="country-code-row">
+              <select class="form-input country-code-select wa-code" aria-label="Country phone code"></select>
+              <input type="text" placeholder="Phone Number" required class="form-input wa-phone">
+            </div>
+            <input type="hidden" class="country-code-value" value="+977">
+          </div>
+          <textarea placeholder="Ask a question..." required class="form-input wa-question" rows="4"></textarea>
+          <button type="submit" class="btn btn-primary" style="background-color:#25d366; border-color:#25d366; color:white;">Send WhatsApp Inquiry</button>
+        </form>
       </div>
 
     </div>
