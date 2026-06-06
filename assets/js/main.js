@@ -82,6 +82,8 @@ function initMobileMenu() {
     menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     document.body.classList.toggle('mobile-nav-open', isOpen);
     if (isOpen) {
+      navItems.forEach(item => item.classList.remove('open-mobile'));
+      resetRegionToggles();
       nav.scrollTop = 0;
       window.requestAnimationFrame(syncMobileSubmenuPanelTop);
     } else {

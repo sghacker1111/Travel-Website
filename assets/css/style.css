@@ -416,10 +416,23 @@ nav {
 }
 
 @media (max-width: 992px) {
+  #site-header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 5000 !important;
+  }
+
+  body {
+    padding-top: 60px !important;
+  }
+
   .header-top-row {
     position: relative;
-    padding-left: 4.5rem !important;
-    padding-right: 1rem !important;
+    min-height: 58px;
+    padding-left: 3.75rem !important;
+    padding-right: 0.75rem !important;
   }
 
   .header-actions-right {
@@ -1358,7 +1371,7 @@ table {
   }
 
   #site-nav .nav-item {
-    position: static !important;
+    position: relative !important;
     width: 100%;
   }
 
@@ -1387,17 +1400,13 @@ table {
   }
 
   #site-nav .dropdown-menu {
-    position: absolute !important;
-    top: var(--mobile-submenu-top, 28rem) !important;
-    left: 1rem !important;
-    right: 1rem !important;
-    bottom: 1rem !important;
+    position: static !important;
     display: flex !important;
     flex-direction: column !important;
     width: auto !important;
     min-width: 0 !important;
     max-width: none !important;
-    max-height: 0;
+    max-height: 0 !important;
     overflow-x: hidden;
     overflow-y: hidden;
     padding: 0 !important;
@@ -1413,7 +1422,7 @@ table {
   }
 
   #site-nav .nav-item.open-mobile > .dropdown-menu {
-    max-height: none;
+    max-height: min(48dvh, 350px) !important;
     overflow-y: auto;
     scroll-behavior: smooth;
     overscroll-behavior: contain;
@@ -1434,11 +1443,15 @@ table {
   #site-nav .mega-menu-wide {
     width: 100% !important;
     min-width: 0 !important;
-    max-height: none !important;
+    max-height: 0 !important;
     overflow-y: auto !important;
     scroll-behavior: smooth;
     overscroll-behavior: contain;
     padding: 0 !important;
+  }
+
+  #site-nav .nav-item.open-mobile > .mega-menu-wide {
+    max-height: min(48dvh, 350px) !important;
   }
 
   #site-nav .mega-menu-column {
@@ -1494,7 +1507,7 @@ table {
   }
 
   #site-nav .mega-menu-wide .mega-col-links {
-    max-height: clamp(210px, 38dvh, 360px);
+    max-height: clamp(155px, 24dvh, 210px);
     overflow-y: auto;
     scroll-behavior: smooth;
     overscroll-behavior: contain;
@@ -1541,9 +1554,12 @@ table {
 
   #site-header .menu-btn {
     position: fixed !important;
-    top: 0.8rem !important;
-    left: 1rem !important;
+    top: 0.7rem !important;
+    left: 0.75rem !important;
     z-index: 6000 !important;
+    width: 34px !important;
+    height: 34px !important;
+    padding: 8px !important;
     transition: transform 0.2s ease, background-color 0.2s ease;
   }
 
@@ -1564,7 +1580,30 @@ table {
   }
 
   #site-header .menu-btn span {
+    height: 2px !important;
     transition: transform 0.22s ease, opacity 0.2s ease;
+  }
+}
+
+@media (max-width: 640px) {
+  #site-header .logo-wrapper {
+    min-width: 0;
+    max-width: calc(100vw - 4.6rem);
+  }
+
+  #site-header .logo-wrapper img {
+    height: 32px !important;
+    flex-shrink: 0;
+    margin-right: 0.35rem !important;
+  }
+
+  #site-header .logo-text {
+    font-size: clamp(12px, 3.6vw, 15px) !important;
+    max-width: calc(100vw - 7rem);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.1 !important;
   }
 }
 

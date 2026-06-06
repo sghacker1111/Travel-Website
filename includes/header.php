@@ -356,10 +356,21 @@ if (!function_exists('header_activity_package_match')) {
       gap: 1rem;
     }
     @media (max-width: 992px) {
+      #site-header {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 5000 !important;
+      }
+      body {
+        padding-top: 60px !important;
+      }
       .header-top-row {
         position: relative;
-        padding-left: 4.5rem !important;
-        padding-right: 1rem !important;
+        min-height: 58px;
+        padding-left: 3.75rem !important;
+        padding-right: 0.75rem !important;
       }
       .header-actions-right {
         position: absolute !important;
@@ -376,12 +387,12 @@ if (!function_exists('header_activity_package_match')) {
       #site-header .menu-btn {
         display: flex !important;
         position: fixed !important;
-        top: 0.8rem !important;
-        left: 1rem !important;
+        top: 0.7rem !important;
+        left: 0.75rem !important;
         z-index: 6000 !important;
-        width: 42px;
-        height: 42px;
-        padding: 10px;
+        width: 34px;
+        height: 34px;
+        padding: 8px;
         border-radius: var(--radius-sm);
         background: var(--color-primary) !important;
         align-items: center;
@@ -389,6 +400,7 @@ if (!function_exists('header_activity_package_match')) {
       }
       #site-header .menu-btn span {
         width: 100%;
+        height: 2px;
         background-color: #ffffff !important;
       }
       body.mobile-nav-open {
@@ -458,7 +470,7 @@ if (!function_exists('header_activity_package_match')) {
         padding: 0 !important;
       }
       #site-nav .nav-item {
-        position: static !important;
+        position: relative !important;
       }
       #site-nav .nav-item,
       #site-nav .nav-link {
@@ -485,18 +497,14 @@ if (!function_exists('header_activity_package_match')) {
         transform: rotate(180deg);
       }
       #site-nav .dropdown-menu {
-        position: absolute !important;
-        top: var(--mobile-submenu-top, 28rem) !important;
-        left: 1rem !important;
-        right: 1rem !important;
-        bottom: 1rem !important;
+        position: static !important;
         transform: translateY(-6px) !important;
         display: flex !important;
         flex-direction: column !important;
         width: auto !important;
         min-width: 0 !important;
         max-width: none !important;
-        max-height: 0;
+        max-height: 0 !important;
         overflow-x: hidden !important;
         overflow-y: hidden;
         opacity: 0;
@@ -509,7 +517,7 @@ if (!function_exists('header_activity_package_match')) {
         background: #ffffff !important;
       }
       #site-nav .nav-item.open-mobile > .dropdown-menu {
-        max-height: none;
+        max-height: min(48dvh, 350px) !important;
         overflow-y: auto;
         scroll-behavior: smooth;
         overscroll-behavior: contain;
@@ -522,11 +530,14 @@ if (!function_exists('header_activity_package_match')) {
       #site-nav .mega-menu-wide {
         width: 100% !important;
         min-width: 0 !important;
-        max-height: none !important;
+        max-height: 0 !important;
         overflow-y: auto !important;
         scroll-behavior: smooth;
         overscroll-behavior: contain;
         padding: 0 !important;
+      }
+      #site-nav .nav-item.open-mobile > .mega-menu-wide {
+        max-height: min(48dvh, 350px) !important;
       }
       #site-nav .mega-menu-grid {
         display: grid !important;
@@ -580,7 +591,7 @@ if (!function_exists('header_activity_package_match')) {
         transition: max-height 0.28s ease, padding-top 0.28s ease;
       }
       #site-nav .mega-menu-wide .mega-col-links {
-        max-height: clamp(210px, 38dvh, 360px);
+        max-height: clamp(155px, 24dvh, 210px);
         overflow-y: auto;
         scroll-behavior: smooth;
         overscroll-behavior: contain;
@@ -624,21 +635,28 @@ if (!function_exists('header_activity_package_match')) {
     @media (max-width: 640px) {
       .header-top-row {
         position: relative;
-        padding: 0.75rem 1rem;
-        padding-left: 4.5rem !important;
-        padding-right: 1rem !important;
-        gap: 0.75rem;
+        min-height: 58px;
+        padding: 0.65rem 0.75rem;
+        padding-left: 3.75rem !important;
+        padding-right: 0.75rem !important;
+        gap: 0.4rem;
       }
       #site-header .logo-wrapper {
         min-width: 0;
+        max-width: calc(100vw - 4.6rem);
       }
       #site-header .logo-wrapper img {
-        height: 42px !important;
+        height: 32px !important;
         flex-shrink: 0;
+        margin-right: 0.35rem !important;
       }
       #site-header .logo-text {
-        font-size: 18px !important;
-        max-width: 210px;
+        font-size: clamp(12px, 3.6vw, 15px) !important;
+        max-width: calc(100vw - 7rem);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.1 !important;
       }
       .header-actions-right {
         position: absolute;
