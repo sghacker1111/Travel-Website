@@ -54,11 +54,29 @@ function initMobileMenu() {
 
   if (!menuBtn || !nav) return;
 
+  const regionToggles = nav.querySelectorAll('.mobile-region-toggle');
+  const resetRegionToggles = (scope = nav) => {
+    scope.querySelectorAll('.mobile-menu-group.open-region').forEach(group => {
+      group.classList.remove('open-region');
+    });
+    scope.querySelectorAll('.mobile-region-toggle[aria-expanded]').forEach(toggle => {
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+  };
+
   menuBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     nav.classList.toggle('open');
-    menuBtn.classList.toggle('active', nav.classList.contains('open'));
-    menuBtn.setAttribute('aria-expanded', nav.classList.contains('open') ? 'true' : 'false');
+    const isOpen = nav.classList.contains('open');
+    menuBtn.classList.toggle('active', isOpen);
+    menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    document.body.classList.toggle('mobile-nav-open', isOpen);
+    if (isOpen) {
+      nav.scrollTop = 0;
+    } else {
+      navItems.forEach(item => item.classList.remove('open-mobile'));
+      resetRegionToggles();
+    }
   });
 
   // Toggle dropdown items on click for mobile devices
@@ -72,7 +90,41 @@ function initMobileMenu() {
         navItems.forEach(other => {
           if (other !== item) other.classList.remove('open-mobile');
         });
+        resetRegionToggles();
         item.classList.toggle('open-mobile');
+        nav.scrollTop = 0;
+      }
+    });
+  });
+
+  // Mobile second level: region/category title opens its package list.
+  regionToggles.forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+      if (window.innerWidth > 992) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      const group = toggle.closest('.mobile-menu-group');
+      if (!group) return;
+
+      const parentMenu = group.parentElement;
+      if (parentMenu) {
+        parentMenu.querySelectorAll(':scope > .mobile-menu-group.open-region').forEach(other => {
+          if (other !== group) {
+            other.classList.remove('open-region');
+            const otherToggle = other.querySelector('.mobile-region-toggle');
+            if (otherToggle) otherToggle.setAttribute('aria-expanded', 'false');
+          }
+        });
+      }
+
+      const willOpen = !group.classList.contains('open-region');
+      group.classList.toggle('open-region', willOpen);
+      toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      if (willOpen) {
+        window.requestAnimationFrame(() => {
+          group.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        });
       }
     });
   });
@@ -83,7 +135,9 @@ function initMobileMenu() {
       nav.classList.remove('open');
       menuBtn.classList.remove('active');
       menuBtn.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('mobile-nav-open');
       navItems.forEach(item => item.classList.remove('open-mobile'));
+      resetRegionToggles();
     }
   });
 }

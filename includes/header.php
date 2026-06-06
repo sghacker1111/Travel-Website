@@ -259,15 +259,18 @@ if (!function_exists('header_activity_package_match')) {
 
     /* Trekking Mega Menu (Multi-Column) */
     .mega-menu-wide {
-      min-width: 850px !important;
+      min-width: min(1180px, calc(100vw - 2rem)) !important;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
       padding: 2rem !important;
     }
     .mega-menu-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 2rem;
+      grid-template-columns: repeat(6, minmax(145px, 1fr));
+      gap: 1rem;
     }
     .mega-col-title {
+      display: block;
       font-family: var(--font-heading);
       font-size: 0.85rem;
       font-weight: 800;
@@ -285,6 +288,9 @@ if (!function_exists('header_activity_package_match')) {
       display: flex;
       flex-direction: column;
       gap: 0.45rem;
+      max-height: min(58vh, 520px);
+      overflow-y: auto;
+      padding-right: 0.25rem;
     }
     .mega-col-link {
       font-size: 0.82rem;
@@ -296,6 +302,31 @@ if (!function_exists('header_activity_package_match')) {
     .mega-col-link:hover {
       color: var(--color-primary);
       padding-left: 4px;
+    }
+    .mobile-region-arrow {
+      display: none;
+    }
+    .standard-region-link {
+      display: block;
+      font-family: var(--font-heading);
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #000000;
+      text-transform: uppercase;
+      text-decoration: none;
+      margin-top: 0.5rem;
+      margin-bottom: 0.25rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 2px;
+      transition: color 0.2s;
+    }
+    .standard-region-link:hover {
+      color: var(--color-secondary);
+    }
+    .standard-package-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
     }
 
     /* Standard dropdown link */
@@ -325,8 +356,29 @@ if (!function_exists('header_activity_package_match')) {
       gap: 1rem;
     }
     @media (max-width: 992px) {
+      .header-top-row {
+        position: relative;
+        padding-left: 4.5rem !important;
+        padding-right: 1rem !important;
+      }
+      .header-actions-right {
+        position: absolute !important;
+        top: 50% !important;
+        left: 1rem !important;
+        right: auto !important;
+        transform: translateY(-50%) !important;
+        margin-left: 0 !important;
+        flex-shrink: 0 !important;
+      }
+      .header-whatsapp-right {
+        display: none !important;
+      }
       #site-header .menu-btn {
         display: flex !important;
+        position: fixed !important;
+        top: 0.8rem !important;
+        left: 1rem !important;
+        z-index: 6000 !important;
         width: 42px;
         height: 42px;
         padding: 10px;
@@ -339,19 +391,80 @@ if (!function_exists('header_activity_package_match')) {
         width: 100%;
         background-color: #ffffff !important;
       }
+      body.mobile-nav-open {
+        overflow: hidden !important;
+        touch-action: none;
+      }
+      body.mobile-nav-open #site-header {
+        position: fixed !important;
+        inset: 0 0 auto 0 !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        overflow: visible !important;
+        z-index: 5000 !important;
+      }
+      body.mobile-nav-open #site-nav {
+        z-index: 5002 !important;
+      }
+      body.mobile-nav-open #mobile-menu-btn {
+        z-index: 5003 !important;
+      }
       #site-nav {
-        width: min(92vw, 420px) !important;
+        position: fixed !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        left: -100% !important;
+        right: auto !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        min-height: 100vh !important;
+        max-height: 100vh !important;
+        max-height: 100dvh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
+        gap: 0 !important;
+        width: min(96vw, 980px) !important;
         max-width: 100vw !important;
+        padding: 5.75rem 1rem 1.25rem !important;
+        background: #ffffff !important;
+        border-right: 1px solid var(--border-color) !important;
+        box-shadow: var(--shadow-lg) !important;
         overflow-x: hidden !important;
+        overflow-y: auto !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transform: none !important;
+        transition: left 0.28s ease, visibility 0.28s ease !important;
+        z-index: 1050 !important;
+      }
+      #site-nav.open {
+        left: 0 !important;
+        right: auto !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
       }
       #site-nav .nav-links {
+        display: flex !important;
         width: 100% !important;
         flex-direction: column !important;
         align-items: stretch !important;
+        gap: 0.45rem !important;
+        margin: 0 !important;
+        padding: 0 !important;
       }
       #site-nav .nav-item,
       #site-nav .nav-link {
         width: 100% !important;
+      }
+      #site-nav .nav-link {
+        justify-content: space-between !important;
+        min-height: 46px !important;
+        padding: 0.65rem 0.8rem !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: var(--radius-sm) !important;
+        background: #ffffff !important;
       }
       #site-nav .dropdown-menu {
         position: static !important;
@@ -373,7 +486,7 @@ if (!function_exists('header_activity_package_match')) {
         background: transparent !important;
       }
       #site-nav .nav-item.open-mobile > .dropdown-menu {
-        max-height: 72vh;
+        max-height: calc(100dvh - 190px);
         overflow-y: auto;
         opacity: 1;
         visibility: visible;
@@ -381,12 +494,15 @@ if (!function_exists('header_activity_package_match')) {
         padding: 0.55rem 0 0.8rem !important;
       }
       #site-nav .mega-menu-wide {
+        width: 100% !important;
         min-width: 0 !important;
+        max-height: calc(100dvh - 205px) !important;
+        overflow-y: auto !important;
         padding: 0 !important;
       }
       #site-nav .mega-menu-grid {
         display: grid !important;
-        grid-template-columns: 1fr !important;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)) !important;
         gap: 0.75rem !important;
       }
       #site-nav .mega-menu-column {
@@ -397,12 +513,65 @@ if (!function_exists('header_activity_package_match')) {
         border-radius: var(--radius-sm);
         padding: 0.75rem;
       }
+      #site-nav .mobile-region-toggle {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 0.65rem !important;
+        width: 100% !important;
+        min-height: 42px !important;
+        color: #111827 !important;
+        text-decoration: none !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: var(--radius-sm) !important;
+        background: #ffffff !important;
+        padding: 0.62rem 0.7rem !important;
+      }
+      #site-nav .mobile-region-toggle .mega-col-title,
+      #site-nav .standard-region-link span:first-child {
+        border-bottom: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      #site-nav .mobile-region-arrow {
+        display: inline-block;
+        flex: 0 0 auto;
+        font-size: 1rem;
+        line-height: 1;
+        transition: transform 0.2s ease;
+      }
+      #site-nav .mobile-menu-group.open-region .mobile-region-arrow {
+        transform: rotate(90deg);
+      }
       #site-nav .mega-col-links {
         display: grid;
         grid-template-columns: 1fr;
         gap: 0.35rem;
-        max-height: none;
-        overflow: visible;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.28s ease, padding-top 0.28s ease;
+      }
+      #site-nav .mega-menu-wide .mega-col-links {
+        max-height: clamp(210px, 38dvh, 360px);
+        overflow-y: auto;
+        padding-top: 0.45rem;
+      }
+      #site-nav .mega-menu-wide .mobile-region-arrow {
+        display: none;
+      }
+      #site-nav .standard-package-list {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 0.35rem !important;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.28s ease, padding-top 0.28s ease;
+      }
+      #site-nav .mobile-menu-group.open-region > .mega-col-links,
+      #site-nav .mobile-menu-group.open-region > .standard-package-list {
+        max-height: 72vh;
+        overflow-y: auto;
+        padding-top: 0.45rem;
       }
       #site-nav .mega-col-link,
       #site-nav .dropdown-link {
@@ -422,7 +591,8 @@ if (!function_exists('header_activity_package_match')) {
       .header-top-row {
         position: relative;
         padding: 0.75rem 1rem;
-        padding-right: 4.25rem;
+        padding-left: 4.5rem !important;
+        padding-right: 1rem !important;
         gap: 0.75rem;
       }
       #site-header .logo-wrapper {
@@ -439,7 +609,8 @@ if (!function_exists('header_activity_package_match')) {
       .header-actions-right {
         position: absolute;
         top: 50%;
-        right: 1rem;
+        left: 1rem;
+        right: auto;
         transform: translateY(-50%);
         margin-left: 0;
         flex-shrink: 0;
@@ -462,6 +633,12 @@ if (!function_exists('header_activity_package_match')) {
   <header id="site-header">
     <!-- Top Row: Logo & Contact details (Left / Right) -->
     <div class="header-top-row">
+      <button type="button" class="menu-btn" id="mobile-menu-btn" aria-label="Open navigation menu" aria-controls="site-nav" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
       <!-- Section 1: Logo (Left) -->
       <a href="/index.php" class="logo-wrapper" style="display:flex; align-items:center; text-decoration:none;">
         <img src="/<?php echo htmlspecialchars($site_logo); ?>" alt="<?php echo htmlspecialchars($site_name); ?> Logo" style="height:48px; width:auto; object-fit:contain; margin-right:0.5rem;" onerror="this.style.display='none'">
@@ -480,11 +657,6 @@ if (!function_exists('header_activity_package_match')) {
           </a>
         </div>
       </div>
-      <button type="button" class="menu-btn" id="mobile-menu-btn" aria-label="Open navigation menu" aria-controls="site-nav" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
       </div>
     </div>
 
@@ -556,11 +728,12 @@ if (!function_exists('header_activity_package_match')) {
                             if (empty($act_packages)) continue;
                             $col_count++;
                         ?>
-                          <div class="mega-menu-column">
-                            <a href="/trekking/<?php echo htmlspecialchars($act['slug']); ?>" style="text-decoration:none; display:block;">
-                              <div class="mega-col-title" style="color: #000000; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.75rem; transition: color 0.2s;" onmouseover="this.style.color='var(--color-secondary)'" onmouseout="this.style.color='#000000'">
+                          <div class="mega-menu-column mobile-menu-group">
+                            <a href="/trekking/<?php echo htmlspecialchars($act['slug']); ?>" class="mobile-region-toggle" aria-expanded="false">
+                              <span class="mega-col-title" style="color: #000000; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.75rem; transition: color 0.2s;" onmouseover="this.style.color='var(--color-secondary)'" onmouseout="this.style.color='#000000'">
                                 <?php echo htmlspecialchars($act['name']); ?>
-                              </div>
+                              </span>
+                              <span class="mobile-region-arrow" aria-hidden="true">›</span>
                             </a>
                             <ul class="mega-col-links">
                               <?php foreach ($act_packages as $pkg): ?>
@@ -606,10 +779,13 @@ if (!function_exists('header_activity_package_match')) {
                                 }
                                 if (empty($act_packages)) continue;
                                 $act_link = '/' . $cat_path . '/' . htmlspecialchars($act['slug']);
-                                echo '<a href="' . $act_link . '" style="text-decoration:none; display:block;"><div style="font-family:var(--font-heading); font-size:0.75rem; font-weight:800; color:#000000; text-transform:uppercase; margin-top:0.5rem; margin-bottom:0.25rem; border-bottom:1px solid var(--border-color); padding-bottom:2px; transition: color 0.2s;" onmouseover="this.style.color=\'var(--color-secondary)\'" onmouseout="this.style.color=\'#000000\'">' . htmlspecialchars($act['name']) . '</div></a>';
+                                echo '<div class="mobile-menu-group standard-menu-group">';
+                                echo '<a href="' . $act_link . '" class="standard-region-link mobile-region-toggle" aria-expanded="false"><span>' . htmlspecialchars($act['name']) . '</span><span class="mobile-region-arrow" aria-hidden="true">›</span></a>';
+                                echo '<div class="standard-package-list">';
                                 foreach ($act_packages as $pkg) {
                                     echo '<a href="/' . $cat_path . '/' . htmlspecialchars($pkg['slug']) . '" class="dropdown-link" style="font-size:0.8rem; padding: 0.25rem 0.5rem;">' . htmlspecialchars($pkg['title']) . '</a>';
                                 }
+                                echo '</div></div>';
                             endforeach;
                         endif;
                         ?>

@@ -416,6 +416,26 @@ nav {
 }
 
 @media (max-width: 992px) {
+  .header-top-row {
+    position: relative;
+    padding-left: 4.5rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .header-actions-right {
+    position: absolute !important;
+    top: 50% !important;
+    left: 1rem !important;
+    right: auto !important;
+    transform: translateY(-50%) !important;
+    margin-left: 0 !important;
+    flex-shrink: 0 !important;
+  }
+
+  .header-whatsapp-right {
+    display: none !important;
+  }
+
   .menu-btn {
     display: flex;
   }
@@ -423,7 +443,8 @@ nav {
   nav {
     position: fixed;
     top: 0;
-    right: -100%;
+    left: -100%;
+    right: auto;
     width: 280px;
     height: 100vh;
     background-color: var(--bg-white);
@@ -432,13 +453,14 @@ nav {
     align-items: flex-start;
     padding: 7rem 2rem 2rem;
     gap: 2rem;
-    transition: right var(--transition-normal);
+    transition: left var(--transition-normal);
     z-index: 1050;
-    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
   }
 
   nav.open {
-    right: 0;
+    left: 0;
+    right: auto;
   }
 
   .nav-links {
@@ -1259,14 +1281,75 @@ table {
     overflow-wrap: anywhere;
   }
 
+  body.mobile-nav-open {
+    overflow: hidden !important;
+    touch-action: none;
+  }
+
+  body.mobile-nav-open #site-header {
+    position: fixed !important;
+    inset: 0 0 auto 0 !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow: visible !important;
+    z-index: 5000 !important;
+  }
+
+  body.mobile-nav-open #site-nav {
+    z-index: 5002 !important;
+  }
+
+  body.mobile-nav-open #mobile-menu-btn {
+    z-index: 5003 !important;
+  }
+
+  #site-nav {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: -100% !important;
+    right: auto !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 0 !important;
+    width: min(96vw, 980px) !important;
+    max-width: 100vw !important;
+    padding: 5.75rem 1rem 1.25rem !important;
+    background: #ffffff !important;
+    border-right: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow-lg) !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: none !important;
+    transition: left 0.28s ease, visibility 0.28s ease !important;
+    z-index: 1050 !important;
+  }
+
   #site-nav.open {
-    width: min(92vw, 420px);
-    max-height: calc(100vh - 86px);
+    width: min(96vw, 980px);
+    left: 0 !important;
+    right: auto !important;
+    max-height: 100dvh;
     overflow-y: auto;
+    visibility: visible !important;
+    pointer-events: auto !important;
   }
 
   #site-nav .nav-links {
+    display: flex !important;
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
     gap: 0.25rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   #site-nav .nav-item {
@@ -1274,7 +1357,12 @@ table {
   }
 
   #site-nav .nav-link {
+    justify-content: space-between !important;
     min-height: 44px;
+    padding: 0.65rem 0.8rem !important;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: #ffffff;
   }
 
   #site-nav .dropdown-menu {
@@ -1298,7 +1386,7 @@ table {
   }
 
   #site-nav .nav-item.open-mobile > .dropdown-menu {
-    max-height: 72vh;
+    max-height: calc(100dvh - 190px);
     overflow-y: auto;
     opacity: 1;
     visibility: visible;
@@ -1309,8 +1397,16 @@ table {
   #site-nav .mega-menu-grid,
   #site-nav .mega-menu-wide .mega-menu-grid {
     display: grid !important;
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)) !important;
     gap: 0.75rem !important;
+  }
+
+  #site-nav .mega-menu-wide {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-height: calc(100dvh - 205px) !important;
+    overflow-y: auto !important;
+    padding: 0 !important;
   }
 
   #site-nav .mega-menu-column {
@@ -1322,12 +1418,73 @@ table {
     padding: 0.75rem;
   }
 
+  #site-nav .mobile-region-toggle {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.65rem !important;
+    width: 100% !important;
+    min-height: 42px !important;
+    color: #111827 !important;
+    text-decoration: none !important;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: #ffffff;
+    padding: 0.62rem 0.7rem !important;
+  }
+
+  #site-nav .mobile-region-toggle .mega-col-title,
+  #site-nav .standard-region-link span:first-child {
+    border-bottom: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #site-nav .mobile-region-arrow {
+    display: inline-block;
+    flex: 0 0 auto;
+    font-size: 1rem;
+    line-height: 1;
+    transition: transform 0.2s ease;
+  }
+
+  #site-nav .mobile-menu-group.open-region .mobile-region-arrow {
+    transform: rotate(90deg);
+  }
+
   #site-nav .mega-col-links {
-    max-height: none;
-    overflow: visible;
     display: grid;
     grid-template-columns: 1fr;
     gap: 0.35rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.28s ease, padding-top 0.28s ease;
+  }
+
+  #site-nav .mega-menu-wide .mega-col-links {
+    max-height: clamp(210px, 38dvh, 360px);
+    overflow-y: auto;
+    padding-top: 0.45rem;
+  }
+
+  #site-nav .mega-menu-wide .mobile-region-arrow {
+    display: none;
+  }
+
+  #site-nav .standard-package-list {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.35rem !important;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.28s ease, padding-top 0.28s ease;
+  }
+
+  #site-nav .mobile-menu-group.open-region > .mega-col-links,
+  #site-nav .mobile-menu-group.open-region > .standard-package-list {
+    max-height: 72vh;
+    overflow-y: auto;
+    padding-top: 0.45rem;
   }
 
   #site-nav .mega-col-link,
@@ -1345,6 +1502,10 @@ table {
   }
 
   #site-header .menu-btn {
+    position: fixed !important;
+    top: 0.8rem !important;
+    left: 1rem !important;
+    z-index: 6000 !important;
     transition: transform 0.2s ease, background-color 0.2s ease;
   }
 
