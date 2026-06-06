@@ -13,10 +13,21 @@ if (isset($pkg) && is_array($pkg)):
     $group_offer_text = trim($pkg['group_offer_text'] ?? '');
     $offer_end_date = trim($pkg['offer_end_date'] ?? '');
     $old_price_usd = isset($pkg['offer_old_price_usd']) ? (int)$pkg['offer_old_price_usd'] : 0;
+    $card_text = trim($pkg['card_text'] ?? '');
+    if ($card_text === '') {
+        $card_text = trim($pkg['short_overview'] ?? '');
+    }
+    if ($card_text === '') {
+        $card_text = strip_tags($pkg['overview'] ?? '');
+    }
+    $card_image_alt = trim($pkg['image_alt'] ?? '');
+    if ($card_image_alt === '') {
+        $card_image_alt = $pkg['title'] . ' landscape scenery';
+    }
 ?>
 <div class="card-wrapper">
   <div class="card-image-box">
-    <img src="<?php echo htmlspecialchars($pkg['image']); ?>" alt="<?php echo htmlspecialchars($pkg['title']); ?> landscape scenery" loading="lazy">
+    <img src="<?php echo htmlspecialchars($pkg['image']); ?>" alt="<?php echo htmlspecialchars($card_image_alt); ?>" loading="lazy">
     <div class="card-badge"><?php echo htmlspecialchars($pkg['difficulty']); ?></div>
     <?php if (!empty($offer_badge)): ?>
       <div class="card-badge offer-pulse-badge" style="left:auto; right:0.85rem; top:0.85rem; background:#dc2626; color:white; border-color:#dc2626;"><?php echo htmlspecialchars($offer_badge); ?></div>
@@ -54,7 +65,7 @@ if (isset($pkg) && is_array($pkg)):
       </div>
       <?php endif; ?>
     </div>
-    <p class="card-description"><?php echo htmlspecialchars($pkg['overview']); ?></p>
+    <p class="card-description"><?php echo htmlspecialchars($card_text); ?></p>
     <div class="card-footer">
       <div style="font-size: 0.8rem; color: var(--text-muted); font-weight:600;">
         Category: <span style="text-transform: capitalize; color: var(--color-accent);"><?php echo htmlspecialchars($pkg['category']); ?></span>

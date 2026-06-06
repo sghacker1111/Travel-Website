@@ -131,7 +131,8 @@ print("\n[5] Cleaning up test review...")
 delete_data = {
     'delete_review': '1',
     'rev_pkg_id': ebc_pkg['id'],
-    'rev_idx': str(test_rev_idx)
+    'rev_idx': str(test_rev_idx),
+    'delete_confirm_password': login_data['password']
 }
 r = session.post(f"{base_url}/admin", data=delete_data)
 print(f"Delete request status: {r.status_code}")

@@ -87,6 +87,7 @@ if (file_exists($settings_path)) {
           <span class="footer-badge">TAAN MEMBER</span>
           <span class="footer-badge">NMA APPROVED</span>
         </div>
+        <div class="footer-developer">Developed By: Sunil Gotame (SGHACKER)</div>
       </div>
     </div>
   </footer>

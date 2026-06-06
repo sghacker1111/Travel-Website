@@ -1033,6 +1033,36 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
         // Fallback checks for source links
         $sourceLinks = array_filter(array_map('trim', explode("\n", $_POST['sourceLinks'])));
 
+        $tripFacts = [];
+        if (isset($_POST['fact_labels']) && is_array($_POST['fact_labels'])) {
+            foreach ($_POST['fact_labels'] as $idx => $label) {
+                $label = trim($label);
+                $value = trim($_POST['fact_values'][$idx] ?? '');
+                if ($label === '' || $value === '') continue;
+                $tripFacts[] = [
+                    'label' => $label,
+                    'value' => $value
+                ];
+            }
+        }
+
+        $detailSections = [];
+        if (isset($_POST['section_titles']) && is_array($_POST['section_titles'])) {
+            foreach ($_POST['section_titles'] as $idx => $section_title) {
+                $section_title = trim($section_title);
+                $section_content = $_POST['section_contents'][$idx] ?? '';
+                if ($section_title === '' || trim(strip_tags($section_content)) === '') continue;
+                $detailSections[] = [
+                    'title' => $section_title,
+                    'content' => $section_content
+                ];
+            }
+        }
+
+        $packingList = array_filter(array_map('trim', explode("\n", $_POST['packing_list'] ?? '')));
+        $imageAltTexts = array_filter(array_map('trim', explode("\n", $_POST['image_alt_texts'] ?? '')));
+        $tags = array_filter(array_map('trim', explode("\n", $_POST['package_tags'] ?? '')));
+
         // Itinerary Days
         $itinerary = [];
         if (isset($_POST['itinerary_days'])) {
@@ -1124,6 +1154,11 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             'priceUSD' => (int)$_POST['priceUSD'],
             'priceNPR' => (int)$_POST['priceNPR'],
             'priceNote' => trim($_POST['priceNote']),
+            'short_overview' => trim($_POST['short_overview'] ?? ''),
+            'secondary_keywords' => trim($_POST['secondary_keywords'] ?? ''),
+            'card_text' => trim($_POST['card_text'] ?? ''),
+            'cta_text' => trim($_POST['cta_text'] ?? ''),
+            'route_map_description' => trim($_POST['route_map_description'] ?? ''),
             'offer_badge' => trim($_POST['offer_badge'] ?? ''),
             'offer_old_price_usd' => isset($_POST['offer_old_price_usd']) ? (int)$_POST['offer_old_price_usd'] : 0,
             'offer_end_date' => trim($_POST['offer_end_date'] ?? ''),
@@ -1137,6 +1172,11 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             'meals' => trim($_POST['meals']),
             'groupSize' => trim($_POST['groupSize']),
             'overview' => $_POST['overview'],
+            'tripFacts' => $tripFacts,
+            'detailSections' => $detailSections,
+            'packingList' => array_values($packingList),
+            'image_alt_texts' => array_values($imageAltTexts),
+            'tags' => array_values($tags),
             'highlights' => $highlights,
             'costIncludes' => $includes,
             'costExcludes' => $excludes,
@@ -1653,8 +1693,45 @@ foreach ($packages as $pkg) {
             </div>
 
             <div class="form-group">
+              <label for="edit-short_overview">Short Overview / Homepage Summary</label>
+              <textarea id="edit-short_overview" name="short_overview" class="form-input" rows="3" placeholder="Short readable summary for cards and top of package page..."></textarea>
+            </div>
+
+            <div class="form-group">
               <label for="edit-overview">Expedition Overview (Rich Text)</label>
               <textarea id="edit-overview" name="overview" class="form-input" rows="8" placeholder="Expedition details..."></textarea>
+            </div>
+
+            <div class="edit-fields-grid">
+              <div class="form-group">
+                <label for="edit-card_text">Custom Package Card Text</label>
+                <textarea id="edit-card_text" name="card_text" class="form-input" rows="3" placeholder="Short homepage card copy. Leave blank to use short overview."></textarea>
+              </div>
+              <div class="form-group">
+                <label for="edit-cta_text">Package Call To Action Text</label>
+                <textarea id="edit-cta_text" name="cta_text" class="form-input" rows="3" placeholder="Book this trek today..."></textarea>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="edit-route_map_description">Route Map Description</label>
+              <textarea id="edit-route_map_description" name="route_map_description" class="form-input" rows="2" placeholder="Kathmandu -> Lukla -> Phakding..."></textarea>
+            </div>
+
+            <div style="border-top:1px solid var(--border-color); padding-top:1.5rem; margin-top:1.5rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                <h4 style="font-family:var(--font-heading); color:var(--color-primary); font-weight:800; margin:0;">Trip Facts Table</h4>
+                <button type="button" class="btn btn-outline btn-sm" onclick="addTripFactRow()">+ Add Trip Fact</button>
+              </div>
+              <div id="trip-facts-container" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+            </div>
+
+            <div style="border-top:1px solid var(--border-color); padding-top:1.5rem; margin-top:1.5rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                <h4 style="font-family:var(--font-heading); color:var(--color-primary); font-weight:800; margin:0;">Extra Package Detail Sections</h4>
+                <button type="button" class="btn btn-outline btn-sm" onclick="addDetailSectionRow()">+ Add Detail Section</button>
+              </div>
+              <div id="detail-sections-container" style="display:flex; flex-direction:column; gap:1rem;"></div>
             </div>
 
             <div class="edit-fields-grid">
@@ -1770,6 +1847,11 @@ foreach ($packages as $pkg) {
               </div>
 
               <div class="form-group">
+                <label for="edit-secondary_keywords">Secondary Keywords</label>
+                <textarea id="edit-secondary_keywords" name="secondary_keywords" class="form-input" rows="2" placeholder="EBC Trek, Everest Base Camp itinerary, Everest Base Camp Trek cost..."></textarea>
+              </div>
+
+              <div class="form-group">
                 <label for="edit-seo_description">SEO Meta Description</label>
                 <textarea id="edit-seo_description" name="seo_description" class="form-input" rows="2" placeholder="Search preview summary..." oninput="triggerSEO()"></textarea>
               </div>
@@ -1812,8 +1894,23 @@ foreach ($packages as $pkg) {
               </div>
             </div>
 
-            <!-- Hidden elements for parsing source check -->
-            <input type="hidden" name="sourceLinks" value="">
+            <div style="border-top:1px solid var(--border-color); padding-top:2rem; margin-top:2rem;">
+              <h4 style="font-family:var(--font-heading); color:var(--color-primary); margin-bottom:1rem; font-weight:800;">Tags, Source Links, and Image SEO</h4>
+              <div class="edit-fields-grid">
+                <div class="form-group">
+                  <label for="edit-package_tags">Website Categories / Tags (one per line)</label>
+                  <textarea id="edit-package_tags" name="package_tags" class="form-input" rows="5" placeholder="Everest Region Trekking&#10;Nepal Trekking Packages"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="edit-image_alt_texts">Image SEO Alt Text Ideas (one per line)</label>
+                  <textarea id="edit-image_alt_texts" name="image_alt_texts" class="form-input" rows="5" placeholder="Everest Base Camp Trek route in Nepal"></textarea>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="edit-sourceLinks">Source / Verification Links (one per line)</label>
+                <textarea id="edit-sourceLinks" name="sourceLinks" class="form-input" rows="3" placeholder="https://ntb.gov.np/en/everest-base-camp"></textarea>
+              </div>
+            </div>
 
             <div style="margin-top:2.5rem; display:flex; gap:1rem; justify-content:flex-end;">
               <button type="button" class="btn btn-outline" onclick="resetPackageForm()">Reset Form</button>
@@ -3050,6 +3147,52 @@ foreach ($packages as $pkg) {
          triggerSEO();
       }
 
+      function escapeInput(value) {
+         return String(value || '')
+           .replace(/&/g, '&amp;')
+           .replace(/</g, '&lt;')
+           .replace(/>/g, '&gt;')
+           .replace(/"/g, '&quot;');
+      }
+
+      function addTripFactRow(label = '', value = '') {
+         const container = document.getElementById('trip-facts-container');
+         const row = document.createElement('div');
+         row.className = 'trip-fact-row';
+         row.style.display = 'grid';
+         row.style.gridTemplateColumns = '1fr 1.4fr auto';
+         row.style.gap = '0.75rem';
+         row.style.alignItems = 'center';
+         row.innerHTML = `
+           <input type="text" name="fact_labels[]" class="form-input" value="${escapeInput(label)}" placeholder="Fact label, e.g. Maximum altitude">
+           <input type="text" name="fact_values[]" class="form-input" value="${escapeInput(value)}" placeholder="Fact value, e.g. 5,545 m at Kala Patthar">
+           <button type="button" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger);" onclick="this.parentElement.remove()">Remove</button>
+         `;
+         container.appendChild(row);
+      }
+
+      function addDetailSectionRow(title = '', content = '') {
+         const container = document.getElementById('detail-sections-container');
+         const row = document.createElement('div');
+         row.className = 'detail-section-row';
+         row.style.border = '1px solid var(--border-color)';
+         row.style.borderRadius = 'var(--radius-md)';
+         row.style.padding = '1rem';
+         row.style.background = '#fafafa';
+         row.innerHTML = `
+           <div class="form-group">
+             <label>Section Title</label>
+             <input type="text" name="section_titles[]" class="form-input" value="${escapeInput(title)}" placeholder="Best Time, Difficulty, Accommodation...">
+           </div>
+           <div class="form-group">
+             <label>Section Content</label>
+             <textarea name="section_contents[]" class="form-input" rows="5">${escapeInput(content)}</textarea>
+           </div>
+           <button type="button" class="btn btn-secondary btn-sm" style="background-color:var(--color-danger);" onclick="this.parentElement.remove()">Remove Section</button>
+         `;
+         container.appendChild(row);
+      }
+
       // Rebuilding dynamic Day row elements in form (Req 3, 6, 11)
       let dayIndex = 0;
       function addItineraryDayRow(dayNum = '', title = '', desc = '', accomm = 'Teahouse Lodge', meals = 'Breakfast, Lunch, Dinner', location = '', x = '', y = '') {
@@ -3381,6 +3524,10 @@ foreach ($packages as $pkg) {
          document.getElementById('edit-priceUSD').value = pkg.priceUSD;
          document.getElementById('edit-priceNPR').value = pkg.priceNPR;
          document.getElementById('edit-priceNote').value = pkg.priceNote || 'Estimated starting price per person';
+         document.getElementById('edit-short_overview').value = pkg.short_overview || '';
+         document.getElementById('edit-card_text').value = pkg.card_text || '';
+         document.getElementById('edit-cta_text').value = pkg.cta_text || '';
+         document.getElementById('edit-route_map_description').value = pkg.route_map_description || '';
          document.getElementById('edit-offer_badge').value = pkg.offer_badge || '';
          document.getElementById('edit-offer_old_price_usd').value = pkg.offer_old_price_usd || 0;
          document.getElementById('edit-offer_end_date').value = pkg.offer_end_date || '';
@@ -3397,8 +3544,12 @@ foreach ($packages as $pkg) {
          // SEO & Socials
          document.getElementById('edit-seo_title').value = pkg.seo_title || '';
          document.getElementById('edit-seo_keywords').value = pkg.seo_keywords || '';
+         document.getElementById('edit-secondary_keywords').value = pkg.secondary_keywords || '';
          document.getElementById('edit-seo_description').value = pkg.seo_description || '';
          document.getElementById('edit-image_alt').value = pkg.image_alt || '';
+         document.getElementById('edit-image_alt_texts').value = Array.isArray(pkg.image_alt_texts) ? pkg.image_alt_texts.join('\n') : '';
+         document.getElementById('edit-package_tags').value = Array.isArray(pkg.tags) ? pkg.tags.join('\n') : '';
+         document.getElementById('edit-sourceLinks').value = Array.isArray(pkg.sourceLinks) ? pkg.sourceLinks.join('\n') : '';
          document.getElementById('edit-og_title').value = pkg.og_title || '';
          document.getElementById('edit-og_description').value = pkg.og_description || '';
          document.getElementById('edit-og_image').value = pkg.og_image || '';
@@ -3451,6 +3602,16 @@ foreach ($packages as $pkg) {
              });
          }
 
+         document.getElementById('trip-facts-container').innerHTML = '';
+         if (pkg.tripFacts && Array.isArray(pkg.tripFacts)) {
+             pkg.tripFacts.forEach(fact => addTripFactRow(fact.label, fact.value));
+         }
+
+         document.getElementById('detail-sections-container').innerHTML = '';
+         if (pkg.detailSections && Array.isArray(pkg.detailSections)) {
+             pkg.detailSections.forEach(section => addDetailSectionRow(section.title, section.content));
+         }
+
          // Clear & Rebuild dynamic Itinerary day rows
          document.getElementById('itinerary-rows-container').innerHTML = '';
          if (pkg.itinerary && Array.isArray(pkg.itinerary)) {
@@ -3481,6 +3642,10 @@ foreach ($packages as $pkg) {
          document.getElementById('edit-duration').value = '10';
          document.getElementById('edit-priceUSD').value = '950';
          document.getElementById('edit-priceNPR').value = '126350';
+         document.getElementById('edit-short_overview').value = '';
+         document.getElementById('edit-card_text').value = '';
+         document.getElementById('edit-cta_text').value = '';
+         document.getElementById('edit-route_map_description').value = '';
          document.getElementById('edit-offer_badge').value = '<?php echo htmlspecialchars($home_offer_settings['default_badge'], ENT_QUOTES); ?>';
          document.getElementById('edit-offer_old_price_usd').value = '0';
          document.getElementById('edit-offer_end_date').value = '';
@@ -3496,6 +3661,8 @@ foreach ($packages as $pkg) {
          document.getElementById('edit-existing_route_map').value = '';
          document.getElementById('route-map-preview').innerHTML = '';
          document.getElementById('gallery-preview-container').innerHTML = '';
+         document.getElementById('trip-facts-container').innerHTML = '';
+         document.getElementById('detail-sections-container').innerHTML = '';
 
          if (richEditors['edit-overview']) richEditors['edit-overview'].setData('');
          if (richEditors['edit-highlights']) richEditors['edit-highlights'].setData('');
@@ -3508,8 +3675,12 @@ foreach ($packages as $pkg) {
          
          document.getElementById('edit-seo_title').value = '';
          document.getElementById('edit-seo_keywords').value = '';
+         document.getElementById('edit-secondary_keywords').value = '';
          document.getElementById('edit-seo_description').value = '';
          document.getElementById('edit-image_alt').value = '';
+         document.getElementById('edit-image_alt_texts').value = '';
+         document.getElementById('edit-package_tags').value = '';
+         document.getElementById('edit-sourceLinks').value = '';
          document.getElementById('edit-og_title').value = '';
          document.getElementById('edit-og_description').value = '';
          document.getElementById('edit-og_image').value = '';

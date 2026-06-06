@@ -166,6 +166,11 @@ if (isset($current_pkg['reviews']) && is_array($current_pkg['reviews'])) {
           <!-- Tab Pane: Overview -->
           <div class="tab-pane active" id="detail-overview">
             <h2 style="font-family: var(--font-heading); font-size:1.75rem; color:var(--color-primary); margin-bottom:1rem; font-weight:800;">Trip Overview</h2>
+            <?php if (!empty($current_pkg['short_overview'])): ?>
+              <div style="font-size:1.08rem; line-height:1.75; color:var(--text-dark); background:#f8fafc; border-left:4px solid var(--color-secondary); padding:1rem 1.25rem; border-radius:var(--radius-sm); margin-bottom:1.25rem;">
+                <?php echo nl2br(htmlspecialchars($current_pkg['short_overview'])); ?>
+              </div>
+            <?php endif; ?>
             <div style="color:var(--text-medium); line-height:1.8; font-size:1.02rem; margin-bottom:2.5rem;"><?php echo $current_pkg['overview']; ?></div>
 
             <h3 style="font-family: var(--font-heading); font-size:1.4rem; color:var(--color-primary); margin-bottom:1.25rem; font-weight:800;">Trip Highlights</h3>
@@ -191,8 +196,59 @@ if (isset($current_pkg['reviews']) && is_array($current_pkg['reviews'])) {
               <div><strong>Accommodation:</strong> <?php echo $current_pkg['accommodation']; ?></div>
               <div><strong>Meals:</strong> <?php echo $current_pkg['meals']; ?></div>
               <div><strong>Group Size:</strong> <?php echo htmlspecialchars($current_pkg['groupSize']); ?></div>
-              <div><strong>Permit Check:</strong> <?php echo count($current_pkg['requiredPermits']); ?> required</div>
+              <div><strong>Permit Check:</strong> <?php echo is_array($current_pkg['requiredPermits']) ? count($current_pkg['requiredPermits']) : (trim(strip_tags((string)$current_pkg['requiredPermits'])) !== '' ? 1 : 0); ?> required</div>
             </div>
+
+            <?php if (!empty($current_pkg['tripFacts']) && is_array($current_pkg['tripFacts'])): ?>
+              <h3 style="font-family: var(--font-heading); font-size:1.4rem; color:var(--color-primary); margin:2.5rem 0 1.25rem; font-weight:800;">Detailed Trip Facts</h3>
+              <div style="overflow-x:auto; border:1px solid var(--border-color); border-radius:var(--radius-md); margin-bottom:2.5rem;">
+                <table style="width:100%; border-collapse:collapse; background:white;">
+                  <tbody>
+                    <?php foreach ($current_pkg['tripFacts'] as $fact): ?>
+                      <tr>
+                        <th style="text-align:left; width:38%; padding:0.85rem 1rem; background:#f8fafc; border-bottom:1px solid var(--border-color); color:var(--color-primary); font-weight:800;"><?php echo htmlspecialchars($fact['label'] ?? ''); ?></th>
+                        <td style="padding:0.85rem 1rem; border-bottom:1px solid var(--border-color); color:var(--text-medium);"><?php echo htmlspecialchars($fact['value'] ?? ''); ?></td>
+                      </tr>
+                    <?php endforeach; ?>
+                  </tbody>
+                </table>
+              </div>
+            <?php endif; ?>
+
+            <?php if (!empty($current_pkg['detailSections']) && is_array($current_pkg['detailSections'])): ?>
+              <div style="display:grid; gap:1.5rem; margin-top:2rem;">
+                <?php foreach ($current_pkg['detailSections'] as $section): ?>
+                  <article style="border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1.5rem; background:white;">
+                    <h3 style="font-family:var(--font-heading); color:var(--color-primary); font-size:1.25rem; margin:0 0 0.85rem; font-weight:800;"><?php echo htmlspecialchars($section['title'] ?? ''); ?></h3>
+                    <div style="line-height:1.75; color:var(--text-medium);"><?php echo nl2br($section['content'] ?? ''); ?></div>
+                  </article>
+                <?php endforeach; ?>
+              </div>
+            <?php endif; ?>
+
+            <?php if (!empty($current_pkg['packingList']) && is_array($current_pkg['packingList'])): ?>
+              <h3 style="font-family: var(--font-heading); font-size:1.4rem; color:var(--color-primary); margin:2.5rem 0 1.25rem; font-weight:800;">Recommended Packing List</h3>
+              <div style="display:flex; flex-wrap:wrap; gap:0.6rem; margin-bottom:2rem;">
+                <?php foreach ($current_pkg['packingList'] as $item): ?>
+                  <span class="card-badge" style="position:static; background:#f8fafc; border:1px solid var(--border-color); color:var(--text-dark);"><?php echo htmlspecialchars($item); ?></span>
+                <?php endforeach; ?>
+              </div>
+            <?php endif; ?>
+
+            <?php if (!empty($current_pkg['tags']) && is_array($current_pkg['tags'])): ?>
+              <div style="display:flex; flex-wrap:wrap; gap:0.55rem; margin:1.5rem 0;">
+                <?php foreach ($current_pkg['tags'] as $tag): ?>
+                  <span style="font-size:0.78rem; font-weight:800; color:var(--color-primary); background:#eff6ff; border:1px solid #bfdbfe; border-radius:999px; padding:0.35rem 0.65rem;"><?php echo htmlspecialchars($tag); ?></span>
+                <?php endforeach; ?>
+              </div>
+            <?php endif; ?>
+
+            <?php if (!empty($current_pkg['cta_text'])): ?>
+              <div style="margin-top:2.5rem; background:var(--color-primary); color:white; padding:1.5rem; border-radius:var(--radius-md); display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+                <div style="line-height:1.6; font-weight:700;"><?php echo nl2br(htmlspecialchars($current_pkg['cta_text'])); ?></div>
+                <a href="/contact?package=<?php echo urlencode($current_pkg['title']); ?>" class="btn btn-primary" style="background:var(--color-secondary); border-color:var(--color-secondary); color:white;">Book / Ask Price</a>
+              </div>
+            <?php endif; ?>
           </div>
 
           <!-- Tab Pane: Itinerary -->
@@ -251,6 +307,12 @@ if (isset($current_pkg['reviews']) && is_array($current_pkg['reviews'])) {
           <!-- Tab Pane: Interactive Route Map -->
           <div class="tab-pane" id="detail-route">
             <h2 style="font-family: var(--font-heading); font-size:1.75rem; color:var(--color-primary); margin-bottom:1rem; font-weight:800;">Visual Route Mapper</h2>
+            <?php if (!empty($current_pkg['route_map_description'])): ?>
+              <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem 1.25rem; margin-bottom:1.5rem; color:var(--text-medium); line-height:1.7;">
+                <strong style="color:var(--color-primary);">Route:</strong>
+                <?php echo nl2br(htmlspecialchars($current_pkg['route_map_description'])); ?>
+              </div>
+            <?php endif; ?>
             
             <?php if (!empty($current_pkg['route_map'])): ?>
               <!-- Show Static Uploaded Route Map if exists (Req 5) -->
@@ -523,9 +585,11 @@ if (isset($current_pkg['reviews']) && is_array($current_pkg['reviews'])) {
               <p style="color:var(--text-muted); text-align:center; padding:3rem 0;">No photos uploaded in the gallery list yet.</p>
             <?php else: ?>
               <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1.25rem;" id="gallery-grid">
-                <?php foreach ($gallery as $img_path): ?>
+                <?php foreach ($gallery as $gidx => $img_path):
+                  $gallery_alt = !empty($current_pkg['image_alt_texts'][$gidx]) ? $current_pkg['image_alt_texts'][$gidx] : ($image_alt ?? $current_pkg['title']);
+                ?>
                   <div style="height:200px; border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--border-color); background:#f1f5f9; cursor:pointer; transition:all 0.3s ease;" onmouseover="this.style.transform='scale(1.03)';" onmouseout="this.style.transform='scale(1)';" onclick="openLightbox('/<?php echo htmlspecialchars($img_path); ?>')">
-                    <img src="/<?php echo htmlspecialchars($img_path); ?>" style="width:100%; height:100%; object-fit:cover;" alt="Trekking view">
+                    <img src="/<?php echo htmlspecialchars($img_path); ?>" style="width:100%; height:100%; object-fit:cover;" alt="<?php echo htmlspecialchars($gallery_alt); ?>">
                   </div>
                 <?php endforeach; ?>
               </div>
