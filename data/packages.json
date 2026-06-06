@@ -6,232 +6,205 @@
         "title": "Everest Base Camp Trek",
         "region": "Everest \/ Khumbu",
         "duration": 14,
-        "priceUSD": 1450,
-        "priceNPR": 192850,
-        "priceNote": "Starting from USD 1,450 per person. Final price depends on group size, hotel category, guide\/porter service, flight cost, season, and included services.",
-        "difficulty": "Moderate to Challenging",
-        "maxAltitude": "5,545 m at Kala Patthar",
-        "bestSeason": "March to May and September to November",
+        "priceUSD": 1490,
+        "priceNPR": 198170,
+        "priceNote": "Estimated starting price per person based on double occupancy",
+        "short_overview": "",
+        "secondary_keywords": "",
+        "card_text": "",
+        "cta_text": "",
+        "route_map_description": "",
+        "offer_badge": "Hot Deals",
+        "offer_old_price_usd": 0,
+        "offer_end_date": "",
+        "group_offer_text": "",
+        "difficulty": "Challenging",
+        "maxAltitude": "5,545 m, Kala Patthar",
+        "bestSeason": "March-May and September-November",
         "startPoint": "Kathmandu",
         "endPoint": "Kathmandu",
-        "accommodation": "Hotel in Kathmandu, tea house\/lodge during trek",
-        "meals": "Breakfast, lunch, and dinner during trek",
-        "groupSize": "1 to 20 people",
-        "overview": "<p>The Everest Base Camp Trek is a dream journey for trekkers who want to walk close to the world highest mountain, Mount Everest. The trek begins with a scenic mountain flight to Lukla, followed by a beautiful walk through Phakding, Namche Bazaar, Tengboche, Dingboche, Lobuche, and Gorakshep before reaching Everest Base Camp.<\/p><p>This trek is not only about mountains. It is also a cultural journey through the homeland of the Sherpa people. Along the route, trekkers can experience traditional Sherpa villages, prayer wheels, mani walls, Buddhist monasteries, colorful prayer flags, and the peaceful lifestyle of the Himalayas.<\/p><p>The trail passes through Sagarmatha National Park, a UNESCO World Heritage Site, where trekkers can enjoy pine forests, rhododendron forests, deep valleys, high suspension bridges, glaciers, and rare Himalayan landscapes. The acclimatization days in Namche Bazaar and Dingboche help trekkers adjust to the altitude safely.<\/p><p>The major highlights of this trek are reaching Everest Base Camp and climbing Kala Patthar early in the morning for one of the best sunrise views over Mount Everest. This package is suitable for physically fit beginners and experienced trekkers who want a classic Himalayan adventure in Nepal.<\/p>",
-        "highlights": [
-            "Walk to the base camp of the world highest mountain, Mount Everest.",
-            "Enjoy a thrilling scenic flight to and from Lukla.",
-            "Explore Namche Bazaar, the famous Sherpa town and gateway to Everest.",
-            "Visit Tengboche Monastery, one of the most important monasteries in the Everest region.",
-            "Trek through Sagarmatha National Park, a UNESCO World Heritage Site.",
-            "Reach Everest Base Camp at 5,364 meters.",
-            "Hike to Kala Patthar at 5,545 meters for the best close-up view of Mount Everest.",
-            "Experience Sherpa culture, mountain villages, prayer flags, mani walls, and Buddhist monasteries.",
-            "See stunning views of Everest, Lhotse, Nuptse, Ama Dablam, Thamserku, Pumori, and other Himalayan peaks."
+        "accommodation": "Hotel in Kathmandu and teahouses on trek",
+        "meals": "Full board on trek; breakfast in Kathmandu",
+        "groupSize": "2 to 14 people",
+        "overview": "<p>Everest Base Camp Trek is one of Nepal's most famous trekking journeys. It takes travelers through Sherpa villages, Buddhist monasteries, suspension bridges, Sagarmatha National Park, Namche Bazaar, Tengboche, Dingboche, Lobuche, Gorakshep, Everest Base Camp, and Kala Patthar.<\/p>",
+        "tripFacts": [],
+        "detailSections": [],
+        "packingList": [],
+        "image_alt_texts": [],
+        "tags": [],
+        "highlights": "<p>Scenic mountain flight to Lukla Explore Namche Bazaar and local Sherpa culture Visit the sacred Tengboche Monastery in the clouds Hike through Sagarmatha National Park Stand at the foot of Mount Everest at Base Camp (5,364m) Breathtaking sunrise panoramic view from Kala Patthar (5,545m)<\/p>",
+        "costIncludes": "<p>Airport pickup and drop-off in Kathmandu Hotel stay with breakfast in Kathmandu Domestic flights Kathmandu-Lukla-Kathmandu Trekking permits Licensed guide and porters Teahouse accommodation during trek Meals on trek Standard first aid kit<\/p>",
+        "costExcludes": "<p>International flights and visas Emergency rescue evacuation insurance Personal items, hot shower, charging, drinks Tips for guide and porter<\/p>",
+        "requiredPermits": "<p>Sagarmatha National Park Permit Khumbu Pasang Lhamu Rural Municipality Permit<\/p>",
+        "image": "assets\/images\/packages\/everest-base-camp.jpg",
+        "route_map": "",
+        "gallery": [
+            "assets\/images\/packages\/everest-base-camp.jpg"
+        ],
+        "sourceLinks": [],
+        "lastCheckedDate": "2026-06-06",
+        "faqs": [
+            {
+                "q": "What is the best month for this trek?",
+                "a": "March to May and September to November offer clear skies, stable weather, and excellent mountain views."
+            },
+            {
+                "q": "How physically demanding is the Everest Base Camp Trek?",
+                "a": "It is challenging. You should be in good physical health and capable of walking 5-7 hours daily with a light daypack."
+            },
+            {
+                "q": "Are there charging facilities along the trail?",
+                "a": "Yes, teahouses offer device charging for a small fee ranging from $2 to $5 USD per device."
+            }
         ],
         "itinerary": [
             {
                 "day": 1,
-                "title": "Arrival in Kathmandu",
-                "location": "Kathmandu",
-                "accommodation": "Hotel",
-                "meals": "Not included \/ welcome dinner optional",
-                "desc": "After your arrival at Tribhuvan International Airport, our representative will welcome you and transfer you to your hotel. You can rest after your journey or explore nearby areas of Kathmandu. In the evening, there will be a short briefing about the Everest Base Camp Trek, including route details, packing, safety, permits, and the next day flight plan. Altitude: 1,400 m."
+                "title": "Arrival in Kathmandu and transfer to hotel",
+                "desc": "Welcome to Kathmandu. Upon arrival at Tribhuvan International Airport, you will be met by our representative and transferred to your hotel.",
+                "accommodation": "Teahouse Lodge",
+                "meals": "Breakfast, Lunch, Dinner",
+                "location": "",
+                "x": null,
+                "y": null
             },
             {
                 "day": 2,
                 "title": "Fly to Lukla and trek to Phakding",
-                "location": "Phakding",
-                "accommodation": "Tea house\/lodge",
-                "meals": "Breakfast, lunch, and dinner",
-                "desc": "Early in the morning, you will take a scenic mountain flight to Lukla. The flight offers beautiful views of hills, rivers, and Himalayan landscapes. After landing at Lukla, the trek begins with a gentle walk through Sherpa villages, prayer walls, and green hills. The trail descends gradually towards Phakding. Walking time: 3 to 4 hours. Altitude: 2,610 m."
+                "desc": "Take an early morning scenic flight to Hillary-Tenzing airport in Lukla (2,860m). Begin trekking to Phakding village.",
+                "accommodation": "Teahouse Lodge",
+                "meals": "Breakfast, Lunch, Dinner",
+                "location": "",
+                "x": null,
+                "y": null
             },
             {
                 "day": 3,
                 "title": "Trek from Phakding to Namche Bazaar",
-                "location": "Namche Bazaar",
-                "accommodation": "Tea house\/lodge",
-                "meals": "Breakfast, lunch, and dinner",
-                "desc": "The trail follows the Dudh Koshi River and crosses several suspension bridges. You will enter Sagarmatha National Park and continue through forests and small villages. After crossing the famous high suspension bridge, the trail climbs steeply towards Namche Bazaar. On a clear day, you may get your first distant view of Mount Everest. Walking time: 6 to 7 hours. Altitude: 3,440 m."
+                "desc": "Cross suspension bridges, enter Sagarmatha National Park, and make a steep final climb to Namche Bazaar (3,440m).",
+                "accommodation": "Teahouse Lodge",
+                "meals": "Breakfast, Lunch, Dinner",
+                "location": "",
+                "x": null,
+                "y": null
             },
             {
                 "day": 4,
                 "title": "Acclimatization day in Namche Bazaar",
-                "location": "Namche Bazaar",
-                "accommodation": "Tea house\/lodge",
-                "meals": "Breakfast, lunch, and dinner",
-                "desc": "This day is kept for acclimatization to help your body adjust to the altitude. You can hike to Everest View Hotel or visit nearby viewpoints for beautiful views of Everest, Ama Dablam, Lhotse, and other peaks. Namche Bazaar also has bakeries, shops, museums, and local markets where you can experience Sherpa culture. Walking time: 3 to 4 hours optional hike. Altitude: 3,440 m."
+                "desc": "Rest day. Hike to Everest View Hotel (3,880m) for panoramic views of Everest, Lhotse, and Ama Dablam.",
+                "accommodation": "Teahouse Lodge",
+                "meals": "Breakfast, Lunch, Dinner",
+                "location": "",
+                "x": null,
+                "y": null
             },
             {
                 "day": 5,
                 "title": "Trek from Namche Bazaar to Tengboche",
-                "location": "Tengboche",
-                "accommodation": "Tea house\/lodge",
-                "meals": "Breakfast, lunch, and dinner",
-                "desc": "The trail offers excellent views of Everest, Ama Dablam, Thamserku, and other peaks. After walking along a scenic ridge, the route descends to the river and then climbs through forested trails to Tengboche. Tengboche is famous for its beautiful monastery and panoramic mountain views. Walking time: 5 to 6 hours. Altitude: 3,860 m."
+                "desc": "Trek along ridge trails, descend to the river, and climb to Tengboche Monastery (3,860m).",
+                "accommodation": "Teahouse Lodge",
+                "meals": "Breakfast, Lunch, Dinner",
+                "location": "",
+                "x": null,
+                "y": null
             },
             {
                 "day": 6,
                 "title": "Trek from Tengboche to Dingboche",
-                "location": "Dingboche",
-                "accommodation": "Tea house\/lodge",
-                "meals": "Breakfast, lunch, and dinner",
-                "desc": "The trek continues through Debuche and crosses the Imja Khola. You will pass Pangboche village and walk through open alpine landscapes. As the altitude increases, the vegetation becomes thinner and the mountain views become wider. Dingboche is a beautiful village surrounded by stone walls and high Himalayan peaks. Walking time: 5 to 6 hours. Altitude: 4,410 m."
+                "desc": "Walk past Mani stone walls, entering the dry Imja Valley to reach Dingboche (4,410m).",
+                "accommodation": "Teahouse Lodge",
+                "meals": "Breakfast, Lunch, Dinner",
+                "location": "",
+                "x": null,
+                "y": null
             },
             {
                 "day": 7,
                 "title": "Acclimatization day in Dingboche",
-                "location": "Dingboche",
-                "accommodation": "Tea house\/lodge",
-                "meals": "Breakfast, lunch, and dinner",
-                "desc": "This is another important acclimatization day. You can hike to Nangkartshang viewpoint for views of Makalu, Lhotse, Ama Dablam, and surrounding valleys. The hike helps your body adjust to the high altitude before moving further towards Lobuche and Everest Base Camp. Walking time: 3 to 5 hours optional hike. Altitude: 4,410 m."
+                "desc": "Hike to Nangkartshang Peak (5,100m) for views of Makalu and Cho Oyu.",
+                "accommodation": "Teahouse Lodge",
+                "meals": "Breakfast, Lunch, Dinner",
+                "location": "",
+                "x": null,
+                "y": null
             },
             {
                 "day": 8,
                 "title": "Trek from Dingboche to Lobuche",
-                "location": "Lobuche",
-                "accommodation": "Tea house\/lodge",
-                "meals": "Breakfast, lunch, and dinner",
-                "desc": "The trail climbs gradually through open valleys with beautiful mountain views. You will pass Thukla and continue to the Everest memorial area, where memorials have been built for climbers. From there, the trail continues towards Lobuche with views of Nuptse, Pumori, and other peaks. Walking time: 5 to 6 hours. Altitude: 4,910 m."
+                "desc": "Walk past Thokla Pass climbers' memorial and follow the lateral moraine of the Khumbu Glacier to Lobuche (4,910m).",
+                "accommodation": "Teahouse Lodge",
+                "meals": "Breakfast, Lunch, Dinner",
+                "location": "",
+                "x": null,
+                "y": null
             },
             {
                 "day": 9,
-                "title": "Trek to Everest Base Camp and return to Gorakshep",
-                "location": "Gorakshep \/ Everest Base Camp",
-                "accommodation": "Tea house\/lodge",
-                "meals": "Breakfast, lunch, and dinner",
-                "desc": "This is one of the most exciting days of the trek. You will walk from Lobuche to Gorakshep and then continue towards Everest Base Camp. The trail passes through rocky paths, glaciers, and high Himalayan landscapes. After reaching Everest Base Camp, you can enjoy the achievement and take photos near the famous base camp area. After spending some time there, you will return to Gorakshep for the night. Walking time: 7 to 8 hours. Maximum altitude: 5,364 m. Overnight altitude: 5,164 m."
+                "title": "Trek from Lobuche to Everest Base Camp and return to Gorakshep",
+                "desc": "Trek to Gorakshep (5,160m), then make the roundtrip hike to Everest Base Camp (5,364m) alongside the Khumbu Icefall.",
+                "accommodation": "Teahouse Lodge",
+                "meals": "Breakfast, Lunch, Dinner",
+                "location": "",
+                "x": null,
+                "y": null
             },
             {
                 "day": 10,
                 "title": "Hike to Kala Patthar and trek to Pheriche",
-                "location": "Kala Patthar \/ Pheriche",
-                "accommodation": "Tea house\/lodge",
-                "meals": "Breakfast, lunch, and dinner",
-                "desc": "Early in the morning, you will hike to Kala Patthar, the best viewpoint for close-up views of Mount Everest. The sunrise view from Kala Patthar is one of the most memorable moments of the trek. After enjoying the view, you will return to Gorakshep and continue descending to Pheriche. Walking time: 7 to 8 hours. Maximum altitude: 5,545 m. Overnight altitude: 4,371 m."
+                "desc": "Climb Kala Patthar (5,545m) at dawn for the finest sunrise view of Mt. Everest, Nuptse, and Lhotse, then descend to Pheriche (4,240m).",
+                "accommodation": "Teahouse Lodge",
+                "meals": "Breakfast, Lunch, Dinner",
+                "location": "",
+                "x": null,
+                "y": null
             },
             {
                 "day": 11,
                 "title": "Trek from Pheriche to Namche Bazaar",
-                "location": "Namche Bazaar",
-                "accommodation": "Tea house\/lodge",
-                "meals": "Breakfast, lunch, and dinner",
-                "desc": "The trail descends through familiar villages, forests, rivers, and suspension bridges. As you move down, the air becomes warmer and walking becomes easier. You will pass Pangboche and Tengboche before returning to Namche Bazaar. Walking time: 6 to 7 hours. Altitude: 3,440 m."
+                "desc": "Retrace your steps down the valley, passing Pangboche and Tengboche before climbing back up to Namche Bazaar.",
+                "accommodation": "Teahouse Lodge",
+                "meals": "Breakfast, Lunch, Dinner",
+                "location": "",
+                "x": null,
+                "y": null
             },
             {
                 "day": 12,
                 "title": "Trek from Namche Bazaar to Lukla",
-                "location": "Lukla",
-                "accommodation": "Tea house\/lodge",
-                "meals": "Breakfast, lunch, and dinner",
-                "desc": "This is the final walking day of the trek. The trail descends through forests, river valleys, suspension bridges, and villages before reaching Lukla. In the evening, you can celebrate the completion of the Everest Base Camp Trek with your guide and porter team. Walking time: 6 to 7 hours. Altitude: 2,840 m."
+                "desc": "Final day on the trail. Descend along the Dudh Koshi River and celebrate the journey in Lukla.",
+                "accommodation": "Teahouse Lodge",
+                "meals": "Breakfast, Lunch, Dinner",
+                "location": "",
+                "x": null,
+                "y": null
             },
             {
                 "day": 13,
                 "title": "Fly back to Kathmandu",
-                "location": "Kathmandu",
-                "accommodation": "Hotel",
-                "meals": "Breakfast",
-                "desc": "You will take an early morning flight from Lukla to Kathmandu. After arrival, you will be transferred to your hotel. The rest of the day is free for relaxation, shopping, or sightseeing around Kathmandu. Altitude: 1,400 m."
+                "desc": "Take the morning scenic flight back to Kathmandu. Transfer to hotel for rest.",
+                "accommodation": "Teahouse Lodge",
+                "meals": "Breakfast, Lunch, Dinner",
+                "location": "",
+                "x": null,
+                "y": null
             },
             {
                 "day": 14,
                 "title": "Final departure",
-                "location": "Kathmandu \/ Airport",
-                "accommodation": "None",
-                "meals": "Breakfast",
-                "desc": "Our representative will transfer you to Tribhuvan International Airport for your final departure. You will leave Nepal with unforgettable memories of the Everest Base Camp Trek. Service: Airport transfer."
+                "desc": "Transfer to airport for your flight back home.",
+                "accommodation": "Teahouse Lodge",
+                "meals": "Breakfast, Lunch, Dinner",
+                "location": "",
+                "x": null,
+                "y": null
             }
         ],
-        "costIncludes": [
-            "Airport pickup and drop-off by private vehicle",
-            "Hotel accommodation in Kathmandu as per package",
-            "Tea house\/lodge accommodation during the trek",
-            "Kathmandu to Lukla and Lukla to Kathmandu domestic flight",
-            "Licensed and experienced trekking guide",
-            "Porter service as per package",
-            "Meals during the trek: breakfast, lunch, and dinner",
-            "Sagarmatha National Park entry permit",
-            "Khumbu Pasang Lhamu Rural Municipality permit",
-            "First aid kit carried by guide",
-            "Trekking map",
-            "Company service charge and government taxes"
-        ],
-        "costExcludes": [
-            "Nepal visa fee",
-            "International airfare",
-            "Travel insurance",
-            "Lunch and dinner in Kathmandu",
-            "Personal expenses such as snacks, drinks, hot shower, Wi-Fi, charging, and laundry",
-            "Extra night accommodation due to flight delay, bad weather, or personal reasons",
-            "Rescue and emergency evacuation cost",
-            "Tips for guide and porter",
-            "Personal trekking equipment",
-            "Extra drinks, desserts, and bottled water",
-            "Any service not mentioned in the Cost Includes section"
-        ],
-        "requiredPermits": [
-            "Sagarmatha National Park Entry Permit",
-            "Khumbu Pasang Lhamu Rural Municipality Permit"
-        ],
-        "image": "assets\/images\/packages\/everest-base-camp.jpg",
-        "gallery": [
-            "assets\/images\/packages\/everest-base-camp.jpg"
-        ],
-        "sourceLinks": [
-            "https:\/\/ntb.gov.np\/en\/everest-base-camp",
-            "https:\/\/ntb.gov.np\/en\/everest",
-            "https:\/\/immigration.gov.np\/en\/post\/trekking-permit"
-        ],
-        "lastCheckedDate": "2026-06-06",
-        "faqs": [
-            {
-                "q": "How long is the Everest Base Camp Trek?",
-                "a": "The standard Everest Base Camp Trek takes around 14 days, including arrival, departure, trekking days, and acclimatization days."
-            },
-            {
-                "q": "What is the highest altitude of the trek?",
-                "a": "The highest point of the trek is Kala Patthar at 5,545 meters. Everest Base Camp is located at 5,364 meters."
-            },
-            {
-                "q": "Is Everest Base Camp Trek difficult?",
-                "a": "The trek is moderate to challenging. It does not require climbing experience, but trekkers need good fitness, proper acclimatization, and preparation for high altitude walking."
-            },
-            {
-                "q": "What is the best time for Everest Base Camp Trek?",
-                "a": "The best time is spring, from March to May, and autumn, from September to November. These seasons normally offer better weather and clearer mountain views."
-            },
-            {
-                "q": "Do I need a guide for Everest Base Camp Trek?",
-                "a": "A licensed guide is strongly recommended for safety, navigation, altitude management, accommodation support, and local cultural experience."
-            },
-            {
-                "q": "What permits are required for Everest Base Camp Trek?",
-                "a": "Trekkers usually need the Sagarmatha National Park Entry Permit and the Khumbu Pasang Lhamu Rural Municipality Permit."
-            },
-            {
-                "q": "Can beginners do the Everest Base Camp Trek?",
-                "a": "Yes, physically fit beginners can do the trek with proper preparation, acclimatization, and support from an experienced guide."
-            },
-            {
-                "q": "What mountains can be seen during the trek?",
-                "a": "Trekkers can see Mount Everest, Lhotse, Nuptse, Ama Dablam, Thamserku, Pumori, Kongde, and several other Himalayan peaks."
-            },
-            {
-                "q": "Is travel insurance necessary?",
-                "a": "Yes, travel insurance is strongly recommended. It should cover high-altitude trekking and emergency helicopter rescue."
-            },
-            {
-                "q": "Are hot showers and Wi-Fi available?",
-                "a": "Hot showers and Wi-Fi are available in many tea houses for an extra cost, but the service may become limited and expensive at higher altitudes."
-            }
-        ],
-        "seo_title": "Everest Base Camp Trek - 14 Days EBC Trek Package in Nepal",
-        "seo_description": "Join the 14 Days Everest Base Camp Trek in Nepal and explore Lukla, Namche Bazaar, Tengboche, Dingboche, Lobuche, Gorakshep, Everest Base Camp, and Kala Patthar with expert local guides.",
-        "seo_keywords": "Everest Base Camp Trek",
-        "image_alt": "Everest Base Camp Trek route in Nepal",
-        "og_title": "Everest Base Camp Trek - 14 Days EBC Trek Package",
-        "og_description": "Walk to Everest Base Camp and Kala Patthar with expert local guides on a complete 14-day trekking package in Nepal.",
+        "seo_title": "Everest Base Camp Trek 14 Days | Top Mountain Treks",
+        "seo_description": "Book our classic 14-day Everest Base Camp Trek. Guided by expert local Sherpa guides, experience Lukla flights, Namche Bazaar, Tengboche, and Kala Patthar.",
+        "seo_keywords": "everest base camp trek",
+        "image_alt": "Everest Base Camp Trek mountain view",
+        "og_title": "Everest Base Camp Trek - 14 Days Package",
+        "og_description": "Join our professional guides on the trek of a lifetime to the base of the world's highest peak, Mt. Everest.",
         "og_image": "assets\/images\/packages\/everest-base-camp.jpg",
         "activity_id": "everest-region",
         "reviews": [
@@ -242,168 +215,7 @@
                 "date": "2026-05-12",
                 "approved": true
             }
-        ],
-        "short_overview": "The Everest Base Camp Trek is one of the most famous trekking adventures in the world. The route passes Sherpa villages, Buddhist monasteries, suspension bridges, alpine forests, glaciers, and Himalayan viewpoints before reaching Everest Base Camp and Kala Patthar.",
-        "card_text": "Walk to the base camp of the world highest mountain and experience Sherpa culture, Namche Bazaar, Tengboche Monastery, Everest Base Camp, and Kala Patthar with stunning views of Everest, Lhotse, Nuptse, Ama Dablam, and the Khumbu region.",
-        "cta_text": "Book your Everest Base Camp Trek today and experience the journey of a lifetime in the heart of the Himalayas. Contact us for group price, private trip options, customized itinerary, and seasonal offers.",
-        "route_map_description": "Kathmandu -> Lukla -> Phakding -> Namche Bazaar -> Tengboche -> Dingboche -> Lobuche -> Gorakshep -> Everest Base Camp -> Kala Patthar -> Pheriche -> Namche Bazaar -> Lukla -> Kathmandu",
-        "tripFacts": [
-            {
-                "label": "Trip name",
-                "value": "Everest Base Camp Trek"
-            },
-            {
-                "label": "Duration",
-                "value": "14 days"
-            },
-            {
-                "label": "Trekking region",
-                "value": "Everest \/ Khumbu region"
-            },
-            {
-                "label": "Country",
-                "value": "Nepal"
-            },
-            {
-                "label": "Starting point",
-                "value": "Kathmandu"
-            },
-            {
-                "label": "Ending point",
-                "value": "Kathmandu"
-            },
-            {
-                "label": "Trek start",
-                "value": "Lukla"
-            },
-            {
-                "label": "Trek end",
-                "value": "Lukla"
-            },
-            {
-                "label": "Maximum altitude",
-                "value": "5,545 m at Kala Patthar"
-            },
-            {
-                "label": "Everest Base Camp altitude",
-                "value": "5,364 m"
-            },
-            {
-                "label": "Trip grade",
-                "value": "Moderate to challenging"
-            },
-            {
-                "label": "Accommodation",
-                "value": "Hotel in Kathmandu, tea house\/lodge during trek"
-            },
-            {
-                "label": "Meals during trek",
-                "value": "Breakfast, lunch, and dinner"
-            },
-            {
-                "label": "Best seasons",
-                "value": "March to May and September to November"
-            },
-            {
-                "label": "Transportation",
-                "value": "Private airport transfer and domestic flight"
-            },
-            {
-                "label": "Group size",
-                "value": "1 to 20 people"
-            },
-            {
-                "label": "Guide",
-                "value": "Licensed trekking guide"
-            },
-            {
-                "label": "Porter",
-                "value": "Available as per package"
-            },
-            {
-                "label": "Permits",
-                "value": "Sagarmatha National Park Permit and Khumbu local permit"
-            },
-            {
-                "label": "Suggested package price",
-                "value": "Starting from USD 1,450 per person"
-            }
-        ],
-        "detailSections": [
-            {
-                "title": "Best Time for Everest Base Camp Trek",
-                "content": "The best seasons for the Everest Base Camp Trek are spring and autumn. Spring, from March to May, offers stable weather, clear mountain views, warmer days, and rhododendron flowers in the lower region. Autumn, from September to November, is the most popular trekking season because of clear skies, pleasant temperatures, and excellent Himalayan views. Winter trekking is possible from December to February, but it is very cold at higher elevations. Monsoon trekking from June to August is less recommended because of rain, cloudy weather, and possible flight delays."
-            },
-            {
-                "title": "Difficulty Level",
-                "content": "The Everest Base Camp Trek is a moderate to challenging trek. It does not require technical climbing skills, but trekkers should be physically fit and prepared for long walking days, high altitude, cold weather, and basic mountain accommodation. Most trekking days involve 5 to 7 hours of walking. The highest point is Kala Patthar at 5,545 meters. Proper acclimatization, slow walking, enough water, and guidance from an experienced trekking guide are important for a safe trek."
-            },
-            {
-                "title": "Accommodation",
-                "content": "During the trek, accommodation is arranged in local tea houses or mountain lodges. Rooms are usually simple twin-sharing rooms with basic beds, mattresses, pillows, and blankets. Toilets may be shared in many places. In higher areas, facilities become more basic because of remote location and altitude. In Kathmandu, hotel accommodation can be arranged according to the selected package level."
-            },
-            {
-                "title": "Meals",
-                "content": "During the trek, breakfast, lunch, and dinner are available in tea houses. Common meals include dal bhat, noodles, soup, fried rice, potatoes, pasta, eggs, porridge, pancakes, tea, coffee, and other simple mountain foods. Dal bhat is highly recommended because it provides good energy for trekking. Trekkers should drink enough water and avoid alcohol at high altitude."
-            },
-            {
-                "title": "Safety and Altitude Sickness Note",
-                "content": "Altitude sickness can happen during the Everest Base Camp Trek because the route goes above 5,000 meters. To reduce risk, trekkers should walk slowly, drink enough water, eat properly, avoid alcohol, and follow the guide advice. Acclimatization days in Namche Bazaar and Dingboche are included for safety. If symptoms such as severe headache, vomiting, dizziness, breathing difficulty, or extreme weakness appear, trekkers should inform the guide immediately. In serious cases, descending to a lower altitude is the safest option."
-            },
-            {
-                "title": "Why Book Everest Base Camp Trek with Us?",
-                "content": "Experienced local trekking team\\nLicensed trekking guides\\nCarefully designed acclimatization itinerary\\nClear cost details with no hidden confusion\\nFlexible private and group departure options\\nSupport for permits, flights, accommodation, and logistics\\nFocus on safety, comfort, and local experience"
-            }
-        ],
-        "packingList": [
-            "Warm down jacket",
-            "Fleece jacket",
-            "Thermal inner wear",
-            "Trekking pants",
-            "Waterproof jacket",
-            "Waterproof trousers",
-            "Trekking boots",
-            "Warm socks",
-            "Gloves",
-            "Woolen hat",
-            "Sun hat",
-            "Sunglasses",
-            "Headlamp",
-            "Water bottle",
-            "Sleeping bag",
-            "Sunscreen",
-            "Lip balm",
-            "Personal medicines",
-            "Basic toiletries",
-            "Trekking poles",
-            "Power bank",
-            "Camera or phone",
-            "Small day bag"
-        ],
-        "image_alt_texts": [
-            "Everest Base Camp Trek route in Nepal",
-            "Trekkers walking towards Everest Base Camp",
-            "Mount Everest view from Kala Patthar",
-            "Namche Bazaar on Everest Base Camp Trek",
-            "Tengboche Monastery with Himalayan mountain view",
-            "Suspension bridge on Everest trekking route",
-            "Sherpa village in Khumbu region Nepal",
-            "Everest Base Camp with prayer flags",
-            "Lukla airport gateway to Everest Base Camp Trek",
-            "Ama Dablam view during Everest Base Camp Trek"
-        ],
-        "tags": [
-            "Everest Region Trekking",
-            "Nepal Trekking Packages",
-            "Base Camp Treks",
-            "Adventure Trekking in Nepal",
-            "Himalayan Trekking",
-            "Tea House Trekking",
-            "Moderate to Challenging Trek"
-        ],
-        "secondary_keywords": "Everest Base Camp Trek Nepal, EBC Trek, Everest Base Camp Trek package, Everest Base Camp itinerary, Everest Base Camp Trek cost, 14 Days Everest Base Camp Trek, Trekking in Nepal",
-        "offer_badge": "Hot Deal",
-        "group_offer_text": "Group price available"
+        ]
     },
     {
         "id": "annapurna-abc",
