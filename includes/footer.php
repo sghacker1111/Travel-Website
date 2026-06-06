@@ -104,7 +104,8 @@ if (file_exists($settings_path)) {
   </a>
 
   <!-- Main JavaScript Bundle -->
-  <script src="/assets/js/main.js"></script>
+  <?php $main_js_path = __DIR__ . '/../assets/js/main.js'; ?>
+  <script src="/assets/js/main.js?v=<?php echo file_exists($main_js_path) ? filemtime($main_js_path) : time(); ?>"></script>
   <!-- Local Offline AI Knowledge Bot Search -->
   <script src="/assets/js/ai-bot.js"></script>
 

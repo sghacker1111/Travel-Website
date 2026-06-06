@@ -33,8 +33,26 @@
         "image_alt_texts": [],
         "tags": [],
         "highlights": "<p>Scenic mountain flight to Lukla Explore Namche Bazaar and local Sherpa culture Visit the sacred Tengboche Monastery in the clouds Hike through Sagarmatha National Park Stand at the foot of Mount Everest at Base Camp (5,364m) Breathtaking sunrise panoramic view from Kala Patthar (5,545m)<\/p>",
-        "costIncludes": "<p>Airport pickup and drop-off in Kathmandu Hotel stay with breakfast in Kathmandu Domestic flights Kathmandu-Lukla-Kathmandu Trekking permits Licensed guide and porters Teahouse accommodation during trek Meals on trek Standard first aid kit<\/p>",
-        "costExcludes": "<p>International flights and visas Emergency rescue evacuation insurance Personal items, hot shower, charging, drinks Tips for guide and porter<\/p>",
+        "costIncludes": [
+            "Airport pickup and drop-off in Kathmandu",
+            "Hotel stay with breakfast in Kathmandu",
+            "Domestic flights Kathmandu-Lukla-Kathmandu",
+            "Sagarmatha National Park entry permit",
+            "Khumbu Pasang Lhamu Rural Municipality permit",
+            "Licensed English-speaking trekking guide",
+            "Porter support during the trek",
+            "Teahouse accommodation during the trek",
+            "Breakfast, lunch, and dinner during trekking days",
+            "Standard first aid kit and basic trekking support"
+        ],
+        "costExcludes": [
+            "International flights to and from Nepal",
+            "Nepal entry visa fee",
+            "Travel insurance and emergency helicopter rescue cost",
+            "Personal expenses such as hot shower, battery charging, Wi-Fi, drinks, and snacks",
+            "Lunch and dinner in Kathmandu unless mentioned",
+            "Tips for guide, porter, and support staff"
+        ],
         "requiredPermits": "<p>Sagarmatha National Park Permit Khumbu Pasang Lhamu Rural Municipality Permit<\/p>",
         "image": "assets\/images\/packages\/everest-base-camp.jpg",
         "route_map": "",

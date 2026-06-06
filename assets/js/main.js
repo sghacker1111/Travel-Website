@@ -151,52 +151,72 @@ function initHeroSlider() {
 /* 4. Tab Switching on Package Detail page */
 function initTabsSystem() {
   const tabsContainer = document.querySelector('.tabs');
-  if (!tabsContainer) return;
-
   const tabs = document.querySelectorAll('.tab, .package-shortcut-button');
   const sticky = document.getElementById('package-sticky-shortcuts');
+  const panes = Array.from(document.querySelectorAll('.package-details-main .tab-pane'));
+  if (!tabs.length || !panes.length) return;
   
+  function setActiveShortcut(targetId) {
+    tabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-tab') === targetId));
+    panes.forEach(pane => pane.classList.toggle('active', pane.id === targetId));
+  }
+
+  function getShortcutOffset() {
+    const stickyHeight = sticky && sticky.classList.contains('visible') ? sticky.offsetHeight + 18 : 0;
+    return Math.max(96, stickyHeight + 96);
+  }
+
+  function refreshRouteMap(targetId) {
+    if (targetId === 'detail-route' && window.map) {
+      setTimeout(() => {
+        window.map.invalidateSize();
+        if (window.polyline) {
+          window.map.fitBounds(window.polyline.getBounds(), { padding: [50, 50] });
+        }
+      }, 180);
+    }
+  }
+
+  function scrollToPackageSection(targetId) {
+    const targetPane = document.getElementById(targetId);
+    if (!targetPane) return;
+    setActiveShortcut(targetId);
+    const top = targetPane.getBoundingClientRect().top + window.scrollY - getShortcutOffset() - 40;
+    window.scrollTo({ top, behavior: 'smooth' });
+    refreshRouteMap(targetId);
+    if (targetId === 'detail-itinerary' && typeof window.refreshItineraryAccordionHeights === 'function') {
+      setTimeout(window.refreshItineraryAccordionHeights, 220);
+    }
+  }
+
   tabs.forEach(tab => {
     tab.addEventListener('click', (e) => {
       e.preventDefault();
-      const targetId = e.currentTarget.getAttribute('data-tab');
-      const targetPane = document.getElementById(targetId);
-      if (!targetPane) return;
-      
-      // Deactivate all
-      tabs.forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-      
-      // Activate target
-      document.querySelectorAll('[data-tab="' + targetId + '"]').forEach(t => t.classList.add('active'));
-      targetPane.classList.add('active');
-
-      const headerOffset = sticky && sticky.classList.contains('visible') ? sticky.offsetHeight + 24 : 96;
-      const top = targetPane.getBoundingClientRect().top + window.scrollY - headerOffset;
-      window.scrollTo({ top, behavior: 'smooth' });
-
-      if (targetId === 'detail-route' && window.map) {
-        setTimeout(() => {
-          window.map.invalidateSize();
-          if (window.polyline) {
-            window.map.fitBounds(window.polyline.getBounds(), { padding: [50, 50] });
-          }
-        }, 160);
-      }
+      scrollToPackageSection(e.currentTarget.getAttribute('data-tab'));
     });
   });
 
-  if (sticky) {
-    const showAfter = tabsContainer;
-    const toggleSticky = () => {
-      const rect = showAfter.getBoundingClientRect();
+  function updateStickyAndActiveSection() {
+    if (sticky && tabsContainer) {
+      const tabsRect = tabsContainer.getBoundingClientRect();
       const detailEnd = document.querySelector('.package-details-main');
       const endRect = detailEnd ? detailEnd.getBoundingClientRect() : { bottom: 9999 };
-      sticky.classList.toggle('visible', rect.bottom < 0 && endRect.bottom > 160);
-    };
-    window.addEventListener('scroll', toggleSticky, { passive: true });
-    toggleSticky();
+      sticky.classList.toggle('visible', tabsRect.bottom <= 8 && endRect.bottom > 180);
+    }
+
+    const offset = getShortcutOffset() + 96;
+    let activeId = panes[0].id;
+    panes.forEach(pane => {
+      if (pane.getBoundingClientRect().top <= offset) {
+        activeId = pane.id;
+      }
+    });
+    setActiveShortcut(activeId);
   }
+
+  window.addEventListener('scroll', updateStickyAndActiveSection, { passive: true });
+  window.addEventListener('resize', updateStickyAndActiveSection);
+  updateStickyAndActiveSection();
 }
 
 /* 5. Collapsible Accordion on Package Itinerary */
@@ -207,9 +227,29 @@ function initAccordionSystem() {
   const modeToggle = document.getElementById('itinerary-expand-mode');
   let expandedAll = false;
 
+  function getAccordionHeight(item) {
+    const inner = item.querySelector('.acc-content-inner');
+    return inner ? inner.scrollHeight + 40 : 0;
+  }
+
+  function setAccordionOpen(item, isOpen) {
+    const content = item.querySelector('.acc-content');
+    if (!content) return;
+    item.classList.toggle('active', isOpen);
+    content.style.maxHeight = isOpen ? getAccordionHeight(item) + 'px' : '0px';
+  }
+
+  window.refreshItineraryAccordionHeights = function() {
+    items.forEach(item => {
+      if (item.classList.contains('active')) {
+        setAccordionOpen(item, true);
+      }
+    });
+  };
+
   items.forEach(item => {
     const header = item.querySelector('.acc-header');
-    const content = item.querySelector('.acc-content');
+    if (!header) return;
 
     header.addEventListener('click', () => {
       const isActive = item.classList.contains('active');
@@ -217,20 +257,13 @@ function initAccordionSystem() {
 
       // Collapse all
       if (!allowMulti) {
-        items.forEach(i => {
-          i.classList.remove('active');
-          i.querySelector('.acc-content').style.maxHeight = '0px';
-        });
+        items.forEach(i => setAccordionOpen(i, false));
       }
 
       if (!isActive) {
-        item.classList.add('active');
-        // Calculate content inner height
-        const height = content.querySelector('.acc-content-inner').scrollHeight + 40; // padding buffer
-        content.style.maxHeight = `${height}px`;
+        setAccordionOpen(item, true);
       } else if (allowMulti) {
-        item.classList.remove('active');
-        content.style.maxHeight = '0px';
+        setAccordionOpen(item, false);
       }
     });
   });
@@ -238,19 +271,13 @@ function initAccordionSystem() {
   if (expandBtn) {
     expandBtn.addEventListener('click', () => {
       expandedAll = !expandedAll;
-      items.forEach(item => {
-        const content = item.querySelector('.acc-content');
-        if (expandedAll) {
-          item.classList.add('active');
-          content.style.maxHeight = content.querySelector('.acc-content-inner').scrollHeight + 40 + 'px';
-        } else {
-          item.classList.remove('active');
-          content.style.maxHeight = '0px';
-        }
-      });
+      items.forEach(item => setAccordionOpen(item, expandedAll));
       expandBtn.textContent = expandedAll ? 'Collapse All' : 'Expand All';
     });
   }
+
+  window.addEventListener('resize', window.refreshItineraryAccordionHeights);
+  window.refreshItineraryAccordionHeights();
 }
 
 function initCountryCodePickers() {

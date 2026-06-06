@@ -76,6 +76,51 @@ function getDayLocationFallback($title) {
     return $title;
 }
 
+function renderPackagePointList($items, $type = 'include') {
+    $is_exclude = $type === 'exclude';
+    $class = $is_exclude ? 'excludes' : 'includes';
+    $icon = $is_exclude ? '&#10005;' : '&#10003;';
+    $points = [];
+
+    if (is_array($items)) {
+        foreach ($items as $item) {
+            $item = trim(strip_tags((string)$item));
+            if ($item !== '') {
+                $points[] = $item;
+            }
+        }
+    } else {
+        $html = trim((string)$items);
+        if ($html !== '' && preg_match('/<li[\s>]/i', $html)) {
+            echo '<div class="package-rich-list ' . $class . '">' . $html . '</div>';
+            return;
+        }
+
+        $normalized = preg_replace('/<br\s*\/?>/i', "\n", $html);
+        $normalized = preg_replace('/<\/p>\s*<p[^>]*>/i', "\n", $normalized);
+        $normalized = preg_replace('/<\/div>\s*<div[^>]*>/i', "\n", $normalized);
+        $plain = trim(strip_tags($normalized));
+        $parts = preg_split('/\r\n|\r|\n/', $plain);
+        foreach ($parts as $part) {
+            $part = trim($part, " \t\n\r\0\x0B-*+•");
+            if ($part !== '') {
+                $points[] = $part;
+            }
+        }
+    }
+
+    if (empty($points)) {
+        echo '<p style="color:var(--text-muted); font-size:0.92rem;">Details will be updated soon.</p>';
+        return;
+    }
+
+    echo '<ul class="package-point-list ' . $class . '">';
+    foreach ($points as $point) {
+        echo '<li><span class="package-point-icon" aria-hidden="true">' . $icon . '</span><span>' . htmlspecialchars($point) . '</span></li>';
+    }
+    echo '</ul>';
+}
+
 // Set package-specific SEO parameters
 $page_title = isset($current_pkg['seo_title']) && !empty($current_pkg['seo_title']) ? $current_pkg['seo_title'] : $current_pkg['title'] . " | Top Mountain Treks Pvt. Ltd.";
 $page_desc = isset($current_pkg['seo_description']) && !empty($current_pkg['seo_description']) ? $current_pkg['seo_description'] : strip_tags($current_pkg['overview']);
@@ -500,40 +545,14 @@ if (isset($current_pkg['reviews']) && is_array($current_pkg['reviews'])) {
                 <h3 style="font-family:var(--font-heading); font-size:1.35rem; color:var(--color-primary); margin-bottom:1.25rem; display:flex; align-items:center; gap:0.5rem; font-weight:800;">
                   <span style="color:var(--color-success); font-size:1.5rem;">✔</span> Price Includes
                 </h3>
-                <?php if (is_array($current_pkg['costIncludes'])): ?>
-                  <ul style="display:grid; gap:0.75rem; list-style:none; padding:0;">
-                    <?php foreach ($current_pkg['costIncludes'] as $item): ?>
-                      <li style="display:flex; align-items:flex-start; gap:0.5rem; font-size:0.9rem; color:var(--text-medium);">
-                        <span style="color:var(--color-success); font-weight:bold;">+</span>
-                        <span><?php echo htmlspecialchars($item); ?></span>
-                      </li>
-                    <?php endforeach; ?>
-                  </ul>
-                <?php else: ?>
-                  <div style="font-size:0.95rem; color:var(--text-medium); line-height:1.75;">
-                    <?php echo $current_pkg['costIncludes']; ?>
-                  </div>
-                <?php endif; ?>
+                <?php renderPackagePointList($current_pkg['costIncludes'] ?? [], 'include'); ?>
               </div>
 
               <div>
                 <h3 style="font-family:var(--font-heading); font-size:1.35rem; color:var(--color-primary); margin-bottom:1.25rem; display:flex; align-items:center; gap:0.5rem; font-weight:800;">
                   <span style="color:var(--color-danger); font-size:1.5rem;">✘</span> Price Excludes
                 </h3>
-                <?php if (is_array($current_pkg['costExcludes'])): ?>
-                  <ul style="display:grid; gap:0.75rem; list-style:none; padding:0;">
-                    <?php foreach ($current_pkg['costExcludes'] as $item): ?>
-                      <li style="display:flex; align-items:flex-start; gap:0.5rem; font-size:0.9rem; color:var(--text-medium);">
-                        <span style="color:var(--color-danger); font-weight:bold;">-</span>
-                        <span><?php echo htmlspecialchars($item); ?></span>
-                      </li>
-                    <?php endforeach; ?>
-                  </ul>
-                <?php else: ?>
-                  <div style="font-size:0.95rem; color:var(--text-medium); line-height:1.75;">
-                    <?php echo $current_pkg['costExcludes']; ?>
-                  </div>
-                <?php endif; ?>
+                <?php renderPackagePointList($current_pkg['costExcludes'] ?? [], 'exclude'); ?>
               </div>
 
             </div>
@@ -786,32 +805,6 @@ if (isset($current_pkg['reviews']) && is_array($current_pkg['reviews'])) {
   </div>
 
   <script>
-    // Tab switching script
-    const tabs = document.querySelectorAll('.tab');
-    const panes = document.querySelectorAll('.tab-pane');
-    
-    tabs.forEach(t => {
-        t.addEventListener('click', () => {
-            tabs.forEach(x => x.classList.remove('active'));
-            panes.forEach(x => x.classList.remove('active'));
-            
-            t.classList.add('active');
-            const target = t.getAttribute('data-tab');
-            const targetPane = document.getElementById(target);
-            if (targetPane) targetPane.classList.add('active');
-            
-            // Recalculate Leaflet map layout when the Route Map tab is activated
-            if (target === 'detail-route' && typeof map !== 'undefined' && map !== null) {
-                setTimeout(() => {
-                    map.invalidateSize();
-                    if (typeof polyline !== 'undefined' && polyline !== null) {
-                        map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
-                    }
-                }, 100);
-            }
-        });
-    });
-
     // SVG node toggles (No longer used as Leaflet handles popups)
     function showTrekOverlayDetails(day, title, desc) {}
 

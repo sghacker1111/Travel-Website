@@ -1520,6 +1520,22 @@ table {
   margin-bottom: 0.4rem;
 }
 
+.package-details-main .tab-pane {
+  display: block !important;
+  scroll-margin-top: 8.5rem;
+  margin-bottom: 3.5rem;
+}
+
+.package-details-main .tab-pane:last-child {
+  margin-bottom: 0;
+}
+
+.tabs .tab.active {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+
 .package-sticky-shortcuts {
   position: fixed;
   top: 0.75rem;
@@ -1564,6 +1580,67 @@ table {
   background: var(--color-primary);
   color: #ffffff;
   border-color: var(--color-primary);
+}
+
+.package-point-list {
+  display: grid;
+  gap: 0.8rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.package-point-list li,
+.package-rich-list li {
+  display: grid;
+  grid-template-columns: 1.65rem 1fr;
+  align-items: start;
+  gap: 0.65rem;
+  color: var(--text-medium);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.package-rich-list ul,
+.package-rich-list ol {
+  display: grid;
+  gap: 0.8rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.package-point-icon,
+.package-rich-list li::before {
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  margin-top: 0.05rem;
+}
+
+.package-point-list.includes .package-point-icon,
+.package-rich-list.includes li::before {
+  background: var(--color-success);
+}
+
+.package-point-list.excludes .package-point-icon,
+.package-rich-list.excludes li::before {
+  background: var(--color-danger);
+}
+
+.package-rich-list.includes li::before {
+  content: "\2713";
+}
+
+.package-rich-list.excludes li::before {
+  content: "\2715";
 }
 
 .itinerary-toolbar {

@@ -38,6 +38,7 @@ expire_legacy_cookie_variants('PHPSESSID');
 
 // Load dynamic global settings
 $settings_path = __DIR__ . '/../data/settings.json';
+$main_css_path = __DIR__ . '/../assets/css/style.css';
 $site_name = "Top Mountain Treks Pvt. Ltd.";
 $site_logo = "assets/images/logo.png";
 $site_whatsapp = "+977 985-1123456";
@@ -117,7 +118,7 @@ if (!is_array($packages)) $packages = [];
   <meta name="description" content="<?php echo isset($page_desc) ? htmlspecialchars(substr($page_desc, 0, 160)) : "Discover high-altitude adventures with " . htmlspecialchars($site_name) . ". Book professional treks and custom tours."; ?>">
   
   <!-- Base Stylesheets -->
-  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/style.css?v=<?php echo file_exists($main_css_path) ? filemtime($main_css_path) : time(); ?>">
   <!-- Dynamic Custom Stylesheet (Overwrites HSL variables) -->
   <link rel="stylesheet" href="/assets/css/theme-custom.css?v=<?php echo file_exists(__DIR__ . '/../assets/css/theme-custom.css') ? filemtime(__DIR__ . '/../assets/css/theme-custom.css') : time(); ?>">
   
