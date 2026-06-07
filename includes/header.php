@@ -215,6 +215,10 @@ if (!function_exists('header_activity_package_match')) {
       padding: var(--menu-padding, 8px) 2rem !important;
       display: flex;
       justify-content: center;
+      position: relative;
+    }
+    .nav-item-mega {
+      position: static !important;
     }
     .site-nav-centered {
       flex-grow: 1;
@@ -792,7 +796,7 @@ if (!function_exists('header_activity_package_match')) {
                 elseif ($is_climbing) $cat_filter = 'climbing';
                 $cat_path = $cat_filter === 'climbing' ? 'peak-climbing' : $cat_filter;
             ?>
-              <li class="nav-item">
+              <li class="nav-item <?php echo $is_trekking ? 'nav-item-mega' : ''; ?>">
                 <a href="<?php echo htmlspecialchars($nav_link); ?>" class="nav-link">
                   <?php echo htmlspecialchars($nav_title); ?>
                   <?php if ($has_dropdown): 
