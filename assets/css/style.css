@@ -798,9 +798,9 @@ main {
 
 .hero-heli-label {
   position: absolute;
-  left: 118px;
-  top: -10px;
-  max-width: 170px;
+  left: 12px;
+  top: -20px;
+  max-width: 160px;
   min-width: 130px;
   padding: 0.35rem 0.55rem;
   background: rgba(15, 23, 42, 0.78);
@@ -811,7 +811,7 @@ main {
   font-weight: 900;
   line-height: 1.2;
   text-transform: uppercase;
-  animation: helicopterLabelSafeZone 18s linear infinite;
+  opacity: 1;
 }
 
 @keyframes helicopterOrbit {
@@ -825,16 +825,16 @@ main {
     transform: translate(0, -260px) scale(0.88);
   }
   37.5% {
-    transform: translate(calc(50vw - 360px), -205px) scale(0.88);
+    transform: translate(calc(50vw - 210px), -205px) scale(0.88);
   }
   50% {
-    transform: translate(calc(50vw - 330px), 14px) scale(0.88);
+    transform: translate(calc(50vw - 210px), 14px) scale(0.88);
   }
   62.5% {
-    transform: translate(calc(23vw), 188px) scale(0.88);
+    transform: translate(calc(23vw), 196px) scale(0.88);
   }
   75% {
-    transform: translate(calc(-23vw), 188px) scale(0.88);
+    transform: translate(calc(-23vw), 196px) scale(0.88);
   }
   87.5% {
     transform: translate(calc(-50vw + 56px), 14px) scale(0.88);
@@ -846,38 +846,33 @@ main {
 
 @keyframes helicopterFaceOrbit {
   0%,
-  22% {
-    transform: rotate(-5deg) scaleX(1);
+  12% {
+    transform: rotate(-8deg) scaleX(1);
   }
-  30%,
-  47% {
-    transform: rotate(14deg) scaleX(1);
+  24% {
+    transform: rotate(0deg) scaleX(1);
   }
-  52%,
-  72% {
-    transform: rotate(2deg) scaleX(-1);
+  38% {
+    transform: rotate(10deg) scaleX(1);
   }
-  80%,
-  96% {
+  49% {
+    transform: rotate(18deg) scaleX(1);
+  }
+  52% {
+    transform: rotate(12deg) scaleX(-1);
+  }
+  64% {
+    transform: rotate(6deg) scaleX(-1);
+  }
+  75% {
+    transform: rotate(0deg) scaleX(-1);
+  }
+  88%,
+  97% {
     transform: rotate(-15deg) scaleX(-1);
   }
   100% {
-    transform: rotate(-5deg) scaleX(1);
-  }
-}
-
-@keyframes helicopterLabelSafeZone {
-  0%,
-  31%,
-  96%,
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  38%,
-  90% {
-    opacity: 0;
-    transform: translateY(-6px);
+    transform: rotate(-8deg) scaleX(1);
   }
 }
 
@@ -913,11 +908,11 @@ main {
     transform-origin: 82px 42px;
   }
   .hero-heli-label {
-    left: 100px;
+    left: 10px;
     min-width: 96px;
     max-width: 120px;
     font-size: 0.62rem;
-    top: -2px;
+    top: -18px;
   }
 }
 
