@@ -139,6 +139,12 @@ $offer_badge = trim($current_pkg['offer_badge'] ?? '');
 $group_offer_text = trim($current_pkg['group_offer_text'] ?? 'We offer group price');
 $offer_end_date = trim($current_pkg['offer_end_date'] ?? '');
 $old_price_usd = isset($current_pkg['offer_old_price_usd']) ? (int)$current_pkg['offer_old_price_usd'] : 0;
+$difficulty_class = '';
+$difficulty_text = strtolower($current_pkg['difficulty'] ?? '');
+if (strpos($difficulty_text, 'strenuous') !== false) $difficulty_class = 'strenuous';
+elseif (strpos($difficulty_text, 'challenging') !== false) $difficulty_class = 'challenging';
+elseif (strpos($difficulty_text, 'moderate') !== false) $difficulty_class = 'moderate';
+elseif (strpos($difficulty_text, 'easy') !== false) $difficulty_class = 'easy';
 $review_count = 0;
 if (isset($current_pkg['reviews']) && is_array($current_pkg['reviews'])) {
     foreach ($current_pkg['reviews'] as $rev) {
@@ -153,7 +159,7 @@ if (isset($current_pkg['reviews']) && is_array($current_pkg['reviews'])) {
   <section id="package-hero" class="hero" data-images='<?php echo htmlspecialchars(json_encode($hero_images), ENT_QUOTES); ?>' style="background-image: url('/<?php echo htmlspecialchars($current_pkg['image']); ?>'); padding: 6rem 0 4rem; min-height: 50vh; background-size:cover; background-position:center; position:relative; display:flex; align-items:center; background-attachment: fixed; transition: background-image 0.6s ease;">
     <div style="position:absolute; inset:0; background:rgba(15,23,42,0.5);"></div>
     <div class="container" style="position:relative; z-index:10; text-align: var(--<?php echo $prefix; ?>-align, left); max-width: 900px; <?php if (($theme_settings[$prefix . '_align'] ?? 'left') === 'left') { echo 'margin: 0; padding-left: 2rem;'; } else { echo 'margin: 0 auto;'; } ?>">
-      <span class="card-badge" style="position:static; display:inline-block; margin-bottom:1rem; background: rgba(255, 122, 0, 0.25); border-color: rgba(255, 122, 0, 0.4); color: white;"><?php echo htmlspecialchars($current_pkg['difficulty']); ?> Category</span>
+      <span class="card-badge difficulty-badge <?php echo $difficulty_class ? 'difficulty-' . htmlspecialchars($difficulty_class) : ''; ?>" style="position:static; display:inline-block; margin-bottom:1rem;"><?php echo htmlspecialchars($current_pkg['difficulty']); ?> Category</span>
       <h1 style="color: var(--<?php echo $prefix; ?>-title-color, white); font-size: var(--<?php echo $prefix; ?>-title-size, 3rem); margin-top: 1rem; text-shadow: 0 2px 6px rgba(0,0,0,0.6); font-family:var(--font-heading); font-weight:800; line-height:1.2;"><?php echo htmlspecialchars($current_pkg['title']); ?></h1>
       <p style="color: var(--<?php echo $prefix; ?>-desc-color, rgba(255,255,255,0.9)); font-size: var(--<?php echo $prefix; ?>-desc-size, 1.15rem); text-shadow: 0 1px 3px rgba(0,0,0,0.5); font-weight:600;"><?php echo htmlspecialchars($current_pkg['region']); ?> Region</p>
     </div>

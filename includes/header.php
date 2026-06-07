@@ -42,6 +42,9 @@ $main_css_path = __DIR__ . '/../assets/css/style.css';
 $site_name = "Top Mountain Treks Pvt. Ltd.";
 $site_logo = "assets/images/logo.png";
 $site_whatsapp = "+977 985-1123456";
+$owner_photo = "";
+$brand_line_1 = "TOP MOUNTAIN";
+$brand_line_2 = "TREKS PVT. LTD.";
 $site_nav = [
     ["title" => "Home", "link" => "/"],
     ["title" => "Destination", "link" => "/destination"],
@@ -59,9 +62,15 @@ if (file_exists($settings_path)) {
         if (!empty($set_data['company_name'])) $site_name = $set_data['company_name'];
         if (!empty($set_data['logo_path'])) $site_logo = $set_data['logo_path'];
         if (!empty($set_data['whatsapp_number'])) $site_whatsapp = $set_data['whatsapp_number'];
+        if (!empty($set_data['owner_photo_path'])) $owner_photo = $set_data['owner_photo_path'];
+        if (!empty($set_data['brand_line_1'])) $brand_line_1 = strtoupper($set_data['brand_line_1']);
+        if (!empty($set_data['brand_line_2'])) $brand_line_2 = strtoupper($set_data['brand_line_2']);
         if (!empty($set_data['navigation'])) $site_nav = $set_data['navigation'];
         if (!empty($set_data['header_custom_html'])) $header_custom_html = $set_data['header_custom_html'];
     }
+}
+if ($owner_photo === '') {
+    $owner_photo = $site_logo;
 }
 
 // Load dynamic theme config
@@ -80,6 +89,10 @@ $theme_settings = [
     'menu_bg' => '#ffffff',
     'menu_text_size' => '15px',
     'menu_padding' => '8px',
+    'submenu_link_color' => '#4b5563',
+    'submenu_hover_color' => '#0077b6',
+    'submenu_prefix_color' => '#111827',
+    'mega_menu_width' => '1240px',
     'slider_title_color' => '#ffffff',
     'slider_title_size' => '50px',
     'slider_desc_color' => '#ffffff',
@@ -259,7 +272,7 @@ if (!function_exists('header_activity_package_match')) {
 
     /* Trekking Mega Menu (Multi-Column) */
     .mega-menu-wide {
-      min-width: min(1180px, calc(100vw - 2rem)) !important;
+      min-width: min(var(--mega-menu-width, 1240px), calc(100vw - 2rem)) !important;
       max-height: calc(100vh - 120px);
       overflow-y: auto;
       padding: 2rem !important;
@@ -293,14 +306,23 @@ if (!function_exists('header_activity_package_match')) {
       padding-right: 0.25rem;
     }
     .mega-col-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
       font-size: 0.82rem;
-      color: var(--text-medium);
+      color: var(--submenu-link-color, var(--text-medium));
       text-decoration: none;
       font-weight: 600;
       transition: all 0.2s;
     }
+    .package-link-prefix {
+      color: var(--submenu-prefix-color, #111827);
+      font-size: 0.72rem;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
     .mega-col-link:hover {
-      color: var(--color-primary);
+      color: var(--submenu-hover-color, var(--color-accent));
       padding-left: 4px;
     }
     .mobile-region-arrow {
@@ -331,24 +353,52 @@ if (!function_exists('header_activity_package_match')) {
 
     /* Standard dropdown link */
     .dropdown-link {
-      display: block;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
       padding: 0.5rem 0.75rem;
       font-size: 0.88rem;
       font-weight: 600;
-      color: var(--text-medium);
+      color: var(--submenu-link-color, var(--text-medium));
       text-decoration: none;
       border-radius: var(--radius-sm);
       transition: all 0.2s;
     }
     .dropdown-link:hover {
       background: var(--bg-light);
-      color: var(--color-secondary);
+      color: var(--submenu-hover-color, var(--color-accent));
     }
 
     /* Header Right (WhatsApp) */
     .header-whatsapp-right {
       display: flex;
       align-items: center;
+    }
+    .header-owner-photo {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(255, 122, 0, 0.35);
+      box-shadow: var(--shadow-sm);
+      background: #ffffff;
+    }
+    .header-whatsapp-link {
+      color: var(--color-secondary);
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .header-whatsapp-dot {
+      width: 0.6rem;
+      height: 0.6rem;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+      flex: 0 0 auto;
     }
     .header-actions-right {
       display: flex;
@@ -653,10 +703,10 @@ if (!function_exists('header_activity_package_match')) {
       #site-header .logo-text {
         font-size: clamp(12px, 3.6vw, 15px) !important;
         max-width: calc(100vw - 7rem);
-        white-space: nowrap;
+        white-space: normal;
         overflow: hidden;
         text-overflow: ellipsis;
-        line-height: 1.1 !important;
+        line-height: 1.05 !important;
       }
       .header-actions-right {
         position: absolute;
@@ -694,18 +744,23 @@ if (!function_exists('header_activity_package_match')) {
       <!-- Section 1: Logo (Left) -->
       <a href="/index.php" class="logo-wrapper" style="display:flex; align-items:center; text-decoration:none;">
         <img src="/<?php echo htmlspecialchars($site_logo); ?>" alt="<?php echo htmlspecialchars($site_name); ?> Logo" style="height:48px; width:auto; object-fit:contain; margin-right:0.5rem;" onerror="this.style.display='none'">
-        <div class="logo-text" style="line-height:1.2; font-family:var(--font-heading); font-weight:800; font-size: var(--logo-font-size, 22px); color: var(--color-title, var(--color-primary));">
-          <?php echo htmlspecialchars($site_name); ?>
+        <div class="logo-text" style="line-height:1.05; font-family:var(--font-heading); font-weight:900; font-size: var(--logo-font-size, 22px); color: var(--color-title, var(--color-primary)); text-transform:uppercase; letter-spacing:0;">
+          <span style="display:block;"><?php echo htmlspecialchars($brand_line_1); ?></span>
+          <span style="display:block;"><?php echo htmlspecialchars($brand_line_2); ?></span>
         </div>
       </a>
 
       <!-- Section 3: WhatsApp hotline and mobile navigation (Right) -->
       <div class="header-actions-right">
       <div class="header-whatsapp-right">
+        <?php if (!empty($owner_photo)): ?>
+          <img class="header-owner-photo" src="/<?php echo htmlspecialchars($owner_photo); ?>" alt="Owner photo" onerror="this.style.display='none'">
+        <?php endif; ?>
         <div style="text-align:right;">
           <span style="font-size:0.7rem; color:var(--text-muted); display:block; font-weight:700; text-transform:uppercase;">WhatsApp Hotline</span>
-          <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $site_whatsapp); ?>" style="color:var(--color-secondary); text-decoration:none; font-size:1rem; font-weight:800; display:flex; align-items:center; gap:0.25rem;" target="_blank">
-            🟢 <?php echo htmlspecialchars($site_whatsapp); ?>
+          <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $site_whatsapp); ?>" class="header-whatsapp-link" target="_blank">
+            <span class="header-whatsapp-dot" aria-hidden="true"></span>
+            <?php echo htmlspecialchars($site_whatsapp); ?>
           </a>
         </div>
       </div>
@@ -790,7 +845,8 @@ if (!function_exists('header_activity_package_match')) {
                             <ul class="mega-col-links">
                               <?php foreach ($act_packages as $pkg): ?>
                                 <li>
-                                  <a href="/trekking/<?php echo htmlspecialchars($pkg['slug']); ?>" class="mega-col-link">
+                                  <a href="/trekking/<?php echo htmlspecialchars($pkg['slug']); ?>" class="mega-col-link package-menu-link">
+                                    <span class="package-link-prefix" aria-hidden="true">&#9658;&#9658;</span>
                                     <?php echo htmlspecialchars($pkg['title']); ?>
                                   </a>
                                 </li>
@@ -818,7 +874,7 @@ if (!function_exists('header_activity_package_match')) {
                             // Fallback direct packages
                             foreach ($packages as $pkg) {
                                 if ($pkg['category'] === $cat_filter) {
-                                    echo '<a href="/' . $cat_path . '/' . htmlspecialchars($pkg['slug']) . '" class="dropdown-link">' . htmlspecialchars($pkg['title']) . '</a>';
+                                    echo '<a href="/' . $cat_path . '/' . htmlspecialchars($pkg['slug']) . '" class="dropdown-link package-menu-link"><span class="package-link-prefix" aria-hidden="true">&#9658;&#9658;</span>' . htmlspecialchars($pkg['title']) . '</a>';
                                 }
                             }
                         else:
@@ -835,7 +891,7 @@ if (!function_exists('header_activity_package_match')) {
                                 echo '<a href="' . $act_link . '" class="standard-region-link mobile-region-toggle" aria-expanded="false"><span>' . htmlspecialchars($act['name']) . '</span><span class="mobile-region-arrow" aria-hidden="true">›</span></a>';
                                 echo '<div class="standard-package-list">';
                                 foreach ($act_packages as $pkg) {
-                                    echo '<a href="/' . $cat_path . '/' . htmlspecialchars($pkg['slug']) . '" class="dropdown-link" style="font-size:0.8rem; padding: 0.25rem 0.5rem;">' . htmlspecialchars($pkg['title']) . '</a>';
+                                    echo '<a href="/' . $cat_path . '/' . htmlspecialchars($pkg['slug']) . '" class="dropdown-link package-menu-link" style="font-size:0.8rem; padding: 0.25rem 0.5rem;"><span class="package-link-prefix" aria-hidden="true">&#9658;&#9658;</span>' . htmlspecialchars($pkg['title']) . '</a>';
                                 }
                                 echo '</div></div>';
                             endforeach;

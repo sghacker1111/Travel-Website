@@ -104,6 +104,9 @@ $settings = file_exists($settings_path) ? json_decode(file_get_contents($setting
 $site_name = isset($settings['company_name']) ? $settings['company_name'] : 'Top Mountain Treks Pvt. Ltd.';
 $site_logo = isset($settings['logo_path']) ? $settings['logo_path'] : 'assets/images/logo.png';
 $site_whatsapp = isset($settings['whatsapp_number']) ? $settings['whatsapp_number'] : '+977 985-1123456';
+$owner_photo_path = isset($settings['owner_photo_path']) ? $settings['owner_photo_path'] : '';
+$brand_line_1 = isset($settings['brand_line_1']) ? $settings['brand_line_1'] : 'TOP MOUNTAIN';
+$brand_line_2 = isset($settings['brand_line_2']) ? $settings['brand_line_2'] : 'TREKS PVT. LTD.';
 $default_nav = [
     ["title" => "Home", "link" => "/"],
     ["title" => "Destination", "link" => "/destination"],
@@ -152,6 +155,10 @@ $theme_defaults = [
     'menu_bg' => '#ffffff',
     'menu_text_size' => '15px',
     'menu_padding' => '8px',
+    'submenu_link_color' => '#4b5563',
+    'submenu_hover_color' => '#0077b6',
+    'submenu_prefix_color' => '#111827',
+    'mega_menu_width' => '1240px',
     'slider_title_color' => '#ffffff',
     'slider_title_size' => '50px',
     'slider_desc_color' => '#ffffff',
@@ -221,6 +228,39 @@ function ensure_uploads_dir() {
 
 function clean_upload_name($name) {
     return preg_replace('/[^a-zA-Z0-9._-]/', '_', basename($name));
+}
+
+function normalize_footer_icons($icons) {
+    $normalized = [];
+    if (!is_array($icons)) {
+        return $normalized;
+    }
+    foreach ($icons as $icon) {
+        if (is_string($icon)) {
+            $path = trim($icon);
+            if ($path !== '') {
+                $normalized[] = [
+                    'image' => $path,
+                    'url' => '',
+                    'label' => 'Affiliation Badge'
+                ];
+            }
+            continue;
+        }
+        if (!is_array($icon)) {
+            continue;
+        }
+        $path = trim($icon['image'] ?? $icon['path'] ?? '');
+        if ($path === '') {
+            continue;
+        }
+        $normalized[] = [
+            'image' => $path,
+            'url' => trim($icon['url'] ?? ''),
+            'label' => trim($icon['label'] ?? 'Affiliation Badge')
+        ];
+    }
+    return array_slice($normalized, 0, 6);
 }
 
 function base64url_encode_value($value) {
@@ -496,6 +536,10 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $menu_bg = isset($_POST['menu_bg']) ? $_POST['menu_bg'] : '#ffffff';
         $menu_text_size = isset($_POST['menu_text_size']) ? $_POST['menu_text_size'] : '15px';
         $menu_padding = isset($_POST['menu_padding']) ? $_POST['menu_padding'] : '8px';
+        $submenu_link_color = isset($_POST['submenu_link_color']) ? $_POST['submenu_link_color'] : '#4b5563';
+        $submenu_hover_color = isset($_POST['submenu_hover_color']) ? $_POST['submenu_hover_color'] : '#0077b6';
+        $submenu_prefix_color = isset($_POST['submenu_prefix_color']) ? $_POST['submenu_prefix_color'] : '#111827';
+        $mega_menu_width = isset($_POST['mega_menu_width']) ? $_POST['mega_menu_width'] : '1240px';
         $slider_title_color = isset($_POST['slider_title_color']) ? $_POST['slider_title_color'] : '#ffffff';
         $slider_title_size = isset($_POST['slider_title_size']) ? $_POST['slider_title_size'] : '50px';
         $slider_desc_color = isset($_POST['slider_desc_color']) ? $_POST['slider_desc_color'] : '#ffffff';
@@ -547,6 +591,10 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             'menu_bg' => $menu_bg,
             'menu_text_size' => $menu_text_size,
             'menu_padding' => $menu_padding,
+            'submenu_link_color' => $submenu_link_color,
+            'submenu_hover_color' => $submenu_hover_color,
+            'submenu_prefix_color' => $submenu_prefix_color,
+            'mega_menu_width' => $mega_menu_width,
             'slider_title_color' => $slider_title_color,
             'slider_title_size' => $slider_title_size,
             'slider_desc_color' => $slider_desc_color,
@@ -599,6 +647,10 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
   --color-menu-bg: {$menu_bg};
   --menu-text-size: {$menu_text_size};
   --menu-padding: {$menu_padding};
+  --submenu-link-color: {$submenu_link_color};
+  --submenu-hover-color: {$submenu_hover_color};
+  --submenu-prefix-color: {$submenu_prefix_color};
+  --mega-menu-width: {$mega_menu_width};
   --slider-title-color: {$slider_title_color};
   --slider-title-size: {$slider_title_size};
   --slider-desc-color: {$slider_desc_color};
@@ -639,6 +691,7 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
     // ACTION C: Save Settings (Branding, Logo, WhatsApp, Navigation, Footer Icons, Custom head/foot)
     if (isset($_POST['save_settings'])) {
         $logo_path = isset($settings['logo_path']) ? $settings['logo_path'] : 'assets/images/logo.png';
+        $owner_photo_path = isset($settings['owner_photo_path']) ? $settings['owner_photo_path'] : '';
         
         // Handle logo upload
         if (isset($_FILES['logo_file']) && $_FILES['logo_file']['error'] === UPLOAD_ERR_OK) {
@@ -653,20 +706,49 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Handle footer icons multi-upload (Req 9)
-        $footer_icons = isset($settings['footer_icons']) ? $settings['footer_icons'] : [];
+        if (isset($_FILES['owner_photo_file']) && $_FILES['owner_photo_file']['error'] === UPLOAD_ERR_OK) {
+            $tmp_name = $_FILES['owner_photo_file']['tmp_name'];
+            $name = clean_upload_name($_FILES['owner_photo_file']['name']);
+            $upload_dir = ensure_uploads_dir();
+            $target_owner = $upload_dir . '/' . time() . '_owner_' . $name;
+            if (move_uploaded_file($tmp_name, $target_owner)) {
+                $owner_photo_path = $target_owner;
+            }
+        }
+
+        // Handle footer icons with optional outbound links.
+        $footer_icons = normalize_footer_icons($settings['footer_icons'] ?? []);
+        if (isset($_POST['footer_icon_paths']) && is_array($_POST['footer_icon_paths'])) {
+            $rebuilt_icons = [];
+            foreach ($_POST['footer_icon_paths'] as $fidx => $path) {
+                $path = trim($path);
+                if ($path === '') continue;
+                $rebuilt_icons[] = [
+                    'image' => $path,
+                    'url' => trim($_POST['footer_icon_urls'][$fidx] ?? ''),
+                    'label' => trim($_POST['footer_icon_labels'][$fidx] ?? 'Affiliation Badge')
+                ];
+            }
+            $footer_icons = $rebuilt_icons;
+        }
         if (isset($_FILES['footer_logos'])) {
             $upload_dir = ensure_uploads_dir();
             foreach ($_FILES['footer_logos']['tmp_name'] as $fkey => $ftmp) {
+                if (count($footer_icons) >= 6) break;
                 if ($_FILES['footer_logos']['error'][$fkey] === UPLOAD_ERR_OK) {
                     $fname = clean_upload_name($_FILES['footer_logos']['name'][$fkey]);
                     $target = $upload_dir . '/' . time() . '_' . $fname;
                     if (move_uploaded_file($ftmp, $target)) {
-                        $footer_icons[] = $target;
+                        $footer_icons[] = [
+                            'image' => $target,
+                            'url' => trim($_POST['footer_logo_links'][$fkey] ?? ''),
+                            'label' => trim($_POST['footer_logo_labels'][$fkey] ?? 'Affiliation Badge')
+                        ];
                     }
                 }
             }
         }
+        $footer_icons = array_slice(normalize_footer_icons($footer_icons), 0, 6);
 
         // Delete footer icon action
         if (isset($_POST['delete_footer_icon_idx'])) {
@@ -675,7 +757,7 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $del_idx = (int)$_POST['delete_footer_icon_idx'];
                 if (isset($footer_icons[$del_idx])) {
-                    @unlink($footer_icons[$del_idx]);
+                    @unlink($footer_icons[$del_idx]['image']);
                     array_splice($footer_icons, $del_idx, 1);
                 }
             }
@@ -713,7 +795,10 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $settings = [
             'company_name' => trim($_POST['company_name']),
+            'brand_line_1' => strtoupper(trim($_POST['brand_line_1'] ?? 'TOP MOUNTAIN')),
+            'brand_line_2' => strtoupper(trim($_POST['brand_line_2'] ?? 'TREKS PVT. LTD.')),
             'logo_path' => $logo_path,
+            'owner_photo_path' => $owner_photo_path,
             'whatsapp_number' => trim($_POST['whatsapp_number']),
             'usd_to_npr_rate' => $usd_to_npr_rate,
             'contact' => $contact_settings,
@@ -1373,6 +1458,38 @@ foreach ($packages as $pkg) {
     [id^="day-meals-"] + .ck-editor .ck-editor__editable,
     [id^="faq-ans-"] + .ck-editor .ck-editor__editable {
       min-height: 80px !important;
+    }
+    .cookie-consent-banner {
+      position: fixed;
+      left: 1rem;
+      right: 1rem;
+      bottom: 1rem;
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 1rem;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+    }
+    .cookie-consent-banner.visible {
+      display: flex;
+    }
+    .cookie-consent-banner p {
+      margin: 0.2rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    @media (max-width: 640px) {
+      .cookie-consent-banner {
+        align-items: stretch;
+        flex-direction: column;
+      }
     }
   </style>
 </head>
@@ -2357,10 +2474,21 @@ foreach ($packages as $pkg) {
           <div class="glass-card" style="padding:2rem; background-color: white; border:1px solid var(--border-color); border-radius:var(--radius-lg);">
             <h3 style="font-family:var(--font-heading); font-size:1.35rem; color:var(--color-primary); margin-bottom:1.5rem;">Global Company Details</h3>
             
-            <form method="POST" action="/admin" enctype="multipart/form-data" style="display:flex; flex-direction:column; gap:1.25rem;">
+            <form id="settings-main-form" method="POST" action="/admin" enctype="multipart/form-data" style="display:flex; flex-direction:column; gap:1.25rem;">
               <div class="form-group">
                 <label for="company_name">Company Name</label>
                 <input type="text" id="company_name" name="company_name" class="form-input" required value="<?php echo htmlspecialchars($site_name); ?>">
+              </div>
+
+              <div class="edit-fields-grid">
+                <div class="form-group">
+                  <label for="brand_line_1">Header Company Name Line 1</label>
+                  <input type="text" id="brand_line_1" name="brand_line_1" class="form-input" required value="<?php echo htmlspecialchars($brand_line_1); ?>" placeholder="TOP MOUNTAIN">
+                </div>
+                <div class="form-group">
+                  <label for="brand_line_2">Header Company Name Line 2</label>
+                  <input type="text" id="brand_line_2" name="brand_line_2" class="form-input" required value="<?php echo htmlspecialchars($brand_line_2); ?>" placeholder="TREKS PVT. LTD.">
+                </div>
               </div>
               
               <div class="edit-fields-grid">
@@ -2372,6 +2500,11 @@ foreach ($packages as $pkg) {
                   <label for="logo_file">Upload New Logo (Image)</label>
                   <input type="file" id="logo_file" name="logo_file" class="form-input">
                   <span style="font-size:0.75rem; color:var(--text-muted);">Current Logo: <code><?php echo htmlspecialchars($site_logo); ?></code></span>
+                </div>
+                <div class="form-group">
+                  <label for="owner_photo_file">Owner Photo Before WhatsApp Number</label>
+                  <input type="file" id="owner_photo_file" name="owner_photo_file" class="form-input" accept="image/*">
+                  <span style="font-size:0.75rem; color:var(--text-muted);">Current Owner Photo: <code><?php echo htmlspecialchars($owner_photo_path ?: 'Not uploaded'); ?></code></span>
                 </div>
               </div>
 
@@ -2462,9 +2595,24 @@ foreach ($packages as $pkg) {
               <!-- Footer Badges Uploads (Req 9) -->
               <div style="border-top:1px solid var(--border-color); padding-top:1.5rem; margin-top:0.5rem;">
                 <h4 style="font-family:var(--font-heading); color:var(--color-primary); margin-bottom:0.5rem; font-weight:800;">Upload Footer Partner/Association Logos</h4>
-                <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem;">Upload small badges (e.g. TAAN, NMA, payment gateway logos). They will align dynamically centered in the footer.</p>
-                <div class="form-group">
-                  <input type="file" id="footer_logos" name="footer_logos[]" class="form-input" multiple>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem;">Add up to 6 small badges. Each badge can open its official website in a new tab.</p>
+                <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                  <?php for ($slot = 1; $slot <= 6; $slot++): ?>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1.25fr; gap:0.75rem; align-items:end; border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.75rem; background:#f8fafc;">
+                      <div class="form-group" style="margin:0;">
+                        <label>Badge <?php echo $slot; ?> Image</label>
+                        <input type="file" name="footer_logos[]" class="form-input" accept="image/*">
+                      </div>
+                      <div class="form-group" style="margin:0;">
+                        <label>Badge <?php echo $slot; ?> Label</label>
+                        <input type="text" name="footer_logo_labels[]" class="form-input" placeholder="e.g. TAAN Member">
+                      </div>
+                      <div class="form-group" style="margin:0;">
+                        <label>Badge <?php echo $slot; ?> Link</label>
+                        <input type="url" name="footer_logo_links[]" class="form-input" placeholder="https://example.com">
+                      </div>
+                    </div>
+                  <?php endfor; ?>
                 </div>
               </div>
 
@@ -2495,20 +2643,27 @@ foreach ($packages as $pkg) {
           <div class="glass-card" style="padding:2rem; background-color:white; border:1px solid var(--border-color); border-radius:var(--radius-lg);">
             <h3 style="font-family:var(--font-heading); font-size:1.35rem; color:var(--color-primary); margin-bottom:1.5rem;">Footer Partner Logos</h3>
             <?php 
-            $footer_icons = isset($settings['footer_icons']) ? $settings['footer_icons'] : [];
+            $footer_icons = normalize_footer_icons($settings['footer_icons'] ?? []);
             if (empty($footer_icons)): 
             ?>
               <p style="color:var(--text-muted); text-align:center; padding:3rem 0;">No partner logos uploaded yet.</p>
             <?php else: ?>
               <div style="display:flex; flex-direction:column; gap:1rem;">
-                <?php foreach ($footer_icons as $idx => $path): ?>
-                  <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border-color); padding:0.75rem; border-radius:var(--radius-sm); background:#f8fafc;">
-                    <img src="/<?php echo htmlspecialchars($path); ?>" style="height:36px; max-width:120px; object-fit:contain;">
-                    <code style="font-size:0.75rem; word-break:break-all; max-width:200px;"><?php echo htmlspecialchars($path); ?></code>
+                <?php foreach ($footer_icons as $idx => $icon): ?>
+                  <div style="display:grid; grid-template-columns:120px 1fr auto; gap:1rem; align-items:center; border:1px solid var(--border-color); padding:0.75rem; border-radius:var(--radius-sm); background:#f8fafc;">
+                    <img src="/<?php echo htmlspecialchars($icon['image']); ?>" style="height:36px; max-width:120px; object-fit:contain;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                      <input type="hidden" form="settings-main-form" name="footer_icon_paths[]" value="<?php echo htmlspecialchars($icon['image']); ?>">
+                      <input type="text" form="settings-main-form" name="footer_icon_labels[]" class="form-input" value="<?php echo htmlspecialchars($icon['label']); ?>" placeholder="Badge label">
+                      <input type="url" form="settings-main-form" name="footer_icon_urls[]" class="form-input" value="<?php echo htmlspecialchars($icon['url']); ?>" placeholder="https://official-site.example">
+                      <code style="font-size:0.75rem; word-break:break-all; grid-column:1 / -1;"><?php echo htmlspecialchars($icon['image']); ?></code>
+                    </div>
                     <form method="POST" action="/admin" style="margin:0;" onsubmit="return confirmAdminDelete(this, 'this footer logo')">
                       <input type="hidden" name="delete_footer_icon_idx" value="<?php echo $idx; ?>">
                       <!-- Reuses settings save trigger with delete variable index -->
                       <input type="hidden" name="company_name" value="<?php echo htmlspecialchars($site_name); ?>">
+                      <input type="hidden" name="brand_line_1" value="<?php echo htmlspecialchars($brand_line_1); ?>">
+                      <input type="hidden" name="brand_line_2" value="<?php echo htmlspecialchars($brand_line_2); ?>">
                       <input type="hidden" name="whatsapp_number" value="<?php echo htmlspecialchars($site_whatsapp); ?>">
                       <?php foreach ($site_nav as $n): ?>
                         <input type="hidden" name="nav_titles[]" value="<?php echo htmlspecialchars($n['title']); ?>">
@@ -2641,6 +2796,31 @@ foreach ($packages as $pkg) {
                     <option value="double_chevron" <?php echo $theme['dropdown_icon'] === 'double_chevron' ? 'selected' : ''; ?>>» Double Chevron</option>
                     <option value="none" <?php echo $theme['dropdown_icon'] === 'none' ? 'selected' : ''; ?>>No Indicator Icon</option>
                   </select>
+                </div>
+                <div class="form-group">
+                  <label for="submenu_link_color">Package Link Text Color</label>
+                  <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <input type="color" id="submenu_link_color" name="submenu_link_color" value="<?php echo htmlspecialchars($theme['submenu_link_color']); ?>" style="width:50px; height:38px; border:1px solid var(--border-color); border-radius:4px; padding:0; cursor:pointer;" oninput="this.nextElementSibling.value = this.value">
+                    <input type="text" value="<?php echo htmlspecialchars($theme['submenu_link_color']); ?>" class="form-input" readonly style="flex:1;">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="submenu_hover_color">Package Link Hover Color</label>
+                  <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <input type="color" id="submenu_hover_color" name="submenu_hover_color" value="<?php echo htmlspecialchars($theme['submenu_hover_color']); ?>" style="width:50px; height:38px; border:1px solid var(--border-color); border-radius:4px; padding:0; cursor:pointer;" oninput="this.nextElementSibling.value = this.value">
+                    <input type="text" value="<?php echo htmlspecialchars($theme['submenu_hover_color']); ?>" class="form-input" readonly style="flex:1;">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="submenu_prefix_color">Double Arrow Color</label>
+                  <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <input type="color" id="submenu_prefix_color" name="submenu_prefix_color" value="<?php echo htmlspecialchars($theme['submenu_prefix_color']); ?>" style="width:50px; height:38px; border:1px solid var(--border-color); border-radius:4px; padding:0; cursor:pointer;" oninput="this.nextElementSibling.value = this.value">
+                    <input type="text" value="<?php echo htmlspecialchars($theme['submenu_prefix_color']); ?>" class="form-input" readonly style="flex:1;">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="mega_menu_width">Trekking Mega Menu Width</label>
+                  <input type="text" id="mega_menu_width" name="mega_menu_width" value="<?php echo htmlspecialchars($theme['mega_menu_width']); ?>" class="form-input" placeholder="e.g. 1240px or 96vw">
                 </div>
               </div>
             </div>
@@ -4019,6 +4199,34 @@ foreach ($packages as $pkg) {
     </script>
 
   <?php endif; ?>
+
+  <div class="cookie-consent-banner" id="cookie-consent-banner" role="dialog" aria-live="polite" aria-label="Cookie notice">
+    <div>
+      <strong>Accept cookies</strong>
+      <p>We use essential cookies to keep the admin panel and visitor site working correctly in the same browser.</p>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" id="cookie-consent-accept">Accept</button>
+  </div>
+  <script>
+    (function() {
+      var banner = document.getElementById('cookie-consent-banner');
+      var accept = document.getElementById('cookie-consent-accept');
+      var key = 'topmountain_cookie_consent';
+      if (!banner || !accept) return;
+      function hasConsent() {
+        return localStorage.getItem(key) === 'accepted' || document.cookie.indexOf('tmt_cookie_consent=accepted') !== -1;
+      }
+      function saveConsent() {
+        localStorage.setItem(key, 'accepted');
+        document.cookie = 'tmt_cookie_consent=accepted; Max-Age=31536000; Path=/; SameSite=Lax';
+        banner.classList.remove('visible');
+      }
+      if (!hasConsent()) {
+        banner.classList.add('visible');
+      }
+      accept.addEventListener('click', saveConsent);
+    })();
+  </script>
 
 </body>
 </html>

@@ -1,6 +1,9 @@
 {
     "company_name": "Top Mountain Treks Pvt. Ltd",
+    "brand_line_1": "TOP MOUNTAIN",
+    "brand_line_2": "TREKS PVT. LTD.",
     "logo_path": "assets\/images\/logo.png",
+    "owner_photo_path": "",
     "whatsapp_number": "+977-9840019909",
     "usd_to_npr_rate": 133,
     "contact": {

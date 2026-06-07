@@ -7,6 +7,35 @@ $site_whatsapp = "+977 985-1123456";
 $footer_icons = [];
 $footer_custom_html = "";
 
+function footer_normalize_icons($icons) {
+    $normalized = [];
+    if (!is_array($icons)) {
+        return $normalized;
+    }
+    foreach ($icons as $icon) {
+        if (is_string($icon)) {
+            $image = trim($icon);
+            if ($image !== '') {
+                $normalized[] = ['image' => $image, 'url' => '', 'label' => 'Affiliation Badge'];
+            }
+            continue;
+        }
+        if (!is_array($icon)) {
+            continue;
+        }
+        $image = trim($icon['image'] ?? $icon['path'] ?? '');
+        if ($image === '') {
+            continue;
+        }
+        $normalized[] = [
+            'image' => $image,
+            'url' => trim($icon['url'] ?? ''),
+            'label' => trim($icon['label'] ?? 'Affiliation Badge')
+        ];
+    }
+    return array_slice($normalized, 0, 6);
+}
+
 if (file_exists($settings_path)) {
     $set_data = json_decode(file_get_contents($settings_path), true);
     if (is_array($set_data)) {
@@ -14,7 +43,7 @@ if (file_exists($settings_path)) {
         if (!empty($set_data['logo_path'])) $site_logo = $set_data['logo_path'];
         if (!empty($set_data['whatsapp_number'])) $site_whatsapp = $set_data['whatsapp_number'];
         if (!empty($set_data['footer_icons']) && is_array($set_data['footer_icons'])) {
-            $footer_icons = $set_data['footer_icons'];
+            $footer_icons = footer_normalize_icons($set_data['footer_icons']);
         }
         if (!empty($set_data['footer_custom_html'])) $footer_custom_html = $set_data['footer_custom_html'];
     }
@@ -71,9 +100,17 @@ if (file_exists($settings_path)) {
 
       <!-- Center Dynamic Partner Badges Section (Req 9) -->
       <?php if (!empty($footer_icons)): ?>
-        <div style="display:flex; justify-content:center; align-items:center; gap:2.5rem; margin: 2rem 0; flex-wrap:wrap; border-top:1px solid rgba(255,255,255,0.1); border-bottom:1px solid rgba(255,255,255,0.1); padding: 1.5rem 0;">
+        <div class="footer-accreditation-icons" style="display:flex; justify-content:center; align-items:center; gap:1.25rem; margin: 2rem 0; flex-wrap:wrap; border-top:1px solid rgba(255,255,255,0.1); border-bottom:1px solid rgba(255,255,255,0.1); padding: 1.5rem 0;">
           <?php foreach ($footer_icons as $icon): ?>
-            <img src="/<?php echo htmlspecialchars($icon); ?>" style="height:40px; width:auto; object-fit:contain; filter:grayscale(100%); opacity:0.6; transition:all 0.3s ease;" onmouseover="this.style.filter='none'; this.style.opacity='1'; this.style.transform='scale(1.08)';" onmouseout="this.style.filter='grayscale(100%)'; this.style.opacity='0.6'; this.style.transform='scale(1)';" alt="Affiliation Badge">
+            <?php if (!empty($icon['url'])): ?>
+              <a href="<?php echo htmlspecialchars($icon['url']); ?>" target="_blank" rel="noopener" class="footer-accreditation-link" aria-label="<?php echo htmlspecialchars($icon['label']); ?>">
+                <img src="/<?php echo htmlspecialchars($icon['image']); ?>" alt="<?php echo htmlspecialchars($icon['label']); ?>">
+              </a>
+            <?php else: ?>
+              <span class="footer-accreditation-link" aria-label="<?php echo htmlspecialchars($icon['label']); ?>">
+                <img src="/<?php echo htmlspecialchars($icon['image']); ?>" alt="<?php echo htmlspecialchars($icon['label']); ?>">
+              </span>
+            <?php endif; ?>
           <?php endforeach; ?>
         </div>
       <?php endif; ?>
@@ -103,6 +140,14 @@ if (file_exists($settings_path)) {
     </svg>
   </a>
   <button type="button" class="back-to-top-btn" id="back-to-top-btn" aria-label="Back to top">&#8593;</button>
+
+  <div class="cookie-consent-banner" id="cookie-consent-banner" role="dialog" aria-live="polite" aria-label="Cookie notice">
+    <div>
+      <strong>Accept cookies</strong>
+      <p>We use essential cookies to keep the visitor site and admin tools working correctly in the same browser.</p>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" id="cookie-consent-accept">Accept</button>
+  </div>
 
   <!-- Main JavaScript Bundle -->
   <?php $main_js_path = __DIR__ . '/../assets/js/main.js'; ?>

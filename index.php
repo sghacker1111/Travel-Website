@@ -11,6 +11,19 @@ if (file_exists($packages_path)) {
 }
 if (!is_array($packages)) $packages = [];
 
+$settings_data = [];
+if (file_exists('data/settings.json')) {
+    $settings_data = json_decode(file_get_contents('data/settings.json'), true);
+}
+if (!is_array($settings_data)) $settings_data = [];
+$home_offer_defaults = [
+    'default_badge' => 'Hot Deal',
+    'default_group_text' => 'Group Offer',
+    'default_offer_days' => '30',
+    'limited_text' => 'Limited time'
+];
+$home_offer_settings = array_merge($home_offer_defaults, isset($settings_data['home_offers']) && is_array($settings_data['home_offers']) ? $settings_data['home_offers'] : []);
+
 // Get slider packages
 $slider_packages = [];
 $featured_packages = [];
@@ -32,12 +45,82 @@ if ($slider_align === 'center') {
 } elseif ($slider_align === 'right') {
     $slider_flex_align = 'flex-end';
 }
+
+function home_extract_altitude_meters($text) {
+    if (!is_string($text) || $text === '') return null;
+    if (preg_match_all('/([1-6][0-9,]{3,5})\s*(?:m|meter|meters|metre|metres)/i', $text, $matches)) {
+        $values = array_map(function($value) {
+            return (int)str_replace(',', '', $value);
+        }, $matches[1]);
+        return max($values);
+    }
+    return null;
+}
+
+function home_clean_day_place($item) {
+    $location = trim($item['location'] ?? '');
+    if ($location !== '') return $location;
+    $title = trim($item['title'] ?? '');
+    $title = preg_replace('/\([^)]*\)/', '', $title);
+    if (preg_match('/\barrival\s+in\s+([^,.;]+?)(?:\s+and\s+|$)/i', $title, $match)) {
+        return trim($match[1]);
+    }
+    if (preg_match_all('/\bto\s+([^,.;]+?)(?=\s+and\s+|$)/i', $title, $matches) && !empty($matches[1])) {
+        $place = trim(end($matches[1]));
+        if (!preg_match('/^(hotel|airport)$/i', $place)) {
+            return $place;
+        }
+    }
+    if (preg_match('/\bin\s+([^,.;]+?)(?:\s+and\s+|$)/i', $title, $match)) {
+        return trim($match[1]);
+    }
+    $title = preg_replace('/^(fly|drive|trek|hike|walk|return|arrival|departure)\s+(from|to)?\s*/i', '', $title);
+    return trim($title) !== '' ? trim($title) : 'Trail waypoint';
+}
+
+$simulator_packages = [];
+foreach ($packages as $pkg) {
+    if (empty($pkg['itinerary']) || !is_array($pkg['itinerary'])) continue;
+    $days = [];
+    $last_altitude = home_extract_altitude_meters($pkg['startPoint'] ?? '') ?: 1300;
+    foreach ($pkg['itinerary'] as $item) {
+        $text_blob = implode(' ', [
+            $item['title'] ?? '',
+            $item['desc'] ?? '',
+            $item['location'] ?? ''
+        ]);
+        $altitude = home_extract_altitude_meters($text_blob);
+        if ($altitude === null) {
+            $altitude = $last_altitude;
+        }
+        $last_altitude = $altitude;
+        $title = trim($item['title'] ?? ('Day ' . ($item['day'] ?? count($days) + 1)));
+        $desc = trim(strip_tags($item['desc'] ?? 'Follow the planned trail at a steady pace with guide monitoring.'));
+        $days[] = [
+            'day' => (int)($item['day'] ?? count($days) + 1),
+            'title' => $title,
+            'place' => home_clean_day_place($item),
+            'path' => $title,
+            'altitude' => $altitude,
+            'desc' => $desc
+        ];
+    }
+    if (empty($days)) continue;
+    $max_altitude = max(array_column($days, 'altitude'));
+    $simulator_packages[] = [
+        'slug' => $pkg['slug'],
+        'title' => $pkg['title'],
+        'region' => $pkg['region'] ?? '',
+        'maxAltitude' => $max_altitude,
+        'days' => $days
+    ];
+}
 ?>
 
   <!-- Hero Slider -->
-  <section class="hero-slider-wrapper" style="position:relative; height:75vh; overflow:hidden; background:#0f172a;" id="home-hero-slider">
+  <section class="hero-slider-wrapper home-hero-slider" id="home-hero-slider">
     <?php if (empty($slider_packages)): ?>
-      <div class="hero-slide active" style="background-image: linear-gradient(180deg, rgba(15,23,42,0.75) 0%, rgba(15,23,42,0.55) 100%), url('assets/images/packages/hero_home.jpg'); width:100%; height:100%; background-size:cover; background-position:center; display:flex; align-items:center;">
+      <div class="hero-slide active" data-title="Explore the roof of the world" style="background-image: linear-gradient(180deg, rgba(15,23,42,0.75) 0%, rgba(15,23,42,0.55) 100%), url('assets/images/packages/hero_home.jpg');">
         <div class="container" style="position: relative; z-index: 3; padding: 2rem; display: flex; flex-direction: column; align-items: <?php echo $slider_flex_align; ?>; text-align: <?php echo $slider_align; ?>;">
           <h2 style="font-family:var(--font-heading); font-weight:800; margin-bottom:1rem; color: var(--slider-title-color, #ffffff); font-size: var(--slider-title-size, 50px) !important; text-shadow:0 2px 4px rgba(0,0,0,0.6);"><?php echo htmlspecialchars($pkg['title'] ?? 'Explore the roof of the world'); ?></h2>
           <p style="max-width:700px; margin-bottom:2rem; line-height:1.6; font-weight:600; color: var(--slider-desc-color, #ffffff); font-size: var(--slider-desc-size, 18px) !important; text-shadow:0 1px 3px rgba(0,0,0,0.6);"><?php echo htmlspecialchars($pkg['overview'] ?? 'Expert-led high-altitude trekking, peak climbing, and tours in the Himalayas.'); ?></p>
@@ -46,7 +129,7 @@ if ($slider_align === 'center') {
       </div>
     <?php else: ?>
       <?php foreach ($slider_packages as $idx => $pkg): ?>
-        <div class="hero-slide <?php echo $idx === 0 ? 'active' : ''; ?>" style="display: <?php echo $idx === 0 ? 'flex' : 'none'; ?>; background-image: linear-gradient(180deg, rgba(15,23,42,0.5) 0%, rgba(15,23,42,0.5) 100%), url('/<?php echo htmlspecialchars($pkg['image']); ?>'); width:100%; height:100%; background-size:cover; background-position:center; align-items:center; position:absolute; inset:0; transition: opacity 0.8s ease;" id="slide-<?php echo $idx; ?>">
+        <div class="hero-slide <?php echo $idx === 0 ? 'active' : ''; ?>" data-title="<?php echo htmlspecialchars($pkg['title']); ?>" style="background-image: linear-gradient(180deg, rgba(15,23,42,0.5) 0%, rgba(15,23,42,0.5) 100%), url('/<?php echo htmlspecialchars($pkg['image']); ?>');" id="slide-<?php echo $idx; ?>">
           <div class="container" style="position: relative; z-index: 3; padding: 2rem; display: flex; flex-direction: column; align-items: <?php echo $slider_flex_align; ?>; text-align: <?php echo $slider_align; ?>;">
             <span class="card-badge" style="position:static; display:inline-block; margin-bottom:0.75rem; background:var(--color-secondary); color:#ffffff; border:none;"><?php echo htmlspecialchars($pkg['region']); ?> Region</span>
             <h2 style="font-family:var(--font-heading); font-weight:800; margin-top:0.5rem; margin-bottom:1rem; text-shadow:0 2px 4px rgba(0,0,0,0.6); color: var(--slider-title-color, #ffffff); font-size: var(--slider-title-size, 50px) !important;"><?php echo htmlspecialchars($pkg['title']); ?></h2>
@@ -62,6 +145,17 @@ if ($slider_align === 'center') {
       <!-- Slider Arrows -->
       <button onclick="prevHeroSlide()" style="position:absolute; left:20px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25); color:white; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; transition:all 0.3s;" onmouseover="this.style.background='var(--color-secondary)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">❮</button>
       <button onclick="nextHeroSlide()" style="position:absolute; right:20px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25); color:white; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; transition:all 0.3s;" onmouseover="this.style.background='var(--color-secondary)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">❯</button>
+      <div class="hero-helicopter" aria-hidden="true">
+        <span class="heli-rotor"></span>
+        <span class="heli-tail"></span>
+        <span class="heli-body"></span>
+        <span class="heli-skid"></span>
+        <span class="hero-heli-label" id="hero-heli-label"><?php echo htmlspecialchars($slider_packages[0]['title']); ?></span>
+      </div>
+
+      <button type="button" class="hero-arrow hero-arrow-left" id="hero-prev" aria-label="Previous package">&#8249;</button>
+      <button type="button" class="hero-arrow hero-arrow-right" id="hero-next" aria-label="Next package">&#8250;</button>
+      <div class="hero-dots" id="hero-dots-container" aria-label="Slider position"></div>
     <?php endif; ?>
   </section>
 
@@ -77,6 +171,12 @@ if ($slider_align === 'center') {
       <div class="grid grid-3" style="gap:2.5rem;">
         <?php 
         foreach ($featured_packages as $pkg) {
+            if (empty($pkg['offer_badge'])) $pkg['offer_badge'] = $home_offer_settings['default_badge'];
+            if (empty($pkg['group_offer_text'])) $pkg['group_offer_text'] = $home_offer_settings['default_group_text'];
+            if (empty($pkg['offer_end_date'])) {
+                $days = max(1, (int)$home_offer_settings['default_offer_days']);
+                $pkg['offer_end_date'] = date('Y-m-d', time() + ($days * 86400));
+            }
             include 'includes/package-card.php';
         }
         ?>
@@ -98,7 +198,15 @@ if ($slider_align === 'center') {
           
           <div class="glass-card" style="padding:1.5rem; border:1px solid var(--border-color); background-color:white;">
             <div style="margin-bottom:1.25rem;">
-              <label style="font-weight:700; color:var(--text-dark); display:block; margin-bottom:0.5rem;" for="sim-altitude-range">Slide to Choose Target Elevation:</label>
+              <label style="font-weight:700; color:var(--text-dark); display:block; margin-bottom:0.5rem;" for="sim-package-select">Select Package:</label>
+              <select id="sim-package-select" class="form-input" onchange="changeAltitudePackage(this.value)">
+                <?php foreach ($simulator_packages as $sim_idx => $sim_pkg): ?>
+                  <option value="<?php echo $sim_idx; ?>" <?php echo $sim_idx === 0 ? 'selected' : ''; ?>><?php echo htmlspecialchars($sim_pkg['title']); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div style="margin-bottom:1.25rem;">
+              <label style="font-weight:700; color:var(--text-dark); display:block; margin-bottom:0.5rem;" for="sim-altitude-range">Slide or Choose Day Elevation:</label>
               <input type="range" id="sim-altitude-range" min="1300" max="6500" value="3440" step="50" style="width:100%; accent-color:var(--color-accent);" oninput="updateAltitudeSimulation(this.value)">
             </div>
             <div style="display:flex; justify-content:space-between; font-weight:800; font-size:1.1rem; color:var(--color-primary);">
@@ -114,6 +222,11 @@ if ($slider_align === 'center') {
             <p style="color:var(--text-medium); font-size:0.95rem; line-height:1.75; margin-bottom:1.5rem;" id="sim-desc">
               Entering the High Altitude zone. Acclimatization rest days are critical here. Mild headaches are common. Pacing slowly (Bistarai Bistarai) is key.
             </p>
+            <div style="border:1px solid var(--border-color); border-radius:var(--radius-md); background:#f8fafc; padding:0.85rem; margin-bottom:1.25rem;">
+              <div style="font-size:0.78rem; color:var(--text-muted); font-weight:900; text-transform:uppercase; margin-bottom:0.25rem;">Day-by-Day Trail Path</div>
+              <div id="sim-path-desc" style="font-weight:800; color:var(--color-primary); line-height:1.45;">Day 1: Kathmandu</div>
+              <div id="sim-day-track" class="sim-day-track" style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:0.75rem;"></div>
+            </div>
             
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; font-size:0.88rem; border-top:1px solid var(--border-color); padding-top:1.25rem;">
               <div><strong>Effective Oxygen:</strong> <span id="sim-oxy-desc">67% (Thin air)</span></div>
@@ -184,81 +297,115 @@ if ($slider_align === 'center') {
   </section>
 
   <script>
-    // Hero Slider script
-    let currentHeroSlide = 0;
-    const slides = document.querySelectorAll('.hero-slide');
-    
-    function showHeroSlide(index) {
-        if (slides.length === 0) return;
-        slides[currentHeroSlide].classList.remove('active');
-        slides[currentHeroSlide].style.display = 'none';
-        
-        currentHeroSlide = (index + slides.length) % slides.length;
-        
-        slides[currentHeroSlide].classList.add('active');
-        slides[currentHeroSlide].style.display = 'flex';
-    }
-    
-    function prevHeroSlide() { showHeroSlide(currentHeroSlide - 1); }
-    function nextHeroSlide() { showHeroSlide(currentHeroSlide + 1); }
-    
-    // Auto rotation
-    if (slides.length > 1) {
-        setInterval(() => {
-            nextHeroSlide();
-        }, 6500);
-    }
-    
-    // Altitude simulator script
-    function updateAltitudeSimulation(alt) {
-        const altitude = parseInt(alt);
-        document.getElementById('sim-alt-val').textContent = altitude.toLocaleString();
-        
-        let oxygen = 100;
-        let pressure = 1013;
-        let zone = "Sub-Tropical Zone";
-        let title = "Kathmandu Foothills";
-        let desc = "Safe valley elevation. Oxygen is rich, and air pressure is high. No acclimatization required.";
-        let safety = "Safe environment";
-        
+    const altitudePackages = <?php echo json_encode($simulator_packages); ?>;
+    let activeAltitudePackage = 0;
+
+    function getAltitudeProfile(altitude) {
         if (altitude >= 5500) {
-            oxygen = 50;
-            pressure = 505;
-            zone = "Extreme Altitude (Death Zone)";
-            title = "Thorong La / Kala Patthar (Alt. " + altitude.toLocaleString() + " m)";
-            desc = "Oxygen is cut by half! Headaches, shortness of breath, and fatigue occur instantly. Only remain at this elevation for brief photo ops. Hydrate and descend immediately.";
-            safety = "Danger zone! Brief stay only";
-        } else if (altitude >= 4500) {
-            oxygen = 57;
-            pressure = 580;
-            zone = "Very High Altitude Zone";
-            title = "Lobuche Campsite (Alt. " + altitude.toLocaleString() + " m)";
-            desc = "Air pressure is highly reduced. Walking speed is slow. Avoid sleeping at high altitude without previous stage acclimatization. Carry reserve portable oxygen cylinders.";
-            safety = "Caution. Stage climb mandatory";
-        } else if (altitude >= 3400) {
-            oxygen = 67;
-            pressure = 680;
-            zone = "High Altitude Zone";
-            title = "Namche Bazaar (Alt. " + altitude.toLocaleString() + " m)";
-            desc = "Entering the High Altitude zone. Acclimatization rest days are critical here. Mild headaches are common. Pacing slowly (Bistarai Bistarai) is key.";
-            safety = "Rest day mandatory";
-        } else if (altitude >= 2500) {
-            oxygen = 75;
-            pressure = 750;
-            zone = "Moderate Altitude Zone";
-            title = "Lukla Airport (Alt. " + altitude.toLocaleString() + " m)";
-            desc = "Starting point of many Khumbu treks. Breathing rate increases slightly. Safe for most travelers, but avoid climbing too quickly from this point onwards.";
-            safety = "Safe start point";
+            return {
+                oxygen: 50,
+                pressure: 505,
+                zone: "Extreme Altitude Zone",
+                safety: "Danger zone. Brief stay only"
+            };
         }
-        
-        document.getElementById('sim-oxy-val').textContent = oxygen;
-        document.getElementById('sim-oxy-desc').textContent = oxygen + "% (Thin air)";
-        document.getElementById('sim-zone-desc').textContent = zone;
-        document.getElementById('sim-press-desc').textContent = pressure + " hPa (Normal: 1013)";
-        document.getElementById('sim-safety-desc').textContent = safety;
-        document.getElementById('sim-title').textContent = title;
-        document.getElementById('sim-desc').textContent = desc;
+        if (altitude >= 4500) {
+            return {
+                oxygen: 57,
+                pressure: 580,
+                zone: "Very High Altitude Zone",
+                safety: "Caution. Stage climb mandatory"
+            };
+        }
+        if (altitude >= 3400) {
+            return {
+                oxygen: 67,
+                pressure: 680,
+                zone: "High Altitude Zone",
+                safety: "Rest day strongly recommended"
+            };
+        }
+        if (altitude >= 2500) {
+            return {
+                oxygen: 75,
+                pressure: 750,
+                zone: "Moderate Altitude Zone",
+                safety: "Watch pace and hydration"
+            };
+        }
+        return {
+            oxygen: 90,
+            pressure: 880,
+            zone: "Low Altitude Zone",
+            safety: "Comfortable acclimatization"
+        };
     }
+
+    function closestSimulatorDay(pkg, altitude) {
+        if (!pkg || !pkg.days || !pkg.days.length) return null;
+        return pkg.days.reduce((best, day) => {
+            return Math.abs(day.altitude - altitude) < Math.abs(best.altitude - altitude) ? day : best;
+        }, pkg.days[0]);
+    }
+
+    function renderSimulatorDayTrack(pkg, activeDay) {
+        const track = document.getElementById('sim-day-track');
+        if (!track || !pkg || !pkg.days) return;
+        track.innerHTML = '';
+        pkg.days.forEach(day => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'sim-day-chip' + (activeDay && day.day === activeDay.day ? ' active' : '');
+            btn.textContent = 'Day ' + day.day;
+            btn.addEventListener('click', () => {
+                document.getElementById('sim-altitude-range').value = day.altitude;
+                updateAltitudeSimulation(day.altitude);
+            });
+            track.appendChild(btn);
+        });
+    }
+
+    function changeAltitudePackage(index) {
+        activeAltitudePackage = parseInt(index, 10) || 0;
+        const pkg = altitudePackages[activeAltitudePackage];
+        const range = document.getElementById('sim-altitude-range');
+        if (!pkg || !pkg.days || !pkg.days.length || !range) return;
+        const values = pkg.days.map(day => day.altitude);
+        range.min = Math.max(1000, Math.min(...values) - 300);
+        range.max = Math.max(...values) + 300;
+        range.value = pkg.days[0].altitude;
+        updateAltitudeSimulation(pkg.days[0].altitude);
+    }
+
+    function updateAltitudeSimulation(alt) {
+        const altitude = parseInt(alt, 10);
+        const pkg = altitudePackages[activeAltitudePackage] || altitudePackages[0];
+        const day = closestSimulatorDay(pkg, altitude) || {
+            day: 1,
+            place: "Kathmandu",
+            path: "Kathmandu arrival",
+            title: "Kathmandu arrival",
+            desc: "Safe valley elevation. Oxygen is rich, and air pressure is high."
+        };
+        const profile = getAltitudeProfile(altitude);
+
+        document.getElementById('sim-alt-val').textContent = altitude.toLocaleString();
+        document.getElementById('sim-oxy-val').textContent = profile.oxygen;
+        document.getElementById('sim-oxy-desc').textContent = profile.oxygen + "% effective oxygen";
+        document.getElementById('sim-zone-desc').textContent = profile.zone;
+        document.getElementById('sim-press-desc').textContent = profile.pressure + " hPa (Normal: 1013)";
+        document.getElementById('sim-safety-desc').textContent = profile.safety;
+        document.getElementById('sim-title').textContent = "Day " + day.day + ": " + day.place + " (Alt. " + altitude.toLocaleString() + " m)";
+        document.getElementById('sim-desc').textContent = day.desc || "Follow the planned trail slowly with guide monitoring and proper hydration.";
+        document.getElementById('sim-path-desc').textContent = "Day " + day.day + ": " + day.path;
+        renderSimulatorDayTrack(pkg, day);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (altitudePackages.length) {
+            changeAltitudePackage(0);
+        }
+    });
   </script>
 
   <!-- Need Help WhatsApp CTA Section -->

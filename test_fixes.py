@@ -133,8 +133,8 @@ if header_test_code not in home_res.text:
 if footer_test_code not in home_res.text:
     print("[-] ERROR: Custom footer script not injected into public page footer.")
     exit(1)
-if "filter:grayscale(100%)" not in home_res.text:
-    print("[-] ERROR: Partner logo/badge does not have CSS grayscale filter or styling.")
+if "footer-accreditation-link" not in home_res.text:
+    print("[-] ERROR: Partner logo/badge markup does not include linked footer accreditation styling.")
     exit(1)
 print("[+] Custom header/footer injection and CSS grayscale badges are live and working!")
 
@@ -171,7 +171,8 @@ if os.path.exists(local_path):
     print(f"[+] Removed mock uploaded media file: {local_path}")
 
 # Remove badge file from footer_icons and settings
-for icon_path in saved_settings['footer_icons']:
+for icon_entry in saved_settings['footer_icons']:
+    icon_path = icon_entry.get('image', '') if isinstance(icon_entry, dict) else icon_entry
     if 'integration_test_badge.gif' in icon_path and os.path.exists(icon_path):
         os.remove(icon_path)
         print(f"[+] Removed uploaded footer badge file: {icon_path}")

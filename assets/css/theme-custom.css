@@ -15,6 +15,10 @@
   --color-menu-bg: #78c1d3;
   --menu-text-size: 18px;
   --menu-padding: 8px;
+  --submenu-link-color: #1f2937;
+  --submenu-hover-color: #0077b6;
+  --submenu-prefix-color: #111827;
+  --mega-menu-width: 1240px;
   --slider-title-color: #ffffff;
   --slider-title-size: 72px;
   --slider-desc-color: #ffffff;

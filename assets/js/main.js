@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initOfferCountdowns();
   initPackageHeroRotation();
   initBackToTop();
+  initCookieConsent();
 });
 
 /* 1. Sticky Header Shadow on Scroll */
@@ -186,35 +187,43 @@ function initHeroSlider() {
   const nextBtn = document.getElementById('hero-next');
   const dotsContainer = document.getElementById('hero-dots-container');
 
-  if (slides.length === 0 || !dotsContainer) return;
+  if (slides.length === 0) return;
 
   let currentIndex = 0;
   let slideInterval;
 
   // Generate dots dynamically
-  dotsContainer.innerHTML = '';
-  slides.forEach((slide, index) => {
-    const dot = document.createElement('span');
-    dot.className = `hero-dot ${index === 0 ? 'active' : ''}`;
-    dot.setAttribute('data-index', index);
-    dotsContainer.appendChild(dot);
+  if (dotsContainer) {
+    dotsContainer.innerHTML = '';
+    slides.forEach((slide, index) => {
+      const dot = document.createElement('span');
+      dot.className = `hero-dot ${index === 0 ? 'active' : ''}`;
+      dot.setAttribute('data-index', index);
+      dotsContainer.appendChild(dot);
 
-    dot.addEventListener('click', () => {
-      goToSlide(index);
-      resetAutoplay();
+      dot.addEventListener('click', () => {
+        goToSlide(index);
+        resetAutoplay();
+      });
     });
-  });
+  }
 
-  const dots = dotsContainer.querySelectorAll('.hero-dot');
+  const dots = dotsContainer ? dotsContainer.querySelectorAll('.hero-dot') : [];
+  const heliLabel = document.getElementById('hero-heli-label');
 
   function goToSlide(index) {
     slides[currentIndex].classList.remove('active');
-    dots[currentIndex].classList.remove('active');
+    slides[currentIndex].style.display = 'flex';
+    if (dots[currentIndex]) dots[currentIndex].classList.remove('active');
 
     currentIndex = (index + slides.length) % slides.length;
 
     slides[currentIndex].classList.add('active');
-    dots[currentIndex].classList.add('active');
+    slides[currentIndex].style.display = 'flex';
+    if (dots[currentIndex]) dots[currentIndex].classList.add('active');
+    if (heliLabel) {
+      heliLabel.textContent = slides[currentIndex].getAttribute('data-title') || 'Top Mountain Treks';
+    }
   }
 
   function nextSlide() {
@@ -250,7 +259,29 @@ function initHeroSlider() {
     startAutoplay();
   }
 
-  startAutoplay();
+  goToSlide(0);
+  if (slides.length > 1) startAutoplay();
+}
+
+function initCookieConsent() {
+  const banner = document.getElementById('cookie-consent-banner');
+  const accept = document.getElementById('cookie-consent-accept');
+  if (!banner || !accept) return;
+
+  const key = 'topmountain_cookie_consent';
+  const hasConsent = () => {
+    return localStorage.getItem(key) === 'accepted' || document.cookie.indexOf('tmt_cookie_consent=accepted') !== -1;
+  };
+  const saveConsent = () => {
+    localStorage.setItem(key, 'accepted');
+    document.cookie = 'tmt_cookie_consent=accepted; Max-Age=31536000; Path=/; SameSite=Lax';
+    banner.classList.remove('visible');
+  };
+
+  if (!hasConsent()) {
+    banner.classList.add('visible');
+  }
+  accept.addEventListener('click', saveConsent);
 }
 
 /* 4. Tab Switching on Package Detail page */

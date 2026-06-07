@@ -5,9 +5,10 @@ if (isset($pkg) && is_array($pkg)):
     $difficulty_class = '';
     if (isset($pkg['difficulty'])) {
         $diff = strtolower($pkg['difficulty']);
-        if (strpos($diff, 'easy') !== false) $difficulty_class = 'easy';
+        if (strpos($diff, 'strenuous') !== false) $difficulty_class = 'strenuous';
+        elseif (strpos($diff, 'challenging') !== false) $difficulty_class = 'challenging';
         elseif (strpos($diff, 'moderate') !== false) $difficulty_class = 'moderate';
-        elseif (strpos($diff, 'challenging') !== false || strpos($diff, 'strenuous') !== false) $difficulty_class = 'challenging';
+        elseif (strpos($diff, 'easy') !== false) $difficulty_class = 'easy';
     }
     $offer_badge = trim($pkg['offer_badge'] ?? '');
     $group_offer_text = trim($pkg['group_offer_text'] ?? '');
@@ -46,7 +47,7 @@ if (isset($pkg) && is_array($pkg)):
 <div class="card-wrapper">
   <div class="card-image-box">
     <img src="<?php echo htmlspecialchars($card_image_src); ?>" alt="<?php echo htmlspecialchars($card_image_alt); ?>" loading="lazy">
-    <div class="card-badge"><?php echo htmlspecialchars($pkg['difficulty']); ?></div>
+    <div class="card-badge difficulty-badge <?php echo $difficulty_class ? 'difficulty-' . htmlspecialchars($difficulty_class) : ''; ?>"><?php echo htmlspecialchars($pkg['difficulty']); ?></div>
     <?php if (!empty($offer_badge)): ?>
       <div class="card-badge offer-pulse-badge" style="left:auto; right:0.85rem; top:0.85rem; background:#dc2626; color:white; border-color:#dc2626;"><?php echo htmlspecialchars($offer_badge); ?></div>
     <?php endif; ?>
