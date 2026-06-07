@@ -146,10 +146,12 @@ foreach ($packages as $pkg) {
       <button onclick="prevHeroSlide()" style="position:absolute; left:20px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25); color:white; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; transition:all 0.3s;" onmouseover="this.style.background='var(--color-secondary)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">❮</button>
       <button onclick="nextHeroSlide()" style="position:absolute; right:20px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25); color:white; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; transition:all 0.3s;" onmouseover="this.style.background='var(--color-secondary)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">❯</button>
       <div class="hero-helicopter" aria-hidden="true">
-        <span class="heli-rotor"></span>
-        <span class="heli-tail"></span>
-        <span class="heli-body"></span>
-        <span class="heli-skid"></span>
+        <span class="heli-airframe">
+          <span class="heli-rotor"></span>
+          <span class="heli-tail"></span>
+          <span class="heli-body"></span>
+          <span class="heli-skid"></span>
+        </span>
         <span class="hero-heli-label" id="hero-heli-label"><?php echo htmlspecialchars($slider_packages[0]['title']); ?></span>
       </div>
 

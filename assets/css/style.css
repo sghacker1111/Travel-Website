@@ -690,14 +690,24 @@ main {
 
 .hero-helicopter {
   position: absolute;
-  top: 18%;
-  left: -280px;
+  top: 50%;
+  left: 50%;
   z-index: 8;
-  width: 210px;
+  width: 280px;
   height: 72px;
-  animation: helicopterFlight 18s linear infinite;
+  animation: helicopterOrbit 18s linear infinite;
   pointer-events: none;
   filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.35));
+}
+
+.heli-airframe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 160px;
+  height: 72px;
+  transform-origin: 88px 43px;
+  animation: helicopterFaceOrbit 16s ease-in-out infinite;
 }
 
 .heli-body {
@@ -788,10 +798,10 @@ main {
 
 .hero-heli-label {
   position: absolute;
-  left: 128px;
-  top: 26px;
-  max-width: 210px;
-  min-width: 150px;
+  left: 118px;
+  top: -10px;
+  max-width: 170px;
+  min-width: 130px;
   padding: 0.35rem 0.55rem;
   background: rgba(15, 23, 42, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -801,23 +811,73 @@ main {
   font-weight: 900;
   line-height: 1.2;
   text-transform: uppercase;
+  animation: helicopterLabelSafeZone 18s linear infinite;
 }
 
-@keyframes helicopterFlight {
+@keyframes helicopterOrbit {
   0% {
-    transform: translateX(0) translateY(0) scale(1);
+    transform: translate(calc(-50vw + 56px), -210px) scale(0.88);
   }
-  48% {
-    transform: translateX(calc(100vw + 360px)) translateY(35px) scale(1);
+  12.5% {
+    transform: translate(calc(-28vw), -260px) scale(0.88);
+  }
+  25% {
+    transform: translate(0, -260px) scale(0.88);
+  }
+  37.5% {
+    transform: translate(calc(50vw - 360px), -205px) scale(0.88);
   }
   50% {
-    transform: translateX(calc(100vw + 360px)) translateY(35px) scale(1);
+    transform: translate(calc(50vw - 330px), 14px) scale(0.88);
   }
-  98% {
-    transform: translateX(0) translateY(0) scale(1);
+  62.5% {
+    transform: translate(calc(23vw), 188px) scale(0.88);
+  }
+  75% {
+    transform: translate(calc(-23vw), 188px) scale(0.88);
+  }
+  87.5% {
+    transform: translate(calc(-50vw + 56px), 14px) scale(0.88);
   }
   100% {
-    transform: translateX(0) translateY(0) scale(1);
+    transform: translate(calc(-50vw + 56px), -210px) scale(0.88);
+  }
+}
+
+@keyframes helicopterFaceOrbit {
+  0%,
+  22% {
+    transform: rotate(-5deg) scaleX(1);
+  }
+  30%,
+  47% {
+    transform: rotate(14deg) scaleX(1);
+  }
+  52%,
+  72% {
+    transform: rotate(2deg) scaleX(-1);
+  }
+  80%,
+  96% {
+    transform: rotate(-15deg) scaleX(-1);
+  }
+  100% {
+    transform: rotate(-5deg) scaleX(1);
+  }
+}
+
+@keyframes helicopterLabelSafeZone {
+  0%,
+  31%,
+  96%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  38%,
+  90% {
+    opacity: 0;
+    transform: translateY(-6px);
   }
 }
 
@@ -845,8 +905,49 @@ main {
   .hero-arrow-left { left: 0.75rem; }
   .hero-arrow-right { right: 0.75rem; }
   .hero-helicopter {
-    top: 14%;
-    transform: scale(0.78);
+    top: 49%;
+    width: 260px;
+    animation-name: helicopterOrbitMobile;
+  }
+  .heli-airframe {
+    transform-origin: 82px 42px;
+  }
+  .hero-heli-label {
+    left: 100px;
+    min-width: 96px;
+    max-width: 120px;
+    font-size: 0.62rem;
+    top: -2px;
+  }
+}
+
+@keyframes helicopterOrbitMobile {
+  0% {
+    transform: translate(calc(-50vw + 22px), -188px) scale(0.72);
+  }
+  12.5% {
+    transform: translate(-24vw, -222px) scale(0.72);
+  }
+  25% {
+    transform: translate(0, -230px) scale(0.72);
+  }
+  37.5% {
+    transform: translate(calc(50vw - 170px), -180px) scale(0.72);
+  }
+  50% {
+    transform: translate(calc(50vw - 165px), 40px) scale(0.72);
+  }
+  62.5% {
+    transform: translate(22vw, 172px) scale(0.72);
+  }
+  75% {
+    transform: translate(-22vw, 172px) scale(0.72);
+  }
+  87.5% {
+    transform: translate(calc(-50vw + 22px), 40px) scale(0.72);
+  }
+  100% {
+    transform: translate(calc(-50vw + 22px), -188px) scale(0.72);
   }
 }
 
