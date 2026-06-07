@@ -92,6 +92,7 @@ $theme_settings = [
     'submenu_link_color' => '#4b5563',
     'submenu_hover_color' => '#0077b6',
     'submenu_prefix_color' => '#111827',
+    'package_arrow' => ' ▸',
     'mega_menu_width' => '1240px',
     'slider_title_color' => '#ffffff',
     'slider_title_size' => '50px',
@@ -846,7 +847,7 @@ if (!function_exists('header_activity_package_match')) {
                               <?php foreach ($act_packages as $pkg): ?>
                                 <li>
                                   <a href="/trekking/<?php echo htmlspecialchars($pkg['slug']); ?>" class="mega-col-link package-menu-link">
-                                    <span class="package-link-prefix" aria-hidden="true">&#9658;&#9658;</span>
+                                    <span class="package-link-prefix" aria-hidden="true"><?php echo htmlspecialchars($theme_settings['package_arrow'] ?? ' ▸'); ?></span>
                                     <?php echo htmlspecialchars($pkg['title']); ?>
                                   </a>
                                 </li>
@@ -874,7 +875,7 @@ if (!function_exists('header_activity_package_match')) {
                             // Fallback direct packages
                             foreach ($packages as $pkg) {
                                 if ($pkg['category'] === $cat_filter) {
-                                    echo '<a href="/' . $cat_path . '/' . htmlspecialchars($pkg['slug']) . '" class="dropdown-link package-menu-link"><span class="package-link-prefix" aria-hidden="true">&#9658;&#9658;</span>' . htmlspecialchars($pkg['title']) . '</a>';
+                                    echo '<a href="/' . $cat_path . '/' . htmlspecialchars($pkg['slug']) . '" class="dropdown-link package-menu-link"><span class="package-link-prefix" aria-hidden="true">' . htmlspecialchars($theme_settings['package_arrow'] ?? ' ▸') . '</span>' . htmlspecialchars($pkg['title']) . '</a>';
                                 }
                             }
                         else:
@@ -891,7 +892,7 @@ if (!function_exists('header_activity_package_match')) {
                                 echo '<a href="' . $act_link . '" class="standard-region-link mobile-region-toggle" aria-expanded="false"><span>' . htmlspecialchars($act['name']) . '</span><span class="mobile-region-arrow" aria-hidden="true">›</span></a>';
                                 echo '<div class="standard-package-list">';
                                 foreach ($act_packages as $pkg) {
-                                    echo '<a href="/' . $cat_path . '/' . htmlspecialchars($pkg['slug']) . '" class="dropdown-link package-menu-link" style="font-size:0.8rem; padding: 0.25rem 0.5rem;"><span class="package-link-prefix" aria-hidden="true">&#9658;&#9658;</span>' . htmlspecialchars($pkg['title']) . '</a>';
+                                    echo '<a href="/' . $cat_path . '/' . htmlspecialchars($pkg['slug']) . '" class="dropdown-link package-menu-link" style="font-size:0.8rem; padding: 0.25rem 0.5rem;"><span class="package-link-prefix" aria-hidden="true">' . htmlspecialchars($theme_settings['package_arrow'] ?? ' ▸') . '</span>' . htmlspecialchars($pkg['title']) . '</a>';
                                 }
                                 echo '</div></div>';
                             endforeach;

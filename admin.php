@@ -189,7 +189,8 @@ $theme_defaults = [
     'blog_title_size' => '40px',
     'blog_desc_color' => '#4b5563',
     'blog_desc_size' => '16px',
-    'blog_align' => 'left'
+    'blog_align' => 'left',
+    'package_arrow' => ' ▸'
 ];
 foreach ($theme_defaults as $k => $v) {
     if (!isset($theme[$k])) {
@@ -569,14 +570,14 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $page_title_size = isset($_POST['page_title_size']) ? $_POST['page_title_size'] : '40px';
         $page_desc_color = isset($_POST['page_desc_color']) ? $_POST['page_desc_color'] : '#4b5563';
         $page_desc_size = isset($_POST['page_desc_size']) ? $_POST['page_desc_size'] : '16px';
-        $page_align = isset($_POST['page_align']) ? $_POST['page_align'] : 'left';
-
-        $blog_title_color = isset($_POST['blog_title_color']) ? $_POST['blog_title_color'] : '#1e3d2f';
+        $page_align = isset($_POST['page_align']) ? $_POST['page_align'] : 'left';        $blog_title_color = isset($_POST['blog_title_color']) ? $_POST['blog_title_color'] : '#1e3d2f';
         $blog_title_size = isset($_POST['blog_title_size']) ? $_POST['blog_title_size'] : '40px';
         $blog_desc_color = isset($_POST['blog_desc_color']) ? $_POST['blog_desc_color'] : '#4b5563';
         $blog_desc_size = isset($_POST['blog_desc_size']) ? $_POST['blog_desc_size'] : '16px';
         $blog_align = isset($_POST['blog_align']) ? $_POST['blog_align'] : 'left';
-
+        
+        $package_arrow = isset($_POST['package_arrow']) ? $_POST['package_arrow'] : ' ▸';
+ 
         $theme = [
             'primary' => $primary,
             'secondary' => $secondary,
@@ -594,6 +595,7 @@ if ($is_logged && $_SERVER['REQUEST_METHOD'] === 'POST') {
             'submenu_link_color' => $submenu_link_color,
             'submenu_hover_color' => $submenu_hover_color,
             'submenu_prefix_color' => $submenu_prefix_color,
+            'package_arrow' => $package_arrow,
             'mega_menu_width' => $mega_menu_width,
             'slider_title_color' => $slider_title_color,
             'slider_title_size' => $slider_title_size,
@@ -2812,11 +2814,15 @@ foreach ($packages as $pkg) {
                   </div>
                 </div>
                 <div class="form-group">
-                  <label for="submenu_prefix_color">Double Arrow Color</label>
+                  <label for="submenu_prefix_color">Prefix Arrow Color</label>
                   <div style="display:flex; gap:0.5rem; align-items:center;">
                     <input type="color" id="submenu_prefix_color" name="submenu_prefix_color" value="<?php echo htmlspecialchars($theme['submenu_prefix_color']); ?>" style="width:50px; height:38px; border:1px solid var(--border-color); border-radius:4px; padding:0; cursor:pointer;" oninput="this.nextElementSibling.value = this.value">
                     <input type="text" value="<?php echo htmlspecialchars($theme['submenu_prefix_color']); ?>" class="form-input" readonly style="flex:1;">
                   </div>
+                </div>
+                <div class="form-group">
+                  <label for="package_arrow">Package Menu Prefix Arrow</label>
+                  <input type="text" id="package_arrow" name="package_arrow" value="<?php echo htmlspecialchars($theme['package_arrow'] ?? ' ▸'); ?>" class="form-input" placeholder="e.g.  ▸ or  → or »">
                 </div>
                 <div class="form-group">
                   <label for="mega_menu_width">Trekking Mega Menu Width</label>
