@@ -93,7 +93,7 @@ $theme_settings = [
     'submenu_hover_color' => '#0077b6',
     'submenu_prefix_color' => '#111827',
     'package_arrow' => ' ▸',
-    'mega_menu_width' => '1240px',
+    'mega_menu_width' => '1300px',
     'slider_title_color' => '#ffffff',
     'slider_title_size' => '50px',
     'slider_desc_color' => '#ffffff',
@@ -280,8 +280,8 @@ if (!function_exists('header_activity_package_match')) {
     }
     .mega-menu-grid {
       display: grid;
-      grid-template-columns: repeat(6, minmax(145px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(6, minmax(max-content, 1fr));
+      gap: 2.25rem;
     }
     .mega-col-title {
       display: block;
@@ -294,6 +294,7 @@ if (!function_exists('header_activity_package_match')) {
       padding-bottom: 0.5rem;
       margin-bottom: 0.75rem;
       letter-spacing: 0.5px;
+      white-space: nowrap;
     }
     .mega-col-links {
       list-style: none;
