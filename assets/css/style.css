@@ -707,7 +707,7 @@ main {
   width: 160px;
   height: 72px;
   transform-origin: 88px 43px;
-  animation: helicopterFaceOrbit 16s ease-in-out infinite;
+  animation: helicopterFaceOrbit 18s linear infinite;
 }
 
 .heli-body {
@@ -815,65 +815,51 @@ main {
 }
 
 @keyframes helicopterOrbit {
-  0% {
-    transform: translate(calc(-50vw + 56px), -210px) scale(0.88);
-  }
-  12.5% {
-    transform: translate(calc(-28vw), -260px) scale(0.88);
-  }
-  25% {
-    transform: translate(0, -260px) scale(0.88);
-  }
-  37.5% {
-    transform: translate(calc(50vw - 210px), -205px) scale(0.88);
-  }
-  50% {
-    transform: translate(calc(50vw - 210px), 14px) scale(0.88);
-  }
-  62.5% {
-    transform: translate(calc(23vw), 196px) scale(0.88);
-  }
-  75% {
-    transform: translate(calc(-23vw), 196px) scale(0.88);
-  }
-  87.5% {
-    transform: translate(calc(-50vw + 56px), 14px) scale(0.88);
-  }
-  100% {
-    transform: translate(calc(-50vw + 56px), -210px) scale(0.88);
-  }
+  0.0% { transform: translate(calc(-1.000 * (50vw - 160px)), -30.0px) scale(0.88); }
+  5.0% { transform: translate(calc(-0.951 * (50vw - 160px)), -98.0px) scale(0.88); }
+  10.0% { transform: translate(calc(-0.809 * (50vw - 160px)), -159.3px) scale(0.88); }
+  15.0% { transform: translate(calc(-0.588 * (50vw - 160px)), -208.0px) scale(0.88); }
+  20.0% { transform: translate(calc(-0.309 * (50vw - 160px)), -239.2px) scale(0.88); }
+  25.0% { transform: translate(calc(0.000 * (50vw - 160px)), -250.0px) scale(0.88); }
+  30.0% { transform: translate(calc(0.309 * (50vw - 160px)), -239.2px) scale(0.88); }
+  35.0% { transform: translate(calc(0.588 * (50vw - 160px)), -208.0px) scale(0.88); }
+  40.0% { transform: translate(calc(0.809 * (50vw - 160px)), -159.3px) scale(0.88); }
+  45.0% { transform: translate(calc(0.951 * (50vw - 160px)), -98.0px) scale(0.88); }
+  50.0% { transform: translate(calc(1.000 * (50vw - 160px)), -30.0px) scale(0.88); }
+  55.0% { transform: translate(calc(0.951 * (50vw - 160px)), 38.0px) scale(0.88); }
+  60.0% { transform: translate(calc(0.809 * (50vw - 160px)), 99.3px) scale(0.88); }
+  65.0% { transform: translate(calc(0.588 * (50vw - 160px)), 148.0px) scale(0.88); }
+  70.0% { transform: translate(calc(0.309 * (50vw - 160px)), 179.2px) scale(0.88); }
+  75.0% { transform: translate(calc(0.000 * (50vw - 160px)), 190.0px) scale(0.88); }
+  80.0% { transform: translate(calc(-0.309 * (50vw - 160px)), 179.2px) scale(0.88); }
+  85.0% { transform: translate(calc(-0.588 * (50vw - 160px)), 148.0px) scale(0.88); }
+  90.0% { transform: translate(calc(-0.809 * (50vw - 160px)), 99.3px) scale(0.88); }
+  95.0% { transform: translate(calc(-0.951 * (50vw - 160px)), 38.0px) scale(0.88); }
+  100.0% { transform: translate(calc(-1.000 * (50vw - 160px)), -30.0px) scale(0.88); }
 }
 
 @keyframes helicopterFaceOrbit {
-  0%,
-  12% {
-    transform: rotate(-8deg) scaleX(1);
-  }
-  24% {
-    transform: rotate(0deg) scaleX(1);
-  }
-  38% {
-    transform: rotate(10deg) scaleX(1);
-  }
-  49% {
-    transform: rotate(18deg) scaleX(1);
-  }
-  52% {
-    transform: rotate(12deg) scaleX(-1);
-  }
-  64% {
-    transform: rotate(6deg) scaleX(-1);
-  }
-  75% {
-    transform: rotate(0deg) scaleX(-1);
-  }
-  88%,
-  97% {
-    transform: rotate(-15deg) scaleX(-1);
-  }
-  100% {
-    transform: rotate(-8deg) scaleX(1);
-  }
+  0.0% { transform: rotate(-90.0deg); }
+  5.0% { transform: rotate(-40.5deg); }
+  10.0% { transform: rotate(-20.9deg); }
+  15.0% { transform: rotate(-11.4deg); }
+  20.0% { transform: rotate(-5.2deg); }
+  25.0% { transform: rotate(0.0deg); }
+  30.0% { transform: rotate(5.2deg); }
+  35.0% { transform: rotate(11.4deg); }
+  40.0% { transform: rotate(20.9deg); }
+  45.0% { transform: rotate(40.5deg); }
+  50.0% { transform: rotate(90.0deg); }
+  55.0% { transform: rotate(139.5deg); }
+  60.0% { transform: rotate(159.1deg); }
+  65.0% { transform: rotate(168.6deg); }
+  70.0% { transform: rotate(174.8deg); }
+  75.0% { transform: rotate(180.0deg); }
+  80.0% { transform: rotate(185.2deg); }
+  85.0% { transform: rotate(191.4deg); }
+  90.0% { transform: rotate(200.9deg); }
+  95.0% { transform: rotate(220.5deg); }
+  100.0% { transform: rotate(270.0deg); }
 }
 
 @keyframes rotorSpin {
@@ -917,33 +903,27 @@ main {
 }
 
 @keyframes helicopterOrbitMobile {
-  0% {
-    transform: translate(calc(-50vw + 22px), -188px) scale(0.72);
-  }
-  12.5% {
-    transform: translate(-24vw, -222px) scale(0.72);
-  }
-  25% {
-    transform: translate(0, -230px) scale(0.72);
-  }
-  37.5% {
-    transform: translate(calc(50vw - 170px), -180px) scale(0.72);
-  }
-  50% {
-    transform: translate(calc(50vw - 165px), 40px) scale(0.72);
-  }
-  62.5% {
-    transform: translate(22vw, 172px) scale(0.72);
-  }
-  75% {
-    transform: translate(-22vw, 172px) scale(0.72);
-  }
-  87.5% {
-    transform: translate(calc(-50vw + 22px), 40px) scale(0.72);
-  }
-  100% {
-    transform: translate(calc(-50vw + 22px), -188px) scale(0.72);
-  }
+  0.0% { transform: translate(calc(-1.000 * (50vw - 90px)), -30.0px) scale(0.72); }
+  5.0% { transform: translate(calc(-0.951 * (50vw - 90px)), -91.8px) scale(0.72); }
+  10.0% { transform: translate(calc(-0.809 * (50vw - 90px)), -147.6px) scale(0.72); }
+  15.0% { transform: translate(calc(-0.588 * (50vw - 90px)), -191.8px) scale(0.72); }
+  20.0% { transform: translate(calc(-0.309 * (50vw - 90px)), -220.2px) scale(0.72); }
+  25.0% { transform: translate(calc(0.000 * (50vw - 90px)), -230.0px) scale(0.72); }
+  30.0% { transform: translate(calc(0.309 * (50vw - 90px)), -220.2px) scale(0.72); }
+  35.0% { transform: translate(calc(0.588 * (50vw - 90px)), -191.8px) scale(0.72); }
+  40.0% { transform: translate(calc(0.809 * (50vw - 90px)), -147.6px) scale(0.72); }
+  45.0% { transform: translate(calc(0.951 * (50vw - 90px)), -91.8px) scale(0.72); }
+  50.0% { transform: translate(calc(1.000 * (50vw - 90px)), -30.0px) scale(0.72); }
+  55.0% { transform: translate(calc(0.951 * (50vw - 90px)), 31.8px) scale(0.72); }
+  60.0% { transform: translate(calc(0.809 * (50vw - 90px)), 87.6px) scale(0.72); }
+  65.0% { transform: translate(calc(0.588 * (50vw - 90px)), 131.8px) scale(0.72); }
+  70.0% { transform: translate(calc(0.309 * (50vw - 90px)), 160.2px) scale(0.72); }
+  75.0% { transform: translate(calc(0.000 * (50vw - 90px)), 170.0px) scale(0.72); }
+  80.0% { transform: translate(calc(-0.309 * (50vw - 90px)), 160.2px) scale(0.72); }
+  85.0% { transform: translate(calc(-0.588 * (50vw - 90px)), 131.8px) scale(0.72); }
+  90.0% { transform: translate(calc(-0.809 * (50vw - 90px)), 87.6px) scale(0.72); }
+  95.0% { transform: translate(calc(-0.951 * (50vw - 90px)), 31.8px) scale(0.72); }
+  100.0% { transform: translate(calc(-1.000 * (50vw - 90px)), -30.0px) scale(0.72); }
 }
 
 /* Package Cards Layout */
